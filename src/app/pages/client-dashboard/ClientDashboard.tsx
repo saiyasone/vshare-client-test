@@ -25,8 +25,6 @@ import {
   DashboardItem,
 } from "./styles/clientDashboard.style";
 import "./styles/clientDashboard.style.css";
-// import * as Icon from "./icons";
-// import required modules
 
 const ITEM_PER_PAGE = 5;
 const ClientDashboard = () => {
