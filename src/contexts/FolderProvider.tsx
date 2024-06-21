@@ -6,16 +6,16 @@ import { decryptData, encryptData } from "utils/secure.util";
 
 export const FolderContext = createContext({});
 
-const reducer = (state, action) => {
+const reducer = (_state, action) => {
   const folderEncrypted = encryptData(JSON.stringify(action.payload));
-  localStorage.setItem(ENV_KEYS.REACT_APP_FOLDER_ID_LOCAL_KEY, folderEncrypted);
+  localStorage.setItem(ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY, folderEncrypted);
   return action.payload;
 };
 
 const FolderProvider = ({ children }) => {
   // const folderIdStorage = localStorage.getItem("folderId");
   const folderIdStorage = localStorage.getItem(
-    ENV_KEYS.REACT_APP_FOLDER_ID_LOCAL_KEY,
+    ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY,
   );
   const folderDecrypted = decryptData(folderIdStorage);
 
@@ -52,7 +52,7 @@ const FolderProvider = ({ children }) => {
       // localStorage.setItem("folderId", 0);
       const folderEncrypted = encryptData(JSON.stringify("0"));
       localStorage.setItem(
-        ENV_KEYS.REACT_APP_FOLDER_ID_LOCAL_KEY,
+        ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY,
         folderEncrypted,
       );
       setFolderId(0);
@@ -63,12 +63,12 @@ const FolderProvider = ({ children }) => {
     const handleStorageChange = (e) => {
       if (
         // e.key === "folderId"
-        e.key === ENV_KEYS.REACT_APP_FOLDER_ID_LOCAL_KEY
+        e.key === ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY
       ) {
         if (!e.newValue) {
           // localStorage.setItem("folderId", e.oldValue);
           localStorage.setItem(
-            ENV_KEYS.REACT_APP_FOLDER_ID_LOCAL_KEY,
+            ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY,
             e.oldValue,
           );
         }

@@ -11,12 +11,19 @@ export function encryptId(
   return encodeURIComponent(encryptedID);
 }
 
-export const encryptData = (param: any) => {
-  const encrypted = CryptoJS.AES.encrypt(
-    param,
-    ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
-  ).toString();
-  return encodeURIComponent(encrypted);
+export const encryptData = (model) => {
+  const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+  const key = CryptoJS.enc.Utf8.parse(secretKey);
+  const iv = CryptoJS.lib.WordArray.random(16);
+  const encrypted = CryptoJS.AES.encrypt(JSON.stringify(model), key, {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+  const cipherText = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
+  const ivText = iv.toString(CryptoJS.enc.Base64);
+  const encryptedData = cipherText + ":" + ivText;
+  return encryptedData;
 };
 
 export const decryptData = (encryptedParam: any) => {
@@ -60,6 +67,36 @@ export const decryptToken = (encryptData: any, secretKey: string) => {
   }
 };
 
+export const decryptSettingKey = (encryptData, secretKey) => {
+  try {
+    if (encryptData && secretKey) {
+      const key = CryptoJS.enc.Utf8.parse(secretKey);
+      const parts = encryptData?.split(":");
+      if (parts) {
+        const ciphertext1 = CryptoJS.enc.Base64.parse(parts[0]);
+        const parsedIv = CryptoJS.enc.Base64.parse(parts[1]);
+
+        const decrypted = CryptoJS.AES.decrypt(
+          CryptoJS.enc.Base64.stringify(ciphertext1),
+          key,
+          {
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7,
+            iv: parsedIv,
+          },
+        );
+        const decryptData = decrypted.toString(CryptoJS.enc.Utf8);
+        return decryptData;
+      } else {
+        return null;
+      }
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+};
+
 export const isValidToken = (accessToken: string) => {
   try {
     if (!accessToken) {
@@ -86,3 +123,19 @@ export const checkAccessToken = (accessToken: string) => {
     delete axios.defaults.headers.common.Authorization;
   }
 };
+
+export const generateUniqueId = (prefix = "") => {
+  const timestamp = new Date().getTime().toString(36);
+  const randomPart = Math.random().toString(36).substring(2, 5);
+
+  return `${prefix}${timestamp}${randomPart}`.toUpperCase();
+};
+
+export function decryptId(encryptedId, secretKey) {
+  const decryptedBytes = CryptoJS.AES.decrypt(
+    decodeURIComponent(encryptedId),
+    secretKey,
+  );
+  const decryptedID = decryptedBytes.toString(CryptoJS.enc.Utf8);
+  return decryptedID;
+}

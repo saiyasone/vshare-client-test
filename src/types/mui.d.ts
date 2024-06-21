@@ -6,11 +6,19 @@ import {
 
 declare module "@mui/material/styles/createPalette" {
   interface Palette extends MuiPallete {
-    primaryTheme?: { main: string };
+    primaryTheme?: {
+      main: string;
+      brown: (alpha?: any) => string;
+      green: string;
+    };
   }
 
   interface PaletteOptions extends MuiPaletteOptions {
-    primaryTheme?: { main: string };
+    primaryTheme?: {
+      main: string;
+      brown: (alpha?: any) => string;
+      green: string;
+    };
   }
 }
 
@@ -18,11 +26,13 @@ declare module "@mui/material/styles/createTheme" {
   interface Theme {
     baseShadow: {
       primary: string;
+      secondary: string;
     };
   }
   interface ThemeOptions {
     baseShadow: {
       primary: string;
+      secondary: string;
     };
   }
 }
@@ -44,5 +54,7 @@ declare module "@mui/material/CircularProgress" {
 declare module "@mui/material/Button" {
   export interface ButtonPropsColorOverrides {
     primaryTheme: true;
+    greyTheme: true;
+    secondaryTheme: true;
   }
 }

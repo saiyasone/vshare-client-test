@@ -113,3 +113,17 @@ export const handleGraphqlErrors = (message: string) => {
     }
   }
 };
+
+export const cutSpaceError = (error) => {
+  if (!error) {
+    return null;
+  }
+  const errorMessage = error;
+  const startIndex = errorMessage.indexOf("Not enough size");
+  const endIndex = errorMessage.indexOf(",SpacePackage");
+  const result = errorMessage.substring(startIndex, endIndex);
+  if (result === "Not enough size") {
+    return true;
+  }
+  return false;
+};

@@ -1,12 +1,12 @@
 import { useLazyQuery } from "@apollo/client";
-import { QUERY_PAYMENT } from "api/graphql/package.graphql";
+import { QUERY_PAYMENT } from "api/graphql/payment.graphql";
 import DialogPaymentPackage from "components/dialog/DialogPaymentPackage";
 import DialogWarningPackage from "components/dialog/DialogWarningPackage";
+import useAuth from "hooks/useAuth";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { paymentState } from "stores/features/paymentSlice";
-import useAuth from "../hooks/useAuth";
 
 export const PackageCheckerContext = createContext({});
 

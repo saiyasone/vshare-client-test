@@ -13,7 +13,7 @@ const DialogV1Content = muiStyled("div")({
   overflowY: "auto",
 });
 
-const BaseDialogV1 = ({ disableOnClose, ...props }) => {
+const BaseDialogV1: React.FC<any> = ({ disableOnClose, ...props }) => {
   return (
     <DialogV1Container>
       <Dialog

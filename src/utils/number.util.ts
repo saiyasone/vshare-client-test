@@ -8,3 +8,10 @@ export function prettyNumberFormat(
     ...options,
   });
 }
+
+export const generateRandomUniqueNumber = () => {
+  const timestamp = new Date().getTime();
+  const randomDigits = Math.floor(1000 + Math.random() * 9000);
+  const uniqueId = timestamp + randomDigits;
+  return uniqueId;
+};

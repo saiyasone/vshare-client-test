@@ -50,6 +50,72 @@ export const QUERY_FOLDER = gql`
   }
 `;
 
+export const MUTATION_CREATE_FOLDER = gql`
+  mutation CreateFolders($data: FoldersInput!) {
+    createFolders(data: $data) {
+      _id
+    }
+  }
+`;
+
+export const MUTATION_UPLOAD_FOLDER = gql`
+  mutation UploadFolder($data: UploadFolderInput!) {
+    uploadFolder(data: $data) {
+      _id
+      status
+      path {
+        newPath
+        path
+      }
+    }
+  }
+`;
+
+export const MUTATION_CANCEL_UPLOAD_FOLDER = gql`
+  mutation DeleteFoldersOutStatus($where: FoldersWhereInputOne!) {
+    deleteFoldersOutStatus(where: $where) {
+      _id
+    }
+  }
+`;
+
+export const MUTATION_UPDATE_FOLDER = gql`
+  mutation UpdateFolders($data: FoldersInput!, $where: FoldersWhereInputOne!) {
+    updateFolders(data: $data, where: $where) {
+      _id
+      folder_type
+      folder_name
+      newFolder_name
+      total_size
+      is_public
+      checkFolder
+      restore
+      access_password
+      show_download_link
+      status
+      path
+      url
+      expired
+      permissionSharePublic
+      aproveDownloadPublic
+      pin
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const MUTATION_UPDATE_EXPORT_LINK = gql`
+  mutation UpdateStatusFolderExportLink(
+    $data: FoldersInput!
+    $where: WhereExport!
+  ) {
+    updateStatusFolderExportLink(data: $data, where: $where) {
+      status
+    }
+  }
+`;
+
 export const QUERY_FOLDER_PUBLIC = gql`
   query QueryFolderPublic($where: FoldersWhereInput) {
     queryFolderPublic(where: $where) {
@@ -82,6 +148,14 @@ export const QUERY_FOLDER_PUBLIC = gql`
         updatedAt
       }
       total
+    }
+  }
+`;
+
+export const MUTATION_DELETE_FOLDER_TRASH = gql`
+  mutation DeleteFoldersTrash($where: FoldersWhereInputOne!) {
+    deleteFoldersTrash(where: $where) {
+      _id
     }
   }
 `;

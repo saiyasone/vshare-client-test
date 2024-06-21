@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const QUERY_SEO = gql`
+export const QUERY_GET_SEO = gql`
   query Data($where: SEOWhereInput) {
     getPublicSEO(where: $where) {
       data {
@@ -24,7 +24,7 @@ export const CREATE_DETAIL_ADVERTISEMENT = gql`
   }
 `;
 
-export const QUERY_ADVERTISEMENT = gql`
+export const QUERY_GET_ADVERTISEMENT = gql`
   query Data($where: AdvertisementWhereInput) {
     getAdvertisement(where: $where) {
       data {

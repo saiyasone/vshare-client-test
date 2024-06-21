@@ -1,4 +1,4 @@
-import { SxProps, Theme, styled as muiStyled } from "@mui/material";
+import { styled as muiStyled } from "@mui/material";
 import React from "react";
 
 const NormalButtonContainer = muiStyled("button")({
@@ -14,13 +14,8 @@ const NormalButtonContainer = muiStyled("button")({
   background: "transparent",
 });
 
-type NormalButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  children: React.ReactNode;
-  sx: SxProps<Theme> | undefined;
-};
-
-const NormalButton = React.forwardRef<HTMLButtonElement, NormalButtonProps>(
-  ({ children, ...props }, ref) => {
+const NormalButton = React.forwardRef<HTMLButtonElement, any>(
+  ({ children, ...props }: any, ref) => {
     return (
       <NormalButtonContainer ref={ref} type="button" {...props}>
         {children}

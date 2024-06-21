@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const MUTATION_FEEDBACK = gql`
+export const MUTATION_CREATE_FEEDBACK = gql`
   mutation CreateFeedback($input: FeedbackInput!) {
     createFeedback(input: $input) {
       _id
@@ -66,7 +66,7 @@ export const QUERY_ALL_SUB_FEATURES = gql`
   }
 `;
 
-export const QUERY_ANNOUNCEMENTS = gql`
+export const QUERY_GET_ANNOUNCEMENTS = gql`
   query Data(
     $where: AnnouncementWhereInput
     $orderBy: OrderByInput

@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material";
 import { styled as muiStyled } from "@mui/system";
 import warningSvg from "assets/images/warning.svg";
 import BaseDialogV1 from "components/BaseDialogV1";
-import NormalButton from "../../components/NormalButton";
+import NormalButton from "components/NormalButton";
 
 const DialogWarningPackageBoby = muiStyled("div")(({ theme }) => ({
   width: "100%",

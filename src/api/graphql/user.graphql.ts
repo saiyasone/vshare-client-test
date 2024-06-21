@@ -83,3 +83,17 @@ export const QUERY_USER = gql`
     }
   }
 `;
+
+export const MUTATION_CHANGE_USER_PASSWORD = gql`
+  mutation ChangePassword($id: ID!, $body: ChangePasswordInput!) {
+    changePassword(ID: $id, body: $body)
+  }
+`;
+
+export const MUTATION_UPDATE_USER = gql`
+  mutation UpdateUser($body: UpdateUserInput!, $id: ID!) {
+    updateUser(body: $body, ID: $id) {
+      _id
+    }
+  }
+`;

@@ -2,8 +2,8 @@ import { Box, Typography } from "@mui/material";
 import { styled as muiStyled } from "@mui/system";
 import timeoutSvg from "assets/images/timeout.svg";
 import BaseDialogV1 from "components/BaseDialogV1";
+import NormalButton from "components/NormalButton";
 import { FaArrowRight } from "react-icons/fa";
-import NormalButton from "../../components/NormalButton";
 
 const DialogPaymentPackageBoby = muiStyled("div")(({ theme }) => ({
   width: "100%",

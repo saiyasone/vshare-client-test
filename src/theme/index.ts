@@ -21,6 +21,10 @@ const createTheme = (name: string) => {
     shadows: shadows,
     baseShadow,
     palette: themeConfig.palette,
+    name: themeConfig.name,
+    header: themeConfig.header,
+    footer: themeConfig.footer,
+    sidebar: themeConfig.sidebar,
   });
 };
 

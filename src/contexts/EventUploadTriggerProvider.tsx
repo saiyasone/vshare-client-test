@@ -1,5 +1,5 @@
+import useDeepEqualEffect from "hooks/useDeepEqualEffect";
 import { createContext, useState } from "react";
-import useDeepEqualEffect from "../hooks/useDeepEqualEffect";
 
 export const EventUploadTriggerContext = createContext<any>(null);
 

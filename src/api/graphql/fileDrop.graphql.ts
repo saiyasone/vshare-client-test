@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const CREATE_FILEDROP_LINK = gql`
+export const MUTATION_CREATE_FILEDROP_URL = gql`
   mutation CreatePublicFileDropUrl($input: PublicFileDropUrlInput) {
     createPublicFileDropUrl(input: $input) {
       _id
@@ -8,11 +8,9 @@ export const CREATE_FILEDROP_LINK = gql`
   }
 `;
 
-export const UPDATE_FILE_DROP_STATUS = gql`
-  mutation UpdateFilesPublic($data: FilesInput!, $where: FilesWhereInputOne!) {
-    updateFilesPublic(data: $data, where: $where) {
-      _id
-    }
+export const MUTATION_UPDATE_FILE_DROP_URL = gql`
+  mutation UpdateFileDropUrl($id: ID!, $input: UpdateFileDropUrlInput) {
+    updateFileDropUrl(ID: $id, input: $input)
   }
 `;
 
@@ -35,6 +33,37 @@ export const QUERY_FILE_DROP_PUBLIC = gql`
         dropStatus
         updatedAt
       }
+    }
+  }
+`;
+
+export const QUERY_FILE_DROP_URL_PRIVATE = gql`
+  query Data(
+    $skip: Int
+    $limit: Int
+    $orderBy: OrderByInput
+    $where: PrivateFileDropUrlWhereInput
+  ) {
+    getPrivateFileDropUrl(
+      skip: $skip
+      limit: $limit
+      orderBy: $orderBy
+      where: $where
+    ) {
+      data {
+        _id
+        url
+        createdAt
+        expiredAt
+        status
+        title
+        description
+        folderId {
+          _id
+          folder_name
+        }
+      }
+      total
     }
   }
 `;
@@ -72,20 +101,18 @@ export const QUERY_GENERAL_BUTTON_DOWNLOADS = gql`
     }
   }
 `;
-export const QUERY_ADVERTISEMENTS = gql`
-  query Data($where: AdvertisementWhereInput) {
-    getAdvertisement(where: $where) {
-      data {
-        _id
-        url
-      }
+
+export const MUTATION_CREATE_FILE_DROP_URL_PRIVATE = gql`
+  mutation CreatePrivateFileDropUrl($input: PrivateFileDropUrlInput) {
+    createPrivateFileDropUrl(input: $input) {
+      _id
     }
   }
 `;
-export const CREATED_DETAIL_ADVERTISEMENTS = gql`
-  mutation CreateDetailadvertisements($data: DetailadvertisementsInput!) {
-    createDetailadvertisements(data: $data) {
-      _id
-    }
+
+export const MUTATION_DELETE_FILE_DROP_URL = gql`
+  mutation DeleteFileDropUrl($id: ID!) {
+    deleteFil
+    DropUrl(ID: $id)
   }
 `;
