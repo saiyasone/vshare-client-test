@@ -85,6 +85,8 @@ function ExtendShare() {
   const [toggle, setToggle] = useState<any>(null);
   const parentFolderUrl: any = Base64.decode(params.id);
 
+  // Share to
+
   const handleToggle = (value) => {
     setToggle(value);
     localStorage.setItem("toggle", value);
@@ -267,6 +269,20 @@ function ExtendShare() {
       fetchSubFoldersAndFiles.refetch();
     }
   }, [eventUploadTrigger.triggerData]);
+
+  useEffect(() => {
+    const shareData = fetchSubFoldersAndFiles.data?.folders?.data?.[0];
+    if (shareData) {
+      if (shareData?.permission === "edit") {
+        eventUploadTrigger.handleSharePermission("edit");
+      } else {
+        eventUploadTrigger.handleSharePermission("view");
+      }
+    }
+  }, [
+    eventUploadTrigger?.sharePermission,
+    fetchSubFoldersAndFiles.data?.folders?.data,
+  ]);
 
   const resetDataForEvents = () => {
     setDataForEvent((state) => ({
@@ -991,6 +1007,7 @@ function ExtendShare() {
             });
           }}
           filename={dataForEvent.data.name}
+          permission={dataForEvent.data.permission}
           newFilename={dataForEvent.data.newName}
           fileType={dataForEvent.data.type}
           path={dataForEvent.data.newPath}

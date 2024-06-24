@@ -11,6 +11,7 @@ const useFetchSharedSubFolderAndFile = (parentId, user) => {
       fetchPolicy: "no-cache",
     },
   );
+  
   const [isDataFound, setDataFound] = useState<any>(null);
   const [mainData, setMainData] = useState<any>(null);
   const [getFolderData] = useLazyQuery(QUERY_FOLDER, {

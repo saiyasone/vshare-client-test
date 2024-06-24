@@ -108,7 +108,9 @@ export default function FloatingButton() {
   };
 
   const handleOpenCreateFolderModal = () => {
-    setFolderOpen(true);
+    if (eventUploadTrigger?.sharePermission === "edit") {
+      setFolderOpen(true);
+    }
   };
 
   const folderJson = localStorage.getItem(
