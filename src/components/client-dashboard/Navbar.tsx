@@ -551,6 +551,10 @@ const Navbar = ({ onDrawerToggle }) => {
           setProgressing(countPercentage);
         },
         onSuccess: async () => {
+          setActiveData((prev) => ({
+            ...prev,
+            totalDownloadFile: activeData.totalDownloadFile + 1,
+          }));
           successMessage("Download successful", 2000);
           eventUploadTrigger.trigger();
         },
