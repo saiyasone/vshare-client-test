@@ -282,12 +282,8 @@ const DialogCreateShare = (props) => {
               await createShareFromSharing({
                 variables: {
                   body: {
-                    accessKey: "",
-                    folderId: data?._id,
-                    isPublic: accessStatusShare,
                     permission: statusShare,
                     toAccount: sharedSelectedUserList[i],
-                    link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
                     shareId: share._id,
                   },
                 },
@@ -298,14 +294,9 @@ const DialogCreateShare = (props) => {
                 variables: {
                   body: {
                     folderId: data?._id,
-                    ownerId: data?.createdBy?._id || props.ownerId?._id,
-                    fromAccount: user?.email,
                     isPublic: accessStatusShare,
                     permission: statusShare,
                     toAccount: sharedSelectedUserList[i],
-                    link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
-                    status: "active",
-                    isShare: "yes",
                   },
                 },
               });
@@ -324,12 +315,8 @@ const DialogCreateShare = (props) => {
               await createShareFromSharing({
                 variables: {
                   body: {
-                    fileId: data?._id,
-                    accessKey: "",
-                    isPublic: accessStatusShare,
                     permission: statusShare,
                     toAccount: sharedSelectedUserList[i],
-                    link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
                     shareId: share._id,
                   },
                 },
@@ -340,15 +327,9 @@ const DialogCreateShare = (props) => {
                 variables: {
                   body: {
                     fileId: data?._id,
-                    accessKey: "",
-                    ownerId: data?.createdBy?._id || props.ownerId?._id,
-                    fromAccount: user?.email,
                     isPublic: accessStatusShare,
                     permission: statusShare,
                     toAccount: sharedSelectedUserList[i],
-                    link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
-                    status: "active",
-                    isShare: "yes",
                   },
                 },
               });

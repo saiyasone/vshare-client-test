@@ -958,6 +958,7 @@ export function MyCloud() {
     setTimeout(() => {
       setOptionsValue(false);
     }, 500);
+    console.log(dataForEvent.data)
 
     const checkPassword = isCheckPassword();
 

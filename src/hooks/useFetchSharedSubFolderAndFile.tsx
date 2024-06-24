@@ -11,7 +11,7 @@ const useFetchSharedSubFolderAndFile = (parentId, user) => {
       fetchPolicy: "no-cache",
     },
   );
-  
+
   const [isDataFound, setDataFound] = useState<any>(null);
   const [mainData, setMainData] = useState<any>(null);
   const [getFolderData] = useLazyQuery(QUERY_FOLDER, {
@@ -94,19 +94,18 @@ const useFetchSharedSubFolderAndFile = (parentId, user) => {
                       newName: folderById.newFolder_name,
                       id: data.folderId._id,
                       isContainsFiles:
-                        folderById.file_id?.filter(
-                          (el) => el.status === "active",
-                        )?.length > 0
-                          ? true
-                          : false ||
-                            folderById.parentkey?.filter(
-                              (el) => el.status === "active",
-                            )?.length > 0
-                          ? true
-                          : false,
+                        folderById.folder_?.item !== "0" ? true : false,
                       // isContainsFiles:
-                      //   folderById.file_id.filter((data) => data._id)?.length > 0 ||
-                      //   folderById.parentkey.filter((data) => data._id)?.length > 0,
+                      //   folderById.file_id?.filter(
+                      //     (el) => el.status === "active",
+                      //   )?.length > 0
+                      //     ? true
+                      //     : false ||
+                      //       folderById.parentkey?.filter(
+                      //         (el) => el.status === "active",
+                      //       )?.length > 0
+                      //     ? true
+                      //     : false,
                       pin: folderById.pin ? 1 : 0,
                       checkTypeItem: "folder",
                       permission: data.permission,
