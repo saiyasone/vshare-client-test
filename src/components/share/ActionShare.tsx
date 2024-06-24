@@ -1,69 +1,140 @@
-import { Box, Button, useMediaQuery } from "@mui/material";
-import { roleShareMenu } from "constants/menuItem.constant";
-import { MdOutlineExpandMore } from "react-icons/md";
-import MenuDropdown from "../MenuDropdown";
-import MenuDropdownItem from "../MenuDropdownItem";
-function ActionShare(props) {
-  const { statusshare, handleStatus } = props;
-  const isSmallMobile = useMediaQuery("(max-width:768px)");
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import { Box, IconButton, useMediaQuery } from "@mui/material";
+import MenuDropdown from "components/MenuDropdown";
+import MenuDropdownItem from "components/MenuDropdownItem";
+import React from "react";
+import { BsPinAngleFill } from "react-icons/bs";
+import { MdFavorite } from "react-icons/md";
+
+export default function ActionShare(props) {
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const { params, eventActions } = props;
 
   return (
-    <MenuDropdown
-      customButton={{
-        element: (
+    <div style={{ position: "relative" }}>
+      {eventActions.hover &&
+      eventActions.hover?.id === params?.id &&
+      !isMobile ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
           <Box
-            sx={{
-              margin: isSmallMobile ? "10px 0px 0 0" : "0px 0 0 10px",
-              height: "100%",
+            sx={{ padding: "0 20px", display: "flex", alignItems: "center" }}
+          >
+            {props?.shortMenuItems?.map((menuItem, index) => {
+              let result;
+              switch (true) {
+                case menuItem.title === "Favourite":
+                  if (params?.row?.favorite || params.row.fileId?.favorite) {
+                    result = <MdFavorite fill="#17766B" />;
+                  } else {
+                    result = menuItem.icon;
+                  }
+                  break;
+                case menuItem.title === "Pin":
+                  if (params?.row?.pin || params?.folderId?.pin) {
+                    result = <BsPinAngleFill fill="#3C384A" />;
+                  } else {
+                    result = menuItem.icon;
+                  }
+                  break;
+
+                default:
+                  result = menuItem.icon;
+              }
+              return (
+                <IconButton
+                  disabled={
+                    params?.row?.permission === "edit" ||
+                    props.user?.permission === "edit"
+                      ? false
+                      : menuItem.disabled
+                  }
+                  key={index}
+                  onClick={() =>
+                    eventActions.handleEvent(
+                      menuItem.action,
+                      params?.row || params,
+                    )
+                  }
+                >
+                  {React.cloneElement(result, {
+                    size: "18px",
+                  })}
+                </IconButton>
+              );
+            })}
+          </Box>
+          <MenuDropdown
+            customButton={{
+              element: (
+                <IconButton>
+                  <MoreVertRoundedIcon />
+                </IconButton>
+              ),
             }}
           >
-            <Button
-              fullWidth
-              variant="outlined"
-              sx={{
-                height: "100%",
-                width: "120px",
-              }}
-              endIcon={<MdOutlineExpandMore />}
-              {...{
-                ...(props.accessStatusShare === "private"
-                  ? {}
-                  : {
-                      disabled: true,
-                    }),
-              }}
-            >
-              {statusshare === "view" ? "Can view" : "Can edit"}
-            </Button>
-          </Box>
-        ),
-      }}
-    >
-      {props.accessStatusShare === "private" && (
-        <div>
-          {roleShareMenu.map((menuItem, index) => {
+            {props.menuItems?.map((menuItem, index) => {
+              return (
+                <MenuDropdownItem
+                  disabled={
+                    params?.row?.permission === "edit" ||
+                    props.user?.permission === "edit"
+                      ? false
+                      : menuItem.disabled
+                  }
+                  isFavorite={params?.row?.favorite ? true : false}
+                  isPinned={
+                    params?.row?.pin || params?.folderId?.pin ? true : false
+                  }
+                  onClick={() => {
+                    eventActions.handleEvent(
+                      menuItem.action,
+                      params?.row || params,
+                    );
+                  }}
+                  key={index}
+                  title={menuItem.title}
+                  icon={menuItem.icon}
+                />
+              );
+            })}
+          </MenuDropdown>
+        </Box>
+      ) : (
+        <MenuDropdown
+          anchor={props.anchor}
+          customButton={{
+            element: (
+              <IconButton>
+                <MoreVertRoundedIcon />
+              </IconButton>
+            ),
+          }}
+        >
+          {props.menuItems?.map((menuItem, index) => {
             return (
               <MenuDropdownItem
-                statusshare={statusshare}
                 key={index}
+                disabled={
+                  params.permission === "edit" ? false : menuItem.disabled
+                }
                 title={menuItem.title}
                 icon={menuItem.icon}
-                {...{
-                  ...(props.accessStatusShare === "private"
-                    ? {
-                        onClick: () => handleStatus(menuItem.action),
-                      }
-                    : {
-                        disabled: true,
-                      }),
+                onClick={() => {
+                  eventActions.handleEvent(
+                    menuItem.action,
+                    params?.row || params,
+                  );
                 }}
               />
             );
           })}
-        </div>
+        </MenuDropdown>
       )}
-    </MenuDropdown>
+    </div>
   );
 }
-
-export default ActionShare;

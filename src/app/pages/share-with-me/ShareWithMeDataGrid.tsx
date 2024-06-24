@@ -1,5 +1,5 @@
 import { Box, Checkbox, styled, useMediaQuery } from "@mui/material";
-import FolderNotEmpty from "assets/images/empty/folder-not-empty.svg";
+import FolderNotEmpty from "assets/images/empty/folder-not-empty.svg?react";
 import FileDataGrid from "components/file/FileDataGrid";
 import ActionFileShare from "components/share/ActionFileShare";
 import ActionShare from "components/share/ActionShare";
