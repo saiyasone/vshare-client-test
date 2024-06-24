@@ -147,27 +147,15 @@ export default function FloatingButton() {
 
   const handleCreateFolder = async () => {
     const newFolderName = uuidv4();
+
     try {
-      // console.log({
-      //   folder_name: folder,
-      //   createdBy: user?._id,
-      //   folder_type: "folder",
-      //   checkFolder: parseInt(globalFolderId) > 0 ? "sub" : "main",
-      //   ...(parseInt(globalFolderId) > 0
-      //     ? { parentkey: parseInt(globalFolderId) }
-      //     : {}),
-      //   newFolder_name: newFolderName,
-      //   newPath:
-      //     parseInt(globalFolderId) > 0
-      //       ? isNewPath?.folders?.data[0]?.newPath + "/" + newFolderName
-      //       : newFolderName,
-      // });
       const data = await todoFolder({
         variables: {
           data: {
             folder_name: folder,
             createdBy: user?._id,
             folder_type: "folder",
+            destination: "",
             checkFolder: parseInt(globalFolderId) > 0 ? "sub" : "main",
             ...(parseInt(globalFolderId) > 0
               ? { parentkey: parseInt(globalFolderId) }
