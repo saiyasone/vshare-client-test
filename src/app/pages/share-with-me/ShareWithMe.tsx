@@ -577,6 +577,7 @@ function ShareWithMe() {
 
       case "double click":
         setEventClick("double click");
+
         if (checkPassword) {
           setShowEncryptPassword(true);
         } else {
@@ -1061,7 +1062,6 @@ function ShareWithMe() {
                                           onClick: (e) =>
                                             handleClickFolder(e, data),
                                           onDoubleClick: () => {
-                                            // handleOpenFolder(data);
                                             setDataForEvent({
                                               data,
                                               action: "double click",
