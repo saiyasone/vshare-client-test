@@ -50,6 +50,22 @@ export const QUERY_FOLDER = gql`
   }
 `;
 
+export const QUERY_FILE_CSV = gql`
+  query ExportMultipleShortUrl($id: ID!) {
+    exportMultipleShortUrl(ID: $id) {
+      total
+      data {
+        _id
+        filename
+        shortUrl
+        size
+        createdAt
+        status
+      }
+    }
+  }
+`;
+
 export const MUTATION_CREATE_FOLDER = gql`
   mutation CreateFolders($data: FoldersInput!) {
     createFolders(data: $data) {

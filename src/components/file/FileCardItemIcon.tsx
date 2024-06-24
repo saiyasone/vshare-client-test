@@ -9,6 +9,7 @@ import { styled as muiStyled } from "@mui/system";
 
 //icon
 import FolderEmptyIcon from "assets/images/empty/folder-empty.svg?react";
+import LockIcon from "assets/images/lock-icon.png";
 import FolderNotEmptyIcon from "assets/images/empty/folder-not-empty.svg?react";
 import useResizeImage from "hooks/useResizeImage";
 import { FileIcon, defaultStyles } from "react-file-icon";
@@ -30,6 +31,18 @@ const Image = muiStyled("img")({
   objectFit: "cover",
 });
 
+const LockImage = muiStyled("img")(({ theme }) => ({
+  width: "30px",
+  height: "30px",
+  textAlign: "center",
+  objectFit: "cover",
+
+  [theme.breakpoints.down("md")]: {
+    width: "20px",
+    height: "20px",
+  },
+}));
+
 const FileCardItemIconContainer = muiStyled("div")(({ theme }) => ({
   width: "100%",
   height: "100%",
@@ -45,6 +58,7 @@ const FileCardItemIcon: React.FC<any> = ({
   user,
   isContainFiles,
   fileType,
+  password,
   ...props
 }) => {
   const itemRef = useRef(null);
@@ -59,31 +73,37 @@ const FileCardItemIcon: React.FC<any> = ({
     <Item ref={itemRef} className="card-item">
       {fileType === "image" ? (
         <React.Fragment>
-          {resizeImage.imageFound === null && (
-            <CircularProgress
-              size={15}
-              sx={{
-                color: "#17766B",
-              }}
-            />
-          )}
-          {resizeImage.imageFound === true && (
-            <>
-              {resizeImage.imageSrc && (
-                <Image
-                  src={resizeImage.imageSrc}
-                  alt={props.name}
-                  className="file-card-image"
+          {password ? (
+            <LockImage src={LockIcon} alt={props?.name} />
+          ) : (
+            <React.Fragment>
+              {resizeImage.imageFound === null && (
+                <CircularProgress
+                  size={15}
+                  sx={{
+                    color: "#17766B",
+                  }}
                 />
               )}
-            </>
-          )}
-          {resizeImage.imageFound === false && (
-            <MdIcon.MdOutlineImageNotSupported
-              style={{
-                fontSize: "2rem",
-              }}
-            />
+              {resizeImage.imageFound === true && (
+                <>
+                  {resizeImage.imageSrc && (
+                    <Image
+                      src={resizeImage.imageSrc}
+                      alt={props.name}
+                      className="file-card-image"
+                    />
+                  )}
+                </>
+              )}
+              {resizeImage.imageFound === false && (
+                <MdIcon.MdOutlineImageNotSupported
+                  style={{
+                    fontSize: "2rem",
+                  }}
+                />
+              )}
+            </React.Fragment>
           )}
         </React.Fragment>
       ) : (

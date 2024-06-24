@@ -209,10 +209,18 @@ function ExtendFolderDataGrid(props) {
             "/" +
             url,
         );
-        navigate(`/folder/share/${base64URL}`);
+        if (props?.isShare) {
+          navigate(`/folder/share/${base64URL}`);
+        } else {
+          navigate(`/folder/${base64URL}`);
+        }
       } else {
         const base64URL = Base64.encodeURI(url);
-        navigate(`/folder/share/${base64URL}`);
+        if (props?.isShare) {
+          navigate(`/folder/share/${base64URL}`);
+        } else {
+          navigate(`/folder/${base64URL}`);
+        }
       }
     }
   }

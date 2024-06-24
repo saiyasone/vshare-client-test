@@ -386,6 +386,7 @@ export default function ShowUpload(props) {
           const uploading = await uploadFiles({
             variables: {
               data: {
+                destination: "",
                 newFilename: randomName + getFileNameExtension(file.name),
                 filename: file.name,
                 fileType: file.type,
@@ -474,6 +475,7 @@ export default function ShowUpload(props) {
                 folder_type: "folder",
               },
               cancelToken: folderCancelTokenSource.token,
+              destination: "",
             },
           });
 

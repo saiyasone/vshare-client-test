@@ -85,6 +85,8 @@ function ExtendShare() {
   const [toggle, setToggle] = useState<any>(null);
   const parentFolderUrl: any = Base64.decode(params.id);
 
+  // Share to
+
   const handleToggle = (value) => {
     setToggle(value);
     localStorage.setItem("toggle", value);
@@ -267,6 +269,20 @@ function ExtendShare() {
       fetchSubFoldersAndFiles.refetch();
     }
   }, [eventUploadTrigger.triggerData]);
+
+  useEffect(() => {
+    const shareData = fetchSubFoldersAndFiles.data?.folders?.data?.[0];
+    if (shareData) {
+      if (shareData?.permission === "edit") {
+        eventUploadTrigger.handleSharePermission("edit");
+      } else {
+        eventUploadTrigger.handleSharePermission("view");
+      }
+    }
+  }, [
+    eventUploadTrigger?.sharePermission,
+    fetchSubFoldersAndFiles.data?.folders?.data,
+  ]);
 
   const resetDataForEvents = () => {
     setDataForEvent((state) => ({
@@ -752,7 +768,7 @@ function ExtendShare() {
               _id: selectOptions?.createdBy?._id,
               newName: selectOptions?.createdBy?.newName,
             },
-            toAccount: selectOptions?.toAccount,
+            toAccount: userAuth,
             share: {
               _id: selectOptions?.sharedId,
               isFromShare: selectOptions?.isShare === "yes" ? true : false,
@@ -789,7 +805,7 @@ function ExtendShare() {
               _id: selectOptions?.createdBy?._id,
               newName: selectOptions?.createdBy?.newName,
             },
-            toAccount: selectOptions?.toAccount,
+            toAccount: userAuth,
             share: {
               _id: selectOptions?.sharedId,
               isFromShare: selectOptions?.isShare === "yes" ? true : false,
@@ -807,7 +823,7 @@ function ExtendShare() {
 
   useEffect(() => {
     handleClearMultipleSelection();
-  }, [dispatch, toggle]);
+  }, [dispatch, navigate]);
 
   const handleAddFavourite = async () => {
     try {
@@ -991,6 +1007,7 @@ function ExtendShare() {
             });
           }}
           filename={dataForEvent.data.name}
+          permission={dataForEvent.data.permission}
           newFilename={dataForEvent.data.newName}
           fileType={dataForEvent.data.type}
           path={dataForEvent.data.newPath}
@@ -1179,6 +1196,7 @@ function ExtendShare() {
                         {toggle !== "grid" && (
                           <ExtendFolderDataGrid
                             isFromSharingUrl={true}
+                            isShare={true}
                             shortMenuItems={shortFileShareMenu}
                             pagination={{
                               total: Math.ceil(

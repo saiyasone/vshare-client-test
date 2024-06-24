@@ -73,6 +73,11 @@ export const QUERY_SHARE = gql`
         permission
         accessedAt
         expiredAt
+        createdBy {
+          _id
+          email
+          username
+        }
       }
       total
     }

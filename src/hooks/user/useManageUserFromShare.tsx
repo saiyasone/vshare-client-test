@@ -36,7 +36,7 @@ const useManageUserFromShare = ({
               where: {
                 parentKey: parentKey || 0,
                 isShare: isShare || "yes",
-                fromAccount: inputFileOrFolder.fromAccount.email,
+                fromAccount: inputFileOrFolder.createdBy.email,
                 toAccount,
                 ...(inputType === "folder"
                   ? {
@@ -93,6 +93,7 @@ const useManageUserFromShare = ({
                 id: data._id,
                 body: {
                   permission: data._permission,
+                  toAccount: data.toAccount?.email,
                 },
               },
             });

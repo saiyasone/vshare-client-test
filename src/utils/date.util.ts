@@ -213,4 +213,12 @@ export const getTimeLineChat = (date) => {
   return moment(date).format("HH:mm").toString();
 };
 
+// formate date number
+export function DateOfNumber(dateTime: string) {
+  if (dateTime) {
+    const date = moment(dateTime).format("DD-MM-YYYY");
+    return date;
+  }
+}
+
 export default moment;
