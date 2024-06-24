@@ -228,6 +228,12 @@ function ExtendFolder() {
   const useDataExportCSV = useExportCSV({
     folderId: csvFolder.folderId,
     exportRef: csvRef,
+    onSuccess: () => {
+      setCsvFolder({
+        folderId: "",
+        folderName: "",
+      });
+    },
   });
 
   const handleViewMore = () => {

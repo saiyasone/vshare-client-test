@@ -218,6 +218,11 @@ export function MyCloud() {
   const useDataExportCSV = useExportCSV({
     folderId: csvFolder.folderId,
     exportRef: csvRef,
+    onSuccess: () =>
+      setCsvFolder({
+        folderId: "",
+        folderName: "",
+      }),
   });
 
   useEffect(() => {
@@ -953,6 +958,7 @@ export function MyCloud() {
     setTimeout(() => {
       setOptionsValue(false);
     }, 500);
+    console.log(dataForEvent.data)
 
     const checkPassword = isCheckPassword();
 

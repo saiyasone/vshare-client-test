@@ -51,7 +51,7 @@ export const shareWithMeFolderMenuItems = [
     action: "download",
     disabled: true,
   },
-  { icon: <FiFile />, title: "File Drop", action: "filedrop" },
+  // { icon: <FiFile />, title: "File Drop", action: "filedrop" },
   { icon: <HiOutlineTrash />, title: "Delete", action: "delete" },
 ];
 

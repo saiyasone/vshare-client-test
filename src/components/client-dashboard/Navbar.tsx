@@ -88,6 +88,10 @@ const AppSearch = styled("div")({
   position: "relative",
   background: "#FFF",
   width: "100%",
+
+  [theme.breakpoints.down(400)]: {
+    width: "80%",
+  },
 });
 const SearchBar = styled("div")({
   borderRadius: "2px",
@@ -189,6 +193,12 @@ const Navbar = ({ onDrawerToggle }) => {
   const useDataExportCSV = useExportCSV({
     folderId: csvFolder.folderId,
     exportRef: csvRef,
+    onSuccess: () => {
+      setCsvFolder({
+        folderId: "",
+        folderName: "",
+      });
+    },
   });
 
   const [isPasswordLink, setIsPasswordLink] = useState(false);
@@ -196,6 +206,8 @@ const Navbar = ({ onDrawerToggle }) => {
   const handleEvent = (paramEventName, data) => {
     const currentEventName = paramEventName || eventName;
     const currentActiveData = data || activeData;
+    setShowEncryptPassword(false);
+
     switch (currentEventName) {
       case "detail":
         handleOpenFile();
@@ -240,6 +252,9 @@ const Navbar = ({ onDrawerToggle }) => {
         break;
       case "preview":
         handlePreviewFile();
+        break;
+      case "double click":
+        handleOpenFolder(currentActiveData);
         break;
       case "filedrop":
         handleFileDrop();
@@ -289,8 +304,12 @@ const Navbar = ({ onDrawerToggle }) => {
     setIsAutoClose(true);
     setActiveData(data);
     setEventName(eventName);
-    if (data.password) {
-      setShowEncryptPassword(true);
+    if (data?.password || data?.access_passwordFolder) {
+      if (eventName === "password") {
+        setIsPasswordLink(true);
+      } else {
+        setShowEncryptPassword(true);
+      }
     } else {
       handleEvent(eventName, data);
     }
@@ -532,6 +551,10 @@ const Navbar = ({ onDrawerToggle }) => {
           setProgressing(countPercentage);
         },
         onSuccess: async () => {
+          setActiveData((prev) => ({
+            ...prev,
+            totalDownloadFile: activeData.totalDownloadFile + 1,
+          }));
           successMessage("Download successful", 2000);
           eventUploadTrigger.trigger();
         },
@@ -686,7 +709,10 @@ const Navbar = ({ onDrawerToggle }) => {
                                         {...(data.checkTypeItem ===
                                           "folder" && {
                                           onDoubleClick: () =>
-                                            handleOpenFolder(data),
+                                            handleCheckPasswordBeforeEvent(
+                                              "double click",
+                                              data,
+                                            ),
                                         })}
                                         {...(data.checkTypeItem === "file" && {
                                           onDoubleClick: () =>
@@ -719,6 +745,10 @@ const Navbar = ({ onDrawerToggle }) => {
                                           <FileCardItemIcon
                                             isContainFiles={isContainsFiles}
                                             name={data.name}
+                                            password={
+                                              data?.password ||
+                                              data?.access_passwordFolder
+                                            }
                                             fileType={getShortFileTypeFromFileType(
                                               data.type,
                                             )}
@@ -810,10 +840,8 @@ const Navbar = ({ onDrawerToggle }) => {
                                                           : false
                                                       }
                                                       isPassword={
-                                                        data.password ||
-                                                        data.access_password
-                                                          ? true
-                                                          : false
+                                                        data?.password ||
+                                                        data?.access_passwordFolder
                                                       }
                                                       title={menuItem.title}
                                                       icon={menuItem.icon}
@@ -847,10 +875,8 @@ const Navbar = ({ onDrawerToggle }) => {
                                                         data.pin ? true : false
                                                       }
                                                       isPassword={
-                                                        data.password ||
-                                                        data.access_password
-                                                          ? true
-                                                          : false
+                                                        data?.password ||
+                                                        data?.access_passwordFolder
                                                       }
                                                       title={menuItems.title}
                                                       icon={menuItems.icon}
@@ -993,11 +1019,15 @@ const Navbar = ({ onDrawerToggle }) => {
         />
       )}
       <DialogCreateFilePassword
-        checkType="file"
         isOpen={isPasswordLink}
+        checkType={activeData?.checkTypeItem}
         dataValue={activeData}
         filename={activeData?.name || "Unknown"}
-        isUpdate={activeData?.password ? true : false}
+        isUpdate={
+          activeData?.password || activeData?.access_passwordFolder
+            ? true
+            : false
+        }
         onConfirm={async () => {
           await handleSearchFolderAndFile(inputSearch);
           eventUploadTrigger.trigger();
