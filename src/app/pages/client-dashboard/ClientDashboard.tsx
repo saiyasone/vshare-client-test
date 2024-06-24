@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { Box, Grid, useMediaQuery } from "@mui/material";
 
@@ -31,7 +31,7 @@ const ClientDashboard = () => {
   const { user }: any = useAuth();
   const [dataFilter, setDataFilter] = useState({});
   const isMobile = useMediaQuery("(max-width:768px)");
-  const eventUploadTrigger = React.useContext(EventUploadTriggerContext);
+  const eventUploadTrigger = useContext(EventUploadTriggerContext);
   const [getSpace, { data: dataSpace, loading: loadingSpace }] = useLazyQuery(
     QUERY_GET_SPACE,
     {
