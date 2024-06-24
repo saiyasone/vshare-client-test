@@ -1,0 +1,7 @@
+.custom-row-class {
+  background-color: #dceae9;
+}
+
+.custom-row-class:hover {
+  background-color: #d4e9e8 !important;
+}
