@@ -23,7 +23,6 @@ import {
 } from "constants/menuItem.constant";
 import { FolderContext } from "contexts/FolderProvider";
 import useManageFile from "hooks/file/useManageFile";
-import useManageFolder from "hooks/folder/useManageFolder";
 import useAuth from "hooks/useAuth";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import { Fragment, useContext, useEffect, useState } from "react";
@@ -110,8 +109,6 @@ function MenuMultipleSelectionFolderAndFile(props) {
     user,
   });
 
-  const manageFolderAction = useManageFolder({ user });
-
   const handleMenuAction = (action) => {
     switch (action) {
       case "file-download":
@@ -123,12 +120,16 @@ function MenuMultipleSelectionFolderAndFile(props) {
         break;
 
       case "share-download":
-        handleShareDownloadData();
+        if (userPackage?.downLoadOption === "direct") {
+          handleShareDownloadData();
+        } else {
+          handleGetLinkAnother();
+        }
         break;
 
       case "folder-download":
         if (userPackage?.downLoadOption === "direct") {
-          handleDownloadFolder();
+          handleDownloadFileAndFolder();
         } else {
           handleGetLinkAnother();
         }
@@ -240,7 +241,6 @@ function MenuMultipleSelectionFolderAndFile(props) {
       {
         onSuccess: () => {
           dispatch(checkboxAction.setIsLoading(false));
-          // handleClearFile();
         },
         onFailed: () => {
           dispatch(checkboxAction.setIsLoading(false));
@@ -258,25 +258,6 @@ function MenuMultipleSelectionFolderAndFile(props) {
       {
         onSuccess: () => {
           dispatch(checkboxAction.setIsLoading(false));
-        },
-        onFailed: (error) => {
-          dispatch(checkboxAction.setIsLoading(false));
-          console.error(error);
-        },
-      },
-    );
-  };
-
-  const handleDownloadFolder = () => {
-    dispatch(checkboxAction.setIsLoading(true));
-    manageFolderAction.handleMultipleDownloadFolder(
-      {
-        multipleData: dataSelector?.selectionFileAndFolderData,
-      },
-      {
-        onSuccess: () => {
-          dispatch(checkboxAction.setIsLoading(false));
-          // handleClearFile();
         },
         onFailed: (error) => {
           dispatch(checkboxAction.setIsLoading(false));
@@ -683,7 +664,7 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                 handleMenuAction(item.action);
                               }}
                               disabled={
-                                (item.action === "download" ||
+                                (item.action === "share-download" ||
                                   item.action === "share") &&
                                 dataSelector?.selectionFileAndFolderData?.find(
                                   (item) =>
@@ -777,6 +758,13 @@ function MenuMultipleSelectionFolderAndFile(props) {
                         {multipleTab === "folder" && (
                           <Fragment>
                             {multipleSelectionFolderItems.map((item, index) => {
+                              if (
+                                item.action === "password" &&
+                                userPackage?.lockFolder === "off"
+                              ) {
+                                return;
+                              }
+
                               return (
                                 <Fragment key={index}>
                                   {item.action === "folder-download" &&
@@ -816,44 +804,52 @@ function MenuMultipleSelectionFolderAndFile(props) {
                         {/* files and folders */}
                         {multipleTab === "multiple" && (
                           <Fragment>
-                            {multipleSelectionFolderAndFileItems.map(
-                              (item, index) => {
-                                return (
-                                  <Fragment key={index}>
-                                    {item.action === "multiple-download" &&
-                                    dataSelector.isLoading ? (
-                                      <IconButton size="small">
-                                        <CircularProgress size={18} />
-                                      </IconButton>
-                                    ) : (
-                                      <IconButton
-                                        size="small"
-                                        onClick={() => {
-                                          handleMenuAction(item.action);
-                                        }}
-                                        disabled={
-                                          (item.action === "get link" ||
-                                            item.action ===
-                                              "multiple-download" ||
-                                            item.action === "password" ||
-                                            item.action === "delete" ||
-                                            item.action === "share") &&
-                                          dataSelector?.selectionFileAndFolderData?.find(
-                                            (item) =>
-                                              item?.totalSize === 0 ||
-                                              item?.dataPassword,
-                                          ) &&
-                                          true
-                                        }
-                                      >
-                                        {item.icon}
-                                      </IconButton>
-                                    )}
-                                  </Fragment>
-                                );
-                              },
-                            )}
-                          </Fragment>
+                          {multipleSelectionFolderAndFileItems.map(
+                            (item, index) => {
+                              if (
+                                item.action === "password" &&
+                                (userPackage.lockFile === "off" ||
+                                  userPackage.lockFolder === "off")
+                              ) {
+                                return;
+                              }
+
+                              return (
+                                <Fragment key={index}>
+                                  {item.action === "multiple-download" &&
+                                  dataSelector.isLoading ? (
+                                    <IconButton size="small">
+                                      <CircularProgress size={18} />
+                                    </IconButton>
+                                  ) : (
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => {
+                                        handleMenuAction(item.action);
+                                      }}
+                                      disabled={
+                                        (item.action === "get link" ||
+                                          item.action ===
+                                            "multiple-download" ||
+                                          item.action === "password" ||
+                                          item.action === "delete" ||
+                                          item.action === "share") &&
+                                        dataSelector?.selectionFileAndFolderData?.find(
+                                          (item) =>
+                                            item?.totalSize === 0 ||
+                                            item?.dataPassword,
+                                        ) &&
+                                        true
+                                      }
+                                    >
+                                      {item.icon}
+                                    </IconButton>
+                                  )}
+                                </Fragment>
+                              );
+                            },
+                          )}
+                        </Fragment>
                         )}
                       </Fragment>
                     </SelectBoxRight>

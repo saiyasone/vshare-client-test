@@ -359,21 +359,9 @@ const useManageFile = ({ user }) => {
       const encryptedData = dataEncrypted({ headers });
       const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifiles?download=${encryptedData}`;
 
+      startDownload({ baseUrl });
       setTimeout(() => {
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-
-        iframe.onload = () => {
-          document.body.removeChild(iframe);
-        };
-
-        // Set the iframe's src to the download URL
-        iframe.src = baseUrl;
-        document.body.appendChild(iframe);
-
-        setTimeout(() => {
-          onSuccess();
-        }, 500);
+        onSuccess();
       }, 1000);
     } catch (error) {
       onFailed?.();
@@ -414,26 +402,28 @@ const useManageFile = ({ user }) => {
 
       const encryptedData = dataEncrypted({ headers });
       const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifiles?download=${encryptedData}`;
+
+      startDownload({ baseUrl });
       setTimeout(() => {
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-
-        iframe.onload = () => {
-          document.body.removeChild(iframe);
-        };
-
-        iframe.src = baseUrl;
-        document.body.appendChild(iframe);
-
-        setTimeout(() => {
-          onSuccess();
-        }, 500);
+        onSuccess();
       }, 1000);
     } catch (error) {
       onFailed?.();
       console.error(error);
     }
   };
+
+  async function startDownload({ baseUrl }) {
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+
+    iframe.onload = () => {
+      document.body.removeChild(iframe);
+    };
+
+    iframe.src = baseUrl;
+    document.body.appendChild(iframe);
+  }
 
   const handleMultipleDownloadFileAndFolder = async (
     { multipleData, isShare },
@@ -462,23 +452,12 @@ const useManageFile = ({ user }) => {
       };
 
       const encryptedData = dataEncrypted({ headers });
-      // const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
-      const baseUrl = `${"http://192.168.100.101:4200"}/downloader/file/download-multifolders-and-files?download=${encryptedData}`;
+      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
+      // const baseUrl = `${"http://192.168.100.101:4200"}/downloader/file/download-multifolders-and-files?download=${encryptedData}`;
 
+      startDownload({ baseUrl });
       setTimeout(() => {
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-
-        iframe.onload = () => {
-          document.body.removeChild(iframe);
-        };
-
-        iframe.src = baseUrl;
-        document.body.appendChild(iframe);
-
-        setTimeout(() => {
-          onSuccess();
-        }, 500);
+        onSuccess();
       }, 1000);
     } catch (error) {
       onFailed?.(error);

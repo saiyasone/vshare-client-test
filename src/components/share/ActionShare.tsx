@@ -6,6 +6,7 @@ import MenuDropdownItem from "../MenuDropdownItem";
 function ActionShare(props) {
   const { statusshare, handleStatus } = props;
   const isSmallMobile = useMediaQuery("(max-width:768px)");
+
   return (
     <MenuDropdown
       customButton={{

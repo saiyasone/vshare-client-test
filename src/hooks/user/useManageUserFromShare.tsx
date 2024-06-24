@@ -93,6 +93,7 @@ const useManageUserFromShare = ({
                 id: data._id,
                 body: {
                   permission: data._permission,
+                  toAccount: data.toAccount?.email,
                 },
               },
             });

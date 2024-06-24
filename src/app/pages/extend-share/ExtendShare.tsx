@@ -752,7 +752,7 @@ function ExtendShare() {
               _id: selectOptions?.createdBy?._id,
               newName: selectOptions?.createdBy?.newName,
             },
-            toAccount: selectOptions?.toAccount,
+            toAccount: userAuth,
             share: {
               _id: selectOptions?.sharedId,
               isFromShare: selectOptions?.isShare === "yes" ? true : false,
@@ -789,7 +789,7 @@ function ExtendShare() {
               _id: selectOptions?.createdBy?._id,
               newName: selectOptions?.createdBy?.newName,
             },
-            toAccount: selectOptions?.toAccount,
+            toAccount: userAuth,
             share: {
               _id: selectOptions?.sharedId,
               isFromShare: selectOptions?.isShare === "yes" ? true : false,
@@ -807,7 +807,7 @@ function ExtendShare() {
 
   useEffect(() => {
     handleClearMultipleSelection();
-  }, [dispatch, toggle]);
+  }, [dispatch, navigate]);
 
   const handleAddFavourite = async () => {
     try {
@@ -1179,6 +1179,7 @@ function ExtendShare() {
                         {toggle !== "grid" && (
                           <ExtendFolderDataGrid
                             isFromSharingUrl={true}
+                            isShare={true}
                             shortMenuItems={shortFileShareMenu}
                             pagination={{
                               total: Math.ceil(

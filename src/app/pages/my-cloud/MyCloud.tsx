@@ -218,6 +218,11 @@ export function MyCloud() {
   const useDataExportCSV = useExportCSV({
     folderId: csvFolder.folderId,
     exportRef: csvRef,
+    onSuccess: () =>
+      setCsvFolder({
+        folderId: "",
+        folderName: "",
+      }),
   });
 
   useEffect(() => {
