@@ -126,7 +126,7 @@ export default function FloatingButton() {
       }
     }
   } catch (error) {
-    console.error(error);
+    globalFolderId = "";
   }
 
   React.useEffect(() => {

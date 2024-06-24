@@ -1247,7 +1247,6 @@ function AccountInfo() {
                 {showTwoFactor && (
                   <TwoFactor data={userAccount} refetch={handleGetUser} />
                 )}
-                s
                 <LoginDevice />
               </>
             )}
