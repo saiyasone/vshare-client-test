@@ -17,7 +17,6 @@ import * as MUI_RECENT from "./styles/recentFile.style";
 // icons
 import {
   MUTATION_ACTION_FILE,
-  QUERY_FILE,
   QUERY_RECENT_FILE,
 } from "api/graphql/file.graphql";
 import { QUERY_FOLDER } from "api/graphql/folder.graphql";
@@ -83,7 +82,7 @@ function RecentFile() {
     getRecentFile,
     { data, loading: fileLoading, refetch: recentFileRefetch },
   ] = useLazyQuery(QUERY_RECENT_FILE, { fetchPolicy: "no-cache" });
-  const [getRecentFileWithoutFiltering] = useLazyQuery(QUERY_FILE, {
+  const [getRecentFileWithoutFiltering] = useLazyQuery(QUERY_RECENT_FILE, {
     fetchPolicy: "no-cache",
   });
 
