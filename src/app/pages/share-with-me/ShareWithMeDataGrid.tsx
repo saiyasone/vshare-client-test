@@ -128,8 +128,11 @@ function ShareWithMeDataGrid(props) {
               <FileIcon
                 extension={getFileType(params?.row?.fileId?.filename)}
                 {...{
-                  ...defaultStyles[getFileType(params?.row?.fileId?.filename) as string],
-                }} />
+                  ...defaultStyles[
+                    getFileType(params?.row?.fileId?.filename) as string
+                  ],
+                }}
+              />
             </FileIconContainer>
           )}
           <span>
@@ -145,15 +148,15 @@ function ShareWithMeDataGrid(props) {
       headerName: "File size",
       flex: 1,
       renderCell: (params) => {
-        const checkFolder = params.row?.folderId?._id;
         let fileSize = 0;
-        if (checkFolder) {
-          fileSize = 1024;
+
+        if (params?.row?.fileId?._id) {
+          fileSize = params?.row?.fileId?.size;
         } else {
-          fileSize = params.row?.fileId?.size || 0;
+          fileSize = params?.row?.size;
         }
 
-        return <Fragment>{convertBytetoMBandGB(fileSize)}</Fragment>;
+        return <Fragment>{convertBytetoMBandGB(fileSize || 0)}</Fragment>;
       },
     },
 
