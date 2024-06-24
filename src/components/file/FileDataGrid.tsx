@@ -69,7 +69,7 @@ export default function FileDataGrid({ dataGrid, ...props }) {
             autoHeight
             disableSelectionOnClick={true}
             getRowClassName={getRowClassName}
-            get
+            onCellDoubleClick={props?.hanleOpenFile}
             {...{
               ...dataGrid,
               sx: {

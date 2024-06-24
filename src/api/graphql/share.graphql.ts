@@ -11,7 +11,8 @@ export const QUERY_SHARE = gql`
       data {
         _id
         isShare
-
+        size
+        item
         ownerId {
           _id
           email

@@ -201,6 +201,7 @@ function ExtendFileDataGrid(props) {
           onRowDoubleClick: (params) => {
             props.handleEvent("preview", params.row);
           },
+
           columns,
           hideFooter: true,
         }}
