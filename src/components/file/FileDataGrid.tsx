@@ -28,7 +28,7 @@ const FileDataGridContainer = styled("div")({
   },
 });
 
-export default function FileDataGrid({ dataGrid, hanleOpenFile, ...props }) {
+export default function FileDataGrid({ dataGrid, ...props }) {
   const [data, setData] = useState([]);
   const [isLoaded, setIsLoaded] = useState<any>(null);
   const dataSelector = useSelector(
@@ -73,7 +73,7 @@ export default function FileDataGrid({ dataGrid, hanleOpenFile, ...props }) {
             autoHeight
             disableSelectionOnClick={true}
             getRowClassName={getRowClassName}
-            onCellDoubleClick={hanleOpenFile}
+            onCellDoubleClick={props?.hanleOpenFile}
             {...{
               ...dataGrid,
               sx: {
