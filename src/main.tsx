@@ -29,6 +29,20 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+export const clientMockup = new ApolloClient({
+  link: from([
+    authLink.concat(
+      createHttpLink({
+        uri: "https://coding.vshare.net/api",
+      }),
+    ),
+  ]),
+  cache: new InMemoryCache({
+    addTypename: false,
+  }),
+  connectToDevTools: false,
+});
+
 const client = new ApolloClient({
   link: from([
     authLink.concat(

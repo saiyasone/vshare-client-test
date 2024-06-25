@@ -1,9 +1,7 @@
-import { useLazyQuery } from "@apollo/client";
-import { styled } from "@mui/material/styles";
-import { QUERY_ONEPAY_SUBSCRIPTION } from "api/graphql/payment.graphql";
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { paymentState } from "stores/features/paymentSlice";
+import { Typography, useMediaQuery } from "@mui/material";
+import { styled, useTheme } from "@mui/material/styles";
+import { useRef } from "react";
+import QRCode from "react-qr-code";
 import NormalButton from "../../../../../components/NormalButton";
 
 const BCELOnePaymentContainer = styled("div")({
@@ -12,53 +10,80 @@ const BCELOnePaymentContainer = styled("div")({
   rowGap: 12,
 });
 
-const BCELOnePayment: React.FC<any> = (_props) => {
-  const [getOnePaySubscription] = useLazyQuery(QUERY_ONEPAY_SUBSCRIPTION, {
-    fetchPolicy: "no-cache",
-  });
-  const [params, setParams] = useState({});
-  const paymentSelector: any = useSelector(paymentState);
+const BCELOnePayment: React.FC<any> = (props) => {
+  const theme = useTheme();
+  const qrCodeRef = useRef<any>(null);
+  const isMobile = useMediaQuery("(max-width:900px)");
 
-  const handlePayWithLink = async () => {
-    getOnePaySubscription({
-      variables: {
-        where: {
-          packageId: paymentSelector.activePackageData.packageId,
-          type: paymentSelector.activePackageType,
-        },
-      },
-      onCompleted: async (data) => {
-        try {
-          const params = data.onePaySubscription.params;
-          setParams(params);
-        } catch (e) {
-          console.error(e);
-        }
-      },
-    });
+  const handleDownloadQrCode = () => {
+    const svgDocument = qrCodeRef.current;
+    if (!svgDocument) return;
+    const svgContent = new XMLSerializer().serializeToString(svgDocument);
+    const svgBlob = new Blob([`${svgContent}`], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(svgBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "qr_code.svg";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
     <BCELOnePaymentContainer>
-      <NormalButton
-        onClick={handlePayWithLink}
-        sx={{
-          fontWeight: 600,
-          width: "max-content",
-          margin: (theme) => `${theme.spacing(2)} ${theme.spacing(4)}`,
-          borderRadius: (theme) => theme.spacing(1),
-          color: (theme) => theme.palette.primaryTheme.main,
-        }}
-      >
-        Pay with link
-      </NormalButton>
-      {Object.keys(params).length > 0 && (
-        <form action="https://bcel.la:9094/test" method="post">
-          {Object.keys(params).map((key) => {
-            return <input type="hidden" name={key} value={params[key]} />;
-          })}
-          <button type="submit">click</button>
-        </form>
+      <Typography component="div">QR Code (BCEL One Subscription)</Typography>
+      {isMobile ? (
+        <>
+          {props.link && (
+            <Typography
+              component="a"
+              sx={{
+                width: "max-content",
+                fontSize: theme.spacing(4),
+                fontWeight: 600,
+              }}
+              href={props.link}
+            >
+              Payment link
+            </Typography>
+          )}
+        </>
+      ) : (
+        <>
+          {props.qrCode && (
+            <>
+              {/* <Typography
+                component="img"
+                src={props.qrCode}
+                width={"25%"}
+                ref={qrCodeRef}
+                sx={{
+                  boxShadow: "rgba(0, 0, 0, 0.09) 0px 3px 12px",
+                }}
+              /> */}
+              <QRCode
+                ref={qrCodeRef}
+                size={200}
+                style={{ float: "left" }}
+                value={props.qrCode}
+                viewBox={`0 0 256 256`}
+              />
+              <NormalButton
+                onClick={handleDownloadQrCode}
+                sx={{
+                  height: "auto",
+                  fontWeight: 600,
+                  width: "max-content",
+                  margin: (theme) => `${theme.spacing(2)} ${theme.spacing(4)}`,
+                  borderRadius: (theme) => theme.spacing(1),
+                  color: (theme) => theme.palette.primaryTheme.main,
+                }}
+              >
+                Download an image
+              </NormalButton>
+            </>
+          )}
+        </>
       )}
     </BCELOnePaymentContainer>
   );
