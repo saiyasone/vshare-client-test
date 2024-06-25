@@ -122,7 +122,7 @@ function ExtendFolderDataGrid(props) {
             }}
           >
             <FileIconContainer onClick={() => handleOnPreview(params)}>
-              {isContainsFiles ? <FolderEmptyIcon /> : <FolderNotEmptyIcon />}
+              {isContainsFiles ? <FolderNotEmptyIcon /> : <FolderEmptyIcon />}
             </FileIconContainer>
             <div className="file_name">{name}</div>
           </div>

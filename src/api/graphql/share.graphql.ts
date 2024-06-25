@@ -67,6 +67,8 @@ export const QUERY_SHARE = gql`
           _id
           email
           username
+          firstName
+          lastName
         }
         accessKey
         isPublic

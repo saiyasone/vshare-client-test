@@ -2,12 +2,15 @@ import { useLazyQuery } from "@apollo/client";
 import { QUERY_FOLDER } from "api/graphql/folder.graphql";
 import { ENV_KEYS } from "constants/env.constant";
 import { createContext, useEffect, useReducer, useState } from "react";
-import { decryptData, encryptData, encryptId } from "utils/secure.util";
+import { decryptData, encryptId } from "utils/secure.util";
 
 export const FolderContext = createContext({});
 
 const reducer = (_state, action) => {
-  const folderEncrypted = encryptData(JSON.stringify(action.payload));
+  const folderEncrypted = encryptId(
+    JSON.stringify(action.payload),
+    ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+  );
   localStorage.setItem(ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY, folderEncrypted);
   return action.payload;
 };

@@ -12,8 +12,8 @@ export default function ActionShare(props) {
 
   return (
     <div style={{ position: "relative" }}>
-      {eventActions.hover &&
-      eventActions.hover?.id === params?.id &&
+      {eventActions?.hover &&
+      eventActions?.hover?.id === params?.id &&
       !isMobile ? (
         <Box
           sx={{

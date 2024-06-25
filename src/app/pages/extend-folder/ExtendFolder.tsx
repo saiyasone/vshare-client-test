@@ -329,6 +329,7 @@ function ExtendFolder() {
   useEffect(() => {
     if (parentFolder?._id) {
       // localStorage.setItem("folderId", parentFolder?._id);
+      // const folderEncrypted = encryptData(JSON.stringify(parentFolder?._id));
       const folderEncrypted = encryptId(
         JSON.stringify(parentFolder?._id),
         ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,

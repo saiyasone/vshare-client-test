@@ -69,7 +69,7 @@ import {
   getShortFileTypeFromFileType,
   removeFileNameOutOfPath,
 } from "utils/file.util";
-import { encryptData } from "utils/secure.util";
+import { encryptData, encryptId } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import ExtendFileDataGrid from "../extend-folder/ExtendFileDataGrid";
 import ExtendFolderDataGrid from "../extend-folder/ExtendFolderDataGrid";
@@ -248,7 +248,10 @@ function ExtendShare() {
 
   useEffect(() => {
     if (parentFolder?._id) {
-      const folderEncrypted = encryptData(JSON.stringify(parentFolder?._id));
+      const folderEncrypted = encryptId(
+        JSON.stringify(parentFolder?._id),
+        ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+      );
       localStorage.setItem(
         ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY,
         folderEncrypted,
