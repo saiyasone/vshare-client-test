@@ -801,7 +801,7 @@ const DialogCreateShare = (props) => {
                             }}
                           >
                             {props.onChangedUserPermissionFromShareSave && (
-                              <ActionShare
+                              <ActionCreateShare
                                 accessStatusShare={"private"}
                                 statusshare={sharedUser._permission}
                                 handleStatus={(val) => {
