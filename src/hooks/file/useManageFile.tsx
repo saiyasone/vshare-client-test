@@ -453,7 +453,6 @@ const useManageFile = ({ user }) => {
 
       const encryptedData = dataEncrypted({ headers });
       const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
-      // const baseUrl = `${"http://192.168.100.101:4200"}/downloader/file/download-multifolders-and-files?download=${encryptedData}`;
 
       startDownload({ baseUrl });
       setTimeout(() => {
