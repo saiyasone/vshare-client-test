@@ -116,6 +116,7 @@ export default function FloatingButton() {
   const folderJson = localStorage.getItem(
     ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY,
   );
+
   let globalFolderId = "";
   try {
     if (folderJson) {
@@ -149,6 +150,7 @@ export default function FloatingButton() {
     const newFolderName = uuidv4();
 
     try {
+      console.log(globalFolderId);
       const data = await todoFolder({
         variables: {
           data: {
