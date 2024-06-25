@@ -30,7 +30,7 @@ import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 import useAuth from "hooks/useAuth";
 import * as React from "react";
 import { successMessage } from "utils/alert.util";
-import { decryptData } from "utils/secure.util";
+import {  decryptId } from "utils/secure.util";
 import { v4 as uuidv4 } from "uuid";
 
 const Transition = React.forwardRef(function Transition(
@@ -120,8 +120,16 @@ export default function FloatingButton() {
   let globalFolderId = "";
   try {
     if (folderJson) {
+<<<<<<< HEAD
       const folderDecrypted = JSON.parse(decryptData(folderJson) as string);
       globalFolderId = folderDecrypted;
+=======
+      const decryptedData = decryptId(folderJson);
+      if (decryptedData && decryptedData.trim() !== "") {
+        const folderDecrypted = JSON.parse(decryptedData);
+        globalFolderId = folderDecrypted;
+      }
+>>>>>>> vshareweb-client/dev_bob
     }
   } catch (error) {
     console.log(error);

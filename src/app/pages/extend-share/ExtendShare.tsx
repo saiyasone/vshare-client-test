@@ -69,7 +69,7 @@ import {
   getShortFileTypeFromFileType,
   removeFileNameOutOfPath,
 } from "utils/file.util";
-import { encryptData, encryptId } from "utils/secure.util";
+import {  encryptId } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import ExtendFileDataGrid from "../extend-folder/ExtendFileDataGrid";
 import ExtendFolderDataGrid from "../extend-folder/ExtendFolderDataGrid";

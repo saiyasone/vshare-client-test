@@ -2,7 +2,11 @@ import { useLazyQuery } from "@apollo/client";
 import { QUERY_FOLDER } from "api/graphql/folder.graphql";
 import { ENV_KEYS } from "constants/env.constant";
 import { createContext, useEffect, useReducer, useState } from "react";
+<<<<<<< HEAD
 import { decryptData, encryptId } from "utils/secure.util";
+=======
+import {   decryptId, encryptId } from "utils/secure.util";
+>>>>>>> vshareweb-client/dev_bob
 
 export const FolderContext = createContext({});
 
@@ -20,7 +24,7 @@ const FolderProvider = ({ children }) => {
   const folderIdStorage = localStorage.getItem(
     ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY,
   );
-  const folderDecrypted = decryptData(folderIdStorage);
+  const folderDecrypted = decryptId(folderIdStorage);
 
   const [folderId, dispatch] = useReducer(reducer, folderDecrypted);
   const [getFolders, { data: folderData }] = useLazyQuery(QUERY_FOLDER, {

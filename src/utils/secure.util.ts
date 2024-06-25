@@ -35,7 +35,7 @@ export const encryptData = (model) => {
   return encryptedData;
 };
 
-export const decryptData = (encryptedParam: any) => {
+export const decryptId = (encryptedParam: any) => {
   try {
     const decrypted = CryptoJS.AES.decrypt(
       decodeURIComponent(encryptedParam),
