@@ -600,7 +600,7 @@ function FileDrop() {
                         borderRadius: "4px",
                         ...(multiId?.length > 0
                           ? {
-                              cursor: "default",
+                              cursor: "pointer",
                               opacity: 0.5,
                             }
                           : {
