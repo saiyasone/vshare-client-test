@@ -77,13 +77,9 @@ const DialogCreateMultipleShare = (props) => {
                   await createShareFromSharing({
                     variables: {
                       body: {
-                        accessKey: "",
-                        folderId: item?.dataId,
-                        permission: statusShare,
-                        toAccount: chipData[i],
-                        link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
                         shareId: item?.share._id,
-                        isPublic: "private",
+                        toAccount: chipData[i],
+                        permission: statusShare,
                       },
                     },
                   });
@@ -92,14 +88,9 @@ const DialogCreateMultipleShare = (props) => {
                     variables: {
                       body: {
                         folderId: item?.id,
-                        ownerId: item?.createdBy?._id || props.ownerId?._id,
-                        fromAccount: user?.email,
+                        toAccount: chipData[i],
                         isPublic: isGlobals,
                         permission: statusShare,
-                        toAccount: chipData[i],
-                        link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
-                        status: "active",
-                        isShare: "yes",
                       },
                     },
                   });
@@ -113,12 +104,8 @@ const DialogCreateMultipleShare = (props) => {
                   await createShareFromSharing({
                     variables: {
                       body: {
-                        fileId: item?._id,
-                        accessKey: "",
-                        isPublic: isGlobals,
                         permission: statusShare,
                         toAccount: chipData[i],
-                        link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
                         shareId: item?.share._id,
                       },
                     },
@@ -129,15 +116,9 @@ const DialogCreateMultipleShare = (props) => {
                     variables: {
                       body: {
                         fileId: item?.id,
-                        accessKey: "",
-                        ownerId: item?.createdBy?._id,
-                        fromAccount: user?.email,
+                        toAccount: chipData[i],
                         isPublic: isGlobals,
                         permission: statusShare,
-                        toAccount: chipData[i],
-                        link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
-                        status: "active",
-                        isShare: "yes",
                       },
                     },
                   });
