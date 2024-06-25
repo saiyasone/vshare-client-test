@@ -177,6 +177,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
           const dataDecode = JSON.parse(decryptData(userStaff) as string);
 
+          console.log(dataDecode);
+
           if (dataDecode?.role?._id) {
             await getSaffLogin({
               variables: {
