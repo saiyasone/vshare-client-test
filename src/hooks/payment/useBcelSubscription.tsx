@@ -13,6 +13,7 @@ const useBcelSubscirption = () => {
 
   const [qrCode, setQrCode] = useState<string>("");
   const [link, setLink] = useState<string>("");
+  const [transactionId, setTransactionId] = useState<string>("");
 
   useEffect(() => {
     createQrAndSubscription({
@@ -30,17 +31,18 @@ const useBcelSubscirption = () => {
         },
       },
     }).then((res) => {
-      const qrCode = res.data.createQrAndSubscribeForPayment.qrCode;
-      if (qrCode) {
-        setQrCode(`${qrCode}`);
-        setLink(`onepay://qr/${qrCode}`);
-      }
+      const { qrCode, transactionId } =
+        res.data.createQrAndSubscribeForPayment || {};
+      setTransactionId(`${transactionId}`);
+      setQrCode(`${qrCode}`);
+      setLink(`onepay://qr/${qrCode}`);
     });
   }, []);
 
   return {
     qrCode,
     link,
+    transactionId,
   };
 };
 

@@ -11,6 +11,15 @@ export function encryptId(
   return encodeURIComponent(encryptedID);
 }
 
+export function decryptId(encryptedId, secretKey) {
+  const decryptedBytes = CryptoJS.AES.decrypt(
+    decodeURIComponent(encryptedId),
+    secretKey,
+  );
+  const decryptedID = decryptedBytes.toString(CryptoJS.enc.Utf8);
+  return decryptedID;
+}
+
 export const encryptData = (model) => {
   const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
   const key = CryptoJS.enc.Utf8.parse(secretKey);
@@ -130,12 +139,3 @@ export const generateUniqueId = (prefix = "") => {
 
   return `${prefix}${timestamp}${randomPart}`.toUpperCase();
 };
-
-export function decryptId(encryptedId, secretKey) {
-  const decryptedBytes = CryptoJS.AES.decrypt(
-    decodeURIComponent(encryptedId),
-    secretKey,
-  );
-  const decryptedID = decryptedBytes.toString(CryptoJS.enc.Utf8);
-  return decryptedID;
-}

@@ -119,15 +119,14 @@ export default function FloatingButton() {
   let globalFolderId = "";
   try {
     if (folderJson) {
-      const decryptedData = decryptData(folderJson);
-      if (decryptedData && decryptedData.trim() !== "") {
-        const folderDecrypted = JSON.parse(decryptedData);
-        globalFolderId = folderDecrypted;
-      }
+      const folderDecrypted = JSON.parse(decryptData(folderJson) as string);
+      globalFolderId = folderDecrypted;
     }
   } catch (error) {
-    globalFolderId = "";
+    console.log(error);
   }
+
+  React.useEffect(() => {}, [globalFolderId]);
 
   React.useEffect(() => {
     setResMessage(false);

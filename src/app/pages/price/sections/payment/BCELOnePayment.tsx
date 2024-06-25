@@ -1,5 +1,7 @@
+import { useSubscription } from "@apollo/client";
 import { Typography, useMediaQuery } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
+import { SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION } from "api/graphql/payment.graphql";
 import { useRef } from "react";
 import QRCode from "react-qr-code";
 import NormalButton from "../../../../../components/NormalButton";
@@ -14,6 +16,15 @@ const BCELOnePayment: React.FC<any> = (props) => {
   const theme = useTheme();
   const qrCodeRef = useRef<any>(null);
   const isMobile = useMediaQuery("(max-width:900px)");
+  const bcelOneSubscription = useSubscription(
+    SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION,
+    {
+      variables: { transactionId: props.transactionId },
+      onData: (data) => {
+        console.log(data);
+      },
+    },
+  );
 
   const handleDownloadQrCode = () => {
     const svgDocument = qrCodeRef.current;
