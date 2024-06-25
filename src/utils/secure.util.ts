@@ -11,14 +11,17 @@ export function encryptId(
   return encodeURIComponent(encryptedID);
 }
 
-export function decryptId(encryptedId, secretKey) {
-  const decryptedBytes = CryptoJS.AES.decrypt(
-    decodeURIComponent(encryptedId),
-    secretKey,
-  );
-  const decryptedID = decryptedBytes.toString(CryptoJS.enc.Utf8);
-  return decryptedID;
-}
+export const decryptId = (encryptedParam: any) => {
+  try {
+    const decrypted = CryptoJS.AES.decrypt(
+      decodeURIComponent(encryptedParam),
+      ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+    ).toString(CryptoJS.enc.Utf8);
+    return decrypted;
+  } catch (error) {
+    return null;
+  }
+};
 
 export const encryptData = (model) => {
   const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
@@ -33,18 +36,6 @@ export const encryptData = (model) => {
   const ivText = iv.toString(CryptoJS.enc.Base64);
   const encryptedData = cipherText + ":" + ivText;
   return encryptedData;
-};
-
-export const decryptId = (encryptedParam: any) => {
-  try {
-    const decrypted = CryptoJS.AES.decrypt(
-      decodeURIComponent(encryptedParam),
-      ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
-    ).toString(CryptoJS.enc.Utf8);
-    return decrypted;
-  } catch (error) {
-    return null;
-  }
 };
 
 export const decryptToken = (encryptData: any, secretKey: string) => {
