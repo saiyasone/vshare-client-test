@@ -161,3 +161,20 @@ export const MUTATION_CREATE_CHECKOUT = gql`
     }
   }
 `;
+
+export const MUTATION_CREATE_QR_AND_SUBSCRIPTION = gql`
+  mutation CreateQrAndSubscribeForPayment($data: PaymentInput!) {
+    createQrAndSubscribeForPayment(data: $data) {
+      qrCode
+    }
+  }
+`;
+
+export const SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION = gql`
+  subscription Subscription($transactionId: String) {
+    subscribeBcelOneSubscriptionQr(transactionId: $transactionId) {
+      message
+      transactionId
+    }
+  }
+`;

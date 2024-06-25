@@ -49,10 +49,6 @@ export default function FileDataGrid({ dataGrid, ...props }) {
   }
 
   useEffect(() => {
-    return () => {};
-  }, []);
-
-  useEffect(() => {
     if (props.data?.length > 0) {
       // setData((_) =>
       setData(() =>

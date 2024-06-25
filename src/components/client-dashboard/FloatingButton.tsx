@@ -194,7 +194,6 @@ export default function FloatingButton() {
         setFolder("");
         setErrorMessage("Please select a new folder!");
       } else {
-        console.log(error);
         setErrorMessage(error);
         setFolder(strMsg);
       }

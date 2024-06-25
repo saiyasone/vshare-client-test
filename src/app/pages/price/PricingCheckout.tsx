@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { createRef, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 // material ui icon and component
@@ -72,6 +72,7 @@ function PricingCheckout() {
   const [getSetting] = useLazyQuery(QUERY_SETTING, {
     fetchPolicy: "no-cache",
   });
+  const transitonRef = createRef<any>();
 
   const packageData =
     packageType === PACKAGE_TYPE.annual
@@ -237,8 +238,14 @@ function PricingCheckout() {
           position: "relative",
         }}
       >
-        <CSSTransition key={activeStep} classNames="fade" timeout={duration}>
+        <CSSTransition
+          key={activeStep}
+          classNames="fade"
+          timeout={duration}
+          nodeRef={transitonRef}
+        >
           <div
+            ref={transitonRef}
             style={{
               width: "100%",
               height: "100%",

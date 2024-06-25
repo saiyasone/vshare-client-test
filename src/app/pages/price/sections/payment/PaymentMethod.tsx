@@ -1,6 +1,6 @@
 import { Box, useTheme } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import useBcelOnePay from "hooks/payment/useBcelOnePay";
+import useBcelSubscirption from "hooks/payment/useBcelSubscription";
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -26,11 +26,11 @@ const PaymentMethod = () => {
 
   const btnMethodList = useMemo(() => {
     if (paymentSelector?.showBcelOne && paymentSelector?.showStripe) {
-      return [PAYMENT_METHOD.bcelOne, PAYMENT_METHOD.stripe];
+      return [PAYMENT_METHOD.bcelOne];
     }
 
     if (paymentSelector?.showStripe && !paymentSelector?.showBcelOne) {
-      return [PAYMENT_METHOD.stripe];
+      return [PAYMENT_METHOD.bcelOne];
     }
 
     if (!paymentSelector?.showStripe && paymentSelector?.showBcelOne) {
@@ -40,7 +40,7 @@ const PaymentMethod = () => {
     return [];
   }, []);
 
-  const bcelOnePay = useBcelOnePay();
+  const bcelOnePay = useBcelSubscirption();
   const paymentMethodList = () => {
     switch (paymentSelector.activePaymentMethod) {
       case PAYMENT_METHOD.bcelOne:
