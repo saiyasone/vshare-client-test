@@ -24,9 +24,9 @@ import { UAParser } from "ua-parser-js";
 import { errorMessage, successMessage, warningMessage } from "utils/alert.util";
 import {
   checkAccessToken,
-  decryptData,
+  decryptId,
   decryptToken,
-  encryptData,
+  encryptId,
   isValidToken,
 } from "utils/secure.util";
 
@@ -175,7 +175,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
           );
 
-          const dataDecode = JSON.parse(decryptData(userStaff) as string);
+          const dataDecode = JSON.parse(decryptId(userStaff) as string);
 
           if (dataDecode?.role?._id) {
             await getSaffLogin({
@@ -186,7 +186,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
               },
               onCompleted: (data) => {
                 const user = data?.queryStaffs?.data[0];
-                const userEncrypted = encryptData(JSON.stringify(user));
+                const userEncrypted = encryptId(
+                  JSON.stringify(user),
+                  ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+                );
                 localStorage.setItem(
                   ENV_KEYS.VITE_APP_USER_DATA_KEY,
                   userEncrypted,
@@ -209,7 +212,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
               },
               onCompleted: (data) => {
                 const user = data?.getUser?.data[0];
-                const userEncrypted = encryptData(JSON.stringify(user));
+                const userEncrypted = encryptId(
+                  JSON.stringify(user),
+                  ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+                );
                 localStorage.setItem(
                   ENV_KEYS.VITE_APP_USER_DATA_KEY,
                   userEncrypted,
@@ -257,7 +263,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     if (storeValue) {
-      const storeParseJson = JSON.parse(decryptData(storeValue) as string);
+      const storeParseJson = JSON.parse(decryptId(storeValue) as string);
       const objectValue = storeParseJson;
       setLocalPermission(objectValue);
     }
@@ -288,8 +294,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             //   "permission",
             //   JSON.stringify(data?.role_staffs?.data[0]?.permision),
             // );
-            const permissionEncrypted = encryptData(
+            const permissionEncrypted = encryptId(
               JSON.stringify(data?.role_staffs?.data[0]?.permision),
+              ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
             );
             localStorage.setItem(
               ENV_KEYS.VITE_APP_USER_DATA_KEY,
@@ -394,7 +401,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             fetchPermission(user?.role._id);
           }
 
-          const userDataEncrypted = encryptData(JSON.stringify(user));
+          const userDataEncrypted = encryptId(
+            JSON.stringify(user),
+            ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+          );
           localStorage.setItem(
             ENV_KEYS.VITE_APP_USER_DATA_KEY,
             userDataEncrypted,
@@ -455,8 +465,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (enable2FA === 0) {
-        const userDataEncrypt = encryptData(
+        const userDataEncrypt = encryptId(
           JSON.stringify(signInUser?.data?.userLogin?.data[0]),
+          ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
         );
         checkAccessToken(checkRole);
         localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA_KEY, userDataEncrypt);

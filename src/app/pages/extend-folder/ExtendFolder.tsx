@@ -74,7 +74,7 @@ import {
   removeFileNameOutOfPath,
 } from "utils/file.util";
 import { convertObjectEmptyStringToNull } from "utils/object.util";
-import { encryptData, encryptId } from "utils/secure.util";
+import {   encryptId } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import { replacetDotWithDash } from "utils/string.util";
 import useFirstRender from "../../../hooks/useFirstRender";

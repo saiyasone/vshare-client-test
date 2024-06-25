@@ -26,7 +26,7 @@ export const encryptData = (model) => {
   return encryptedData;
 };
 
-export const decryptData = (encryptedParam: any) => {
+export const decryptId = (encryptedParam: any) => {
   try {
     const decrypted = CryptoJS.AES.decrypt(
       decodeURIComponent(encryptedParam),
@@ -130,12 +130,3 @@ export const generateUniqueId = (prefix = "") => {
 
   return `${prefix}${timestamp}${randomPart}`.toUpperCase();
 };
-
-export function decryptId(encryptedId, secretKey) {
-  const decryptedBytes = CryptoJS.AES.decrypt(
-    decodeURIComponent(encryptedId),
-    secretKey,
-  );
-  const decryptedID = decryptedBytes.toString(CryptoJS.enc.Utf8);
-  return decryptedID;
-}
