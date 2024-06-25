@@ -169,3 +169,12 @@ export const MUTATION_CREATE_QR_AND_SUBSCRIPTION = gql`
     }
   }
 `;
+
+export const SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION = gql`
+  subscription Subscription($transactionId: String) {
+    subscribeBcelOneSubscriptionQr(transactionId: $transactionId) {
+      message
+      transactionId
+    }
+  }
+`;

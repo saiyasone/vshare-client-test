@@ -20,6 +20,7 @@ import {
 } from "api/graphql/share.graphql";
 import Loader from "components/Loader";
 import NormalButton from "components/NormalButton";
+import ActionCreateShare from "components/share/ActionCreateShare";
 import ActionShare from "components/share/ActionShare";
 import ActionShareStatus from "components/share/ActionShareStatus";
 import { ENV_KEYS } from "constants/env.constant";
@@ -671,7 +672,7 @@ const DialogCreateShare = (props) => {
                   />
 
                   {sharedSelectedUserList.length > 0 && (
-                    <ActionShare
+                    <ActionCreateShare
                       accessStatusShare={accessStatusShare}
                       statusshare={statusShare}
                       handleStatus={handleStatus}
