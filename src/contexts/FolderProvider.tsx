@@ -2,11 +2,7 @@ import { useLazyQuery } from "@apollo/client";
 import { QUERY_FOLDER } from "api/graphql/folder.graphql";
 import { ENV_KEYS } from "constants/env.constant";
 import { createContext, useEffect, useReducer, useState } from "react";
-<<<<<<< HEAD
-import { decryptData, encryptId } from "utils/secure.util";
-=======
-import {   decryptId, encryptId } from "utils/secure.util";
->>>>>>> vshareweb-client/dev_bob
+import { decryptId, encryptId } from "utils/secure.util";
 
 export const FolderContext = createContext({});
 
