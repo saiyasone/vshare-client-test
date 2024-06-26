@@ -290,6 +290,17 @@ export const MUTATION_RESET_PASS = gql`
   }
 `;
 
+export const MUTATION_RESET_FILE_PASSWORD = gql`
+  mutation ChangePasswordFolderAndFile(
+    $data: FoldersData!
+    $where: FoldersForgotInput!
+  ) {
+    changePasswordFolderAndFile(data: $data, where: $where) {
+      status
+    }
+  }
+`;
+
 export const CREATE_LOG = gql`
   mutation CreateLog($input: LogInput!) {
     createLog(input: $input) {

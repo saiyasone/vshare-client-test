@@ -21,7 +21,6 @@ import {
 import Loader from "components/Loader";
 import NormalButton from "components/NormalButton";
 import ActionCreateShare from "components/share/ActionCreateShare";
-import ActionShare from "components/share/ActionShare";
 import ActionShareStatus from "components/share/ActionShareStatus";
 import { ENV_KEYS } from "constants/env.constant";
 import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
