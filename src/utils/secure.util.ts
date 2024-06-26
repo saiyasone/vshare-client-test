@@ -11,11 +11,11 @@ export function encryptId(
   return encodeURIComponent(encryptedID);
 }
 
-export const decryptId = (encryptedParam: any) => {
+export const decryptId = (encryptedParam: any, secretKey?: string) => {
   try {
     const decrypted = CryptoJS.AES.decrypt(
       decodeURIComponent(encryptedParam),
-      ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+      secretKey || ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
     ).toString(CryptoJS.enc.Utf8);
     return decrypted;
   } catch (error) {

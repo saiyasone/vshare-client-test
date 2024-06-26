@@ -166,6 +166,25 @@ export const MUTATION_CREATE_QR_AND_SUBSCRIPTION = gql`
   mutation CreateQrAndSubscribeForPayment($data: PaymentInput!) {
     createQrAndSubscribeForPayment(data: $data) {
       qrCode
+      transactionId
+    }
+  }
+`;
+
+export const MUTATION_CREATE_CANCELLED_SUBSCRIPTION = gql`
+  mutation CancelledBcelOneSubscriptionQr {
+    cancelledBcelOneSubscriptionQr {
+      message
+      transactionId
+    }
+  }
+`;
+
+export const MUTATION_CREATE_TEST_SUBSCRIPTION = gql`
+  mutation TestSubscribeBcelOneSubscriptionQr($transactionId: String) {
+    testSubscribeBcelOneSubscriptionQr(transactionId: $transactionId) {
+      message
+      transactionId
     }
   }
 `;

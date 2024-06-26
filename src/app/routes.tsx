@@ -19,6 +19,7 @@ import Feedback from "./pages/feedback/Feedback";
 import FileDrop from "./pages/file-drop/FileDrop";
 import FileDropDetail from "./pages/file-drop/FileDropDetail";
 import File from "./pages/file/FileType";
+import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import { MyCloud } from "./pages/my-cloud/MyCloud";
 import Page404 from "./pages/not-found/Page404";
 import Pricing from "./pages/price/Pricing";
@@ -55,6 +56,10 @@ const routes: RouteObject[] = [
           {
             path: "sign-up",
             element: <SignUp />,
+          },
+          {
+            path: "forgot-password",
+            element: <ForgotPassword />,
           },
         ],
       },

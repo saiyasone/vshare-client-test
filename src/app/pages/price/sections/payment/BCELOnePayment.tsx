@@ -4,6 +4,7 @@ import { styled, useTheme } from "@mui/material/styles";
 import { SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION } from "api/graphql/payment.graphql";
 import { useRef } from "react";
 import QRCode from "react-qr-code";
+import { setActiveStep } from "stores/features/paymentSlice";
 import NormalButton from "../../../../../components/NormalButton";
 
 const BCELOnePaymentContainer = styled("div")({
@@ -16,12 +17,16 @@ const BCELOnePayment: React.FC<any> = (props) => {
   const theme = useTheme();
   const qrCodeRef = useRef<any>(null);
   const isMobile = useMediaQuery("(max-width:900px)");
-  const bcelOneSubscription = useSubscription(
+
+  const _bcelOneSubscription = useSubscription(
     SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION,
     {
       variables: { transactionId: props.transactionId },
-      onData: (data) => {
-        console.log(data);
+      /* onComplete: () => {
+        console.log("test");
+      }, */
+      onData: () => {
+        setActiveStep(3);
       },
     },
   );

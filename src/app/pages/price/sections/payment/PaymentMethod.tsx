@@ -45,7 +45,11 @@ const PaymentMethod = () => {
     switch (paymentSelector.activePaymentMethod) {
       case PAYMENT_METHOD.bcelOne:
         return (
-          <BCELOnePayment qrCode={bcelOnePay.qrCode} link={bcelOnePay.link} />
+          <BCELOnePayment
+            qrCode={bcelOnePay.qrCode}
+            link={bcelOnePay.link}
+            transactionId={bcelOnePay.transactionId}
+          />
         );
       case PAYMENT_METHOD.stripe:
         return <StripePayment />;

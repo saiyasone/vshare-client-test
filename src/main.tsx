@@ -50,7 +50,7 @@ export const clientMockup = new ApolloClient({
 
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: "ws://coding.vshare.net/api/",
+    url: "wss://coding.vshare.net/api",
   }),
 );
 
