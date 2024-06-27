@@ -38,7 +38,10 @@ function ResetFilePasswordComponent(props) {
 
   const schemaValidation = yup.object().shape({
     newPassword: yup.string().required("New password is required"),
-    confirmPassword: yup.string().required("Confirm password is required"),
+    confirmPassword: yup
+      .string()
+      .oneOf([yup.ref("newPassword"), ""], "Passwords must match")
+      .required("Confirm password is required"),
   });
 
   async function handleResetPassword(values, { resetForm }) {
@@ -83,6 +86,7 @@ function ResetFilePasswordComponent(props) {
               <Box>
                 <InputLabel>New password</InputLabel>
                 <TextField
+                  type="password"
                   name="newPassword"
                   size="small"
                   placeholder="New password"
@@ -96,6 +100,7 @@ function ResetFilePasswordComponent(props) {
               <Box>
                 <InputLabel>Confirm password</InputLabel>
                 <TextField
+                  type="password"
                   size="small"
                   name="confirmPassword"
                   placeholder="Confirm password"
