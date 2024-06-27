@@ -148,7 +148,6 @@ export default function FloatingButton() {
     const newFolderName = uuidv4();
 
     try {
-      console.log(globalFolderId);
       const data = await todoFolder({
         variables: {
           data: {
