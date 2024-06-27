@@ -189,8 +189,7 @@ export default function DialogPreviewFile(props) {
                 }
                 style={{
                   height: "600px",
-                  width: "90%",
-                  marginLeft: "5%",
+                  width: "600px",
                   border: 0,
                 }}
               ></iframe>

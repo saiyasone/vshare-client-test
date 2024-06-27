@@ -25,6 +25,7 @@ import Page404 from "./pages/not-found/Page404";
 import Pricing from "./pages/price/Pricing";
 import PricingCheckout from "./pages/price/PricingCheckout";
 import RecentFile from "./pages/recent-file/RecentFile";
+import ResetFilePassword from "./pages/reset-file-password/ResetFilePassword";
 import ShareWithMe from "./pages/share-with-me/ShareWithMe";
 import SignIn from "./pages/sign-in/SignIn";
 import SignUp from "./pages/sign-up/SignUp";
@@ -32,7 +33,6 @@ import CreateTicket from "./pages/ticket/CreateTicket";
 import ReplyTicket from "./pages/ticket/ReplyTicket";
 import Ticket from "./pages/ticket/Ticket";
 import Trash from "./pages/trash/Trash";
-import ResetFilePassword from "./pages/reset-file-password/ResetFilePassword";
 
 const routes: RouteObject[] = [
   {
