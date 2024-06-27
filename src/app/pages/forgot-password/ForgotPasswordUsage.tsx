@@ -171,7 +171,7 @@ function ForgotPasswordUsage() {
             Send Reset Link
           </Button>
           <LinkBack
-            href="/auth/sign-in"
+            href={`${ENV_KEYS.VITE_APP_URL_REDIRECT_CLIENT_PAGE}auth/sign-in`}
             onClick={() => {
               handleClearDateForgetPassword();
             }}
