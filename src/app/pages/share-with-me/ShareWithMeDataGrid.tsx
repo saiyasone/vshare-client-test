@@ -181,7 +181,7 @@ function ShareWithMeDataGrid(props) {
         if (params?.row?.folderId?.folder_type) {
           return (
             <ActionShare
-              params={params?.row}
+              params={params}
               shortMenuItems={shortFavouriteMenuItems}
               menuItems={shareWithMeFolderMenuItems}
               eventActions={{

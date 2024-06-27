@@ -17,6 +17,8 @@ export const QUERY_SHARE = gql`
           _id
           email
           newName
+          firstName
+          lastName
         }
         fileId {
           _id
@@ -27,6 +29,7 @@ export const QUERY_SHARE = gql`
           url
           fileType
           totalDownload
+          shortUrl
           newFilename
           path
           newPath
@@ -49,6 +52,7 @@ export const QUERY_SHARE = gql`
           is_public
           checkFolder
           status
+          shortUrl
           path
           newPath
           url

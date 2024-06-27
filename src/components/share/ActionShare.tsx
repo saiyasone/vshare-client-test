@@ -1,8 +1,8 @@
+import React from "react";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import { Box, IconButton, useMediaQuery } from "@mui/material";
 import MenuDropdown from "components/MenuDropdown";
 import MenuDropdownItem from "components/MenuDropdownItem";
-import React from "react";
 import { BsPinAngleFill } from "react-icons/bs";
 import { MdFavorite } from "react-icons/md";
 
@@ -120,7 +120,7 @@ export default function ActionShare(props) {
               <MenuDropdownItem
                 key={index}
                 disabled={
-                  params.permission === "edit" ? false : menuItem.disabled
+                  params?.row?.permission === "edit" ? false : menuItem.disabled
                 }
                 title={menuItem.title}
                 icon={menuItem.icon}
