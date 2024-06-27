@@ -718,6 +718,12 @@ function MenuMultipleSelectionFolderAndFile(props) {
                         {multipleTab === "file" && (
                           <Fragment>
                             {multipleSelectionFileItems.map((item, index) => {
+                              if (
+                                item.action === "password" &&
+                                userPackage?.lockFile === "off"
+                              ) {
+                                return;
+                              }
                               return (
                                 <Fragment key={index}>
                                   <SelectWrapper>
@@ -738,7 +744,8 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                             item.action === "delete" ||
                                             item.action === "share") &&
                                           dataSelector?.selectionFileAndFolderData?.find(
-                                            (item) => item?.dataPassword,
+                                            (selector) =>
+                                              selector?.dataPassword,
                                           ) &&
                                           true
                                         }
@@ -765,6 +772,15 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                 return;
                               }
 
+                              if (
+                                item.action === "delete" &&
+                                dataSelector?.selectionFileAndFolderData?.find(
+                                  (item) => item?.totalSize === 0,
+                                )
+                              ) {
+                                return;
+                              }
+
                               return (
                                 <Fragment key={index}>
                                   {item.action === "folder-download" &&
@@ -785,9 +801,9 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                           item.action === "delete" ||
                                           item.action === "share") &&
                                         dataSelector?.selectionFileAndFolderData?.find(
-                                          (item) =>
-                                            item?.totalSize === 0 ||
-                                            item?.dataPassword,
+                                          (selector) =>
+                                            selector?.totalSize === 0 ||
+                                            selector?.dataPassword,
                                         ) &&
                                         true
                                       }
@@ -804,52 +820,52 @@ function MenuMultipleSelectionFolderAndFile(props) {
                         {/* files and folders */}
                         {multipleTab === "multiple" && (
                           <Fragment>
-                          {multipleSelectionFolderAndFileItems.map(
-                            (item, index) => {
-                              if (
-                                item.action === "password" &&
-                                (userPackage.lockFile === "off" ||
-                                  userPackage.lockFolder === "off")
-                              ) {
-                                return;
-                              }
+                            {multipleSelectionFolderAndFileItems.map(
+                              (item, index) => {
+                                if (
+                                  item.action === "password" &&
+                                  (userPackage.lockFile === "off" ||
+                                    userPackage.lockFolder === "off")
+                                ) {
+                                  return;
+                                }
 
-                              return (
-                                <Fragment key={index}>
-                                  {item.action === "multiple-download" &&
-                                  dataSelector.isLoading ? (
-                                    <IconButton size="small">
-                                      <CircularProgress size={18} />
-                                    </IconButton>
-                                  ) : (
-                                    <IconButton
-                                      size="small"
-                                      onClick={() => {
-                                        handleMenuAction(item.action);
-                                      }}
-                                      disabled={
-                                        (item.action === "get link" ||
-                                          item.action ===
-                                            "multiple-download" ||
-                                          item.action === "password" ||
-                                          item.action === "delete" ||
-                                          item.action === "share") &&
-                                        dataSelector?.selectionFileAndFolderData?.find(
-                                          (item) =>
-                                            item?.totalSize === 0 ||
-                                            item?.dataPassword,
-                                        ) &&
-                                        true
-                                      }
-                                    >
-                                      {item.icon}
-                                    </IconButton>
-                                  )}
-                                </Fragment>
-                              );
-                            },
-                          )}
-                        </Fragment>
+                                return (
+                                  <Fragment key={index}>
+                                    {item.action === "multiple-download" &&
+                                    dataSelector.isLoading ? (
+                                      <IconButton size="small">
+                                        <CircularProgress size={18} />
+                                      </IconButton>
+                                    ) : (
+                                      <IconButton
+                                        size="small"
+                                        onClick={() => {
+                                          handleMenuAction(item.action);
+                                        }}
+                                        disabled={
+                                          (item.action === "get link" ||
+                                            item.action ===
+                                              "multiple-download" ||
+                                            item.action === "password" ||
+                                            item.action === "delete" ||
+                                            item.action === "share") &&
+                                          dataSelector?.selectionFileAndFolderData?.find(
+                                            (selector) =>
+                                              selector?.totalSize === 0 ||
+                                              selector?.dataPassword,
+                                          ) &&
+                                          true
+                                        }
+                                      >
+                                        {item.icon}
+                                      </IconButton>
+                                    )}
+                                  </Fragment>
+                                );
+                              },
+                            )}
+                          </Fragment>
                         )}
                       </Fragment>
                     </SelectBoxRight>

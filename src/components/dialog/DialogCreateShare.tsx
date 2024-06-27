@@ -722,7 +722,9 @@ const DialogCreateShare = (props) => {
             <DialogContent>
               <MUI.ShareSelectHeader>
                 <Typography variant="h2">Who has access</Typography>
-                <Typography component="p">Owned by {user.email}</Typography>
+                <Typography component="p">
+                  Owned by {data?.ownerId?.email}
+                </Typography>
               </MUI.ShareSelectHeader>
               <MUI.ShareSelectOwnerContainer>
                 <MUI.ShareProfileContainer>
@@ -756,9 +758,11 @@ const DialogCreateShare = (props) => {
 
                   <MUI.ShareProfileInfo>
                     <Typography variant="h2">
-                      {_.startCase(`${user?.firstName} ${user?.lastName}`)}
+                      {_.startCase(
+                        `${data?.ownerId?.firstName} ${data?.ownerId?.lastName}`,
+                      )}
                     </Typography>
-                    <Typography variant="h5">{user?.email}</Typography>
+                    <Typography variant="h5">{data?.ownerId?.email}</Typography>
                   </MUI.ShareProfileInfo>
                 </MUI.ShareProfileContainer>
                 <MUI.ShareProfileInfoList>

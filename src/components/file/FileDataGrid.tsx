@@ -35,6 +35,22 @@ export default function FileDataGrid({ dataGrid, ...props }) {
     checkboxAction.checkboxFileAndFolderSelector,
   );
 
+  const handlePopperOpen = (event) => {
+    const id = event.currentTarget.dataset.id;
+    const row = props.data.find((r) => {
+      return r.id === id;
+    });
+
+    props?.setHover(row);
+  };
+
+  const handlePopperClose = () => {
+    if (open == null) {
+      return;
+    }
+    props?.setHover("");
+  };
+
   function getRowClassName(params: any) {
     const { _id } = params?.row || {};
 
@@ -70,6 +86,12 @@ export default function FileDataGrid({ dataGrid, ...props }) {
             disableSelectionOnClick={true}
             getRowClassName={getRowClassName}
             onCellDoubleClick={props?.hanleOpenFile}
+            componentsProps={{
+              row: {
+                onMouseEnter: handlePopperOpen,
+                onMouseLeave: handlePopperClose,
+              },
+            }}
             {...{
               ...dataGrid,
               sx: {

@@ -32,6 +32,7 @@ import CreateTicket from "./pages/ticket/CreateTicket";
 import ReplyTicket from "./pages/ticket/ReplyTicket";
 import Ticket from "./pages/ticket/Ticket";
 import Trash from "./pages/trash/Trash";
+import ResetFilePassword from "./pages/reset-file-password/ResetFilePassword";
 
 const routes: RouteObject[] = [
   {
@@ -64,6 +65,10 @@ const routes: RouteObject[] = [
         ],
       },
     ],
+  },
+  {
+    path: "file/reset-password",
+    element: <ResetFilePassword />,
   },
   {
     path: "",
