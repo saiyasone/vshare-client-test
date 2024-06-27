@@ -17,6 +17,8 @@ export const QUERY_SHARE = gql`
           _id
           email
           newName
+          firstName
+          lastName
         }
         fileId {
           _id
