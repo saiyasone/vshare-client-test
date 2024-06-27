@@ -6,7 +6,7 @@ import {
   styled,
 } from "@mui/material";
 import {
-  MUTATION_DELETE_FILE,
+  MUTATION_DELETE_FILE_FOREVER,
   MUTATION_UPDATE_FILE,
 } from "api/graphql/file.graphql";
 import {
@@ -96,7 +96,7 @@ function MenuMultipleSelectionFolderAndFile(props) {
   const [restoreFolder] = useMutation(MUTATION_UPDATE_FOLDER);
   const [restoreFile] = useMutation(MUTATION_UPDATE_FILE);
   const [deleteFolder] = useMutation(MUTATION_DELETE_FOLDER_TRASH);
-  const [deleteFile] = useMutation(MUTATION_DELETE_FILE);
+  const [deleteFile] = useMutation(MUTATION_DELETE_FILE_FOREVER);
 
   // redux store
   const dispatch = useDispatch();
