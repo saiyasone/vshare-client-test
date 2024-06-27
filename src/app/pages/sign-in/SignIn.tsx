@@ -207,7 +207,7 @@ function SignIn() {
       <MUI.MainBox>
         <MUI.LeftBox>
           <MUI.LeftBoxRow1>
-            <Link href="/">
+            <Link href={`${ENV_KEYS.VITE_APP_URL_REDIRECT_LANDING_PAGE}`}>
               <img src={vShareLogo} alt="vShareLogo" />
             </Link>
           </MUI.LeftBoxRow1>
@@ -319,7 +319,9 @@ function SignIn() {
               and Start journey with us
             </Typography>
           </MUI.BoxShowDetail>
-          <NavLink to="/auth/sign-up">
+          <NavLink
+            to={`${ENV_KEYS.VITE_APP_URL_REDIRECT_CLIENT_PAGE}auth/sign-up`}
+          >
             <MUI.ButtonGetStarted>Get Started</MUI.ButtonGetStarted>
           </NavLink>
         </MUI.RightBox>
