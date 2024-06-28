@@ -249,6 +249,30 @@ function RecentFile() {
         orderBy: "actionDate_DESC",
         limit: 100,
       },
+      onCompleted: async (data) => {
+        const queryData = data?.getRecentFile?.data;
+        const queryTotal = data?.getRecentFile?.total;
+        setTotal(queryTotal);
+        setDataRecentFiles(() => {
+          const result = manageFile.splitDataByDate(queryData, "actionDate");
+
+          setTotalItems(handleTotalItems(result));
+          return result.map((recentFiles) => {
+            return {
+              ...recentFiles,
+              data: recentFiles.data?.map((data) => ({
+                id: data._id,
+                ...data,
+              })),
+            };
+          });
+        });
+        if (queryTotal > 0) {
+          setIsDataRecentFilesFound(true);
+        } else {
+          setIsDataRecentFilesFound(false);
+        }
+      },
     });
   };
 
@@ -307,17 +331,7 @@ function RecentFile() {
   }, [eventUploadTrigger?.triggerData]);
 
   useEffect(() => {
-    setTotalItems(0);
-    getRecentFile({
-      variables: {
-        where: {
-          status: "active",
-          createdBy: user._id,
-        },
-        orderBy: "actionDate_DESC",
-        limit: 100,
-      },
-    });
+    customGetRecentFiles();
   }, []);
 
   useEffect(() => {
@@ -336,30 +350,6 @@ function RecentFile() {
         },
         orderBy: "actionDate_DESC",
         limit: 100,
-      },
-      onCompleted: async (data) => {
-        const queryData = data?.getRecentFile?.data;
-        const queryTotal = data?.getRecentFile?.total;
-        setTotal(queryTotal);
-        setDataRecentFiles(() => {
-          const result = manageFile.splitDataByDate(queryData, "actionDate");
-
-          setTotalItems(handleTotalItems(result));
-          return result.map((recentFiles) => {
-            return {
-              ...recentFiles,
-              data: recentFiles.data?.map((data) => ({
-                id: data._id,
-                ...data,
-              })),
-            };
-          });
-        });
-        if (queryTotal > 0) {
-          setIsDataRecentFilesFound(true);
-        } else {
-          setIsDataRecentFilesFound(false);
-        }
       },
     });
   }, [data?.getRecentFile?.data]);
