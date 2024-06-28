@@ -10,11 +10,11 @@ import { spacing } from "@mui/system";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
 import ShowUpload from "components/ShowUpload";
 import navItems from "constants/navItem.constant";
+import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 import GlobalStyle from "styles/GlobalStyle";
 import FloatingButton from "./FloatingButton";
 import Navbar from "./Navbar";
 import Sidebar from "./sidebar/Sidebar";
-import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 
 const drawerWidth = 300;
 
