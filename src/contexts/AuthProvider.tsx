@@ -623,7 +623,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         if (dateCurrentFormat > dateForgetPasswordFormat) {
           await handleForgetPassword(email);
         } else {
-          errorMessage(
+          successMessage(
             "The link was already sent to your email. Please try again later.",
             3000,
           );

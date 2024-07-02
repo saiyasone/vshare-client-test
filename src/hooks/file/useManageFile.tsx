@@ -550,7 +550,6 @@ const useManageFile = ({ user }) => {
     }
   };
 
-  //
   return {
     splitDataByDate,
     handleDeleteFile,
