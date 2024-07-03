@@ -647,10 +647,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             const token = data?.forgotPassword?.token;
             const decodeToken: any = jwtDecode(token);
             const dateFormat = decodeToken?.expiredAt;
-            // localStorage.setItem(
-            //   "dateForgetPassword",
-            //   moment(dateFormat).format("HH:mm"),
-            // );
+
             localStorage.setItem(
               ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY,
               moment(dateFormat).format("HH:mm"),

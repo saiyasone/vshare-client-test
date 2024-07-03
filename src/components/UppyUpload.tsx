@@ -1,0 +1,371 @@
+import { Fragment, useEffect, useRef, useState } from "react";
+
+// uppy package
+import Uppy from "@uppy/core";
+import { Dashboard } from "@uppy/react";
+import xhrUpload from "@uppy/xhr-upload";
+import ImageEditor from "@uppy/image-editor";
+import ThumbnailGenerator from "@uppy/thumbnail-generator";
+import Webcam from "@uppy/webcam";
+import AudioFile from "@uppy/audio";
+import CryptoJS from "crypto-js";
+
+import * as MUI from "../styles/uppyStyle.style";
+
+// uppy css
+import "../styles/uppy-theme.css";
+import "@uppy/core/dist/style.min.css";
+import "@uppy/core/dist/style.css";
+import "@uppy/dashboard/dist/style.min.css";
+import "@uppy/webcam/dist/style.min.css";
+import "@uppy/image-editor/dist/style.css";
+import "@uppy/audio/dist/style.min.css";
+
+import { useMutation } from "@apollo/client";
+import {
+  MUTATION_CREATE_FILE,
+  MUTATION_DELETE_FILE,
+} from "api/graphql/file.graphql";
+import { ENV_KEYS } from "constants/env.constant";
+import useManageGraphqlError from "hooks/useManageGraphqlError";
+import { errorMessage } from "utils/alert.util";
+import { Box, Button, Typography } from "@mui/material";
+import UploadFolderManual from "./UploadFolder";
+import useAuth from "hooks/useAuth";
+
+// type Props = {
+//   open?: boolean;
+// };
+
+function UppyUpload() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenFolder, setIsOpenFolder] = useState(false);
+  const [fileId, setFileId] = useState({});
+  const [selectFiles, setSelectFiles] = useState<any>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uppyInstance, setUppyInstance] = useState(() => new Uppy());
+  const selectFileRef = useRef(selectFiles);
+  const fileIdRef = useRef(fileId);
+
+  // auth
+  const { user }: any = useAuth();
+
+  //   graphql
+  const [uploadFileAction] = useMutation(MUTATION_CREATE_FILE);
+  const [deleteFile] = useMutation(MUTATION_DELETE_FILE);
+
+  const manageGraphError = useManageGraphqlError();
+
+  async function handleUpload() {
+    if (!uppyInstance.getFiles().length) return;
+
+    setIsUploading(true);
+    try {
+      const dataFile = uppyInstance.getFiles() as any[];
+      Promise.all(
+        await dataFile.map(async (file, index) => {
+          const extension = file?.name?.lastIndexOf(".");
+          const fileExtension = file.name?.slice(extension);
+          if (uppyInstance) {
+            const result = await uploadFileAction({
+              variables: {
+                data: {
+                  newFilename: `${file.data.customeNewName}${fileExtension}`,
+                  filename: file.name,
+                  fileType: file.type,
+                  size: file.size.toString(),
+                  checkFile: "main",
+                  country: null,
+                  device: "Windows10",
+                  totalUploadFile: dataFile.length,
+                },
+              },
+            });
+            const fileId = await result.data?.createFiles?._id;
+            if (fileId) {
+              fileIdRef.current = {
+                ...fileIdRef.current,
+                [index]: fileId,
+              };
+              await uppyInstance.upload();
+              setFileId(fileIdRef.current);
+            }
+          }
+        }),
+      );
+
+      handleDoneUpload();
+    } catch (error: any) {
+      // handleDoneUpload();
+      console.log(error);
+    }
+  }
+
+  async function handleCancelUpload({ file, index }) {
+    try {
+      const _id = fileIdRef.current[index];
+
+      if (_id) {
+        setSelectFiles(() =>
+          selectFileRef.current.filter((selected) => selected.id !== file.id),
+        );
+
+        setFileId((prev) => {
+          const newFileId = { ...prev };
+          delete newFileId[index];
+          fileIdRef.current = newFileId;
+
+          return newFileId;
+        });
+
+        await deleteFile({
+          variables: {
+            id: _id,
+          },
+          onCompleted: () => {},
+        });
+      }
+    } catch (error: any) {
+      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
+      errorMessage(
+        manageGraphError.handleErrorMessage(
+          cutErr || "Something wrong please try again !",
+        ) as string,
+        3000,
+      );
+    }
+  }
+
+  async function fetchRandomData() {
+    const randomName = Math.floor(11111111 + Math.random() * 99999999);
+    return randomName;
+  }
+
+  function handleDoneUpload() {
+    setFileId({});
+    setSelectFiles([]);
+    setIsUploading(false);
+  }
+
+  function handleIsUploading() {
+    if (isUploading) {
+      return;
+    }
+    setIsOpen(false);
+    handleDoneUpload();
+  }
+
+  function getIndex(fileId) {
+    return selectFileRef.current.findIndex(
+      (selected) => selected.id === fileId,
+    );
+  }
+
+  useEffect(() => {
+    const initializeUppy = () => {
+      try {
+        const uppy = new Uppy({
+          id: "upload-file-id",
+          restrictions: {},
+          autoProceed: false,
+          allowMultipleUploadBatches: true,
+        });
+
+        uppy.use(Webcam, {});
+        uppy.use(ThumbnailGenerator, {
+          thumbnailWidth: 200,
+          thumbnailHeight: 200,
+        });
+        uppy.use(ImageEditor, {
+          quality: 0.7,
+          cropperOptions: {
+            croppedCanvasOptions: {},
+            viewMode: 1,
+            background: false,
+            center: true,
+            responsive: true,
+          },
+        });
+        uppy.use(AudioFile, {
+          showAudioSourceDropdown: true,
+        });
+        uppy.on("file-added", (file: any) => {
+          try {
+            setSelectFiles((prev: any) => [
+              ...prev,
+              {
+                id: file.id,
+                name: file.name,
+                size: file.data.size,
+                type: file.data.type,
+              },
+            ]);
+
+            fetchRandomData().then((data) => {
+              file.data.customeNewName = data;
+            });
+          } catch (error) {
+            //
+          }
+        });
+        uppy.on("file-removed", (file) => {
+          try {
+            const index = getIndex(file.id);
+            handleCancelUpload({ file, index });
+          } catch (error) {
+            console.error("Error removing file:", error);
+          }
+        });
+        uppy.on("upload-error", () => {});
+
+        uppy.use(xhrUpload, {
+          endpoint: ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL,
+          formData: false,
+          method: "POST",
+          fieldName: "file",
+
+          headers: (file: any) => {
+            const extension = file?.name?.lastIndexOf(".");
+            const fileExtension = file.name?.slice(extension);
+
+            const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+            const headers = {
+              REGION: "sg",
+              BASE_HOSTNAME: ENV_KEYS.VITE_APP_STORAGE_ZONE,
+              STORAGE_ZONE_NAME: "beta-vshare",
+              ACCESS_KEY: ENV_KEYS.VITE_APP_ACCESSKEY_BUNNY,
+              PATH: `${user?.newName}-${user?._id}`,
+              FILENAME: `${file.data?.customeNewName}${fileExtension}`,
+            };
+
+            const key = CryptoJS.enc.Utf8.parse(secretKey);
+            const iv = CryptoJS.lib.WordArray.random(16);
+            const encrypted = CryptoJS.AES.encrypt(
+              JSON.stringify(headers),
+              key,
+              {
+                iv: iv,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7,
+              },
+            );
+            const cipherText = encrypted.ciphertext.toString(
+              CryptoJS.enc.Base64,
+            );
+            const ivText = iv.toString(CryptoJS.enc.Base64);
+            const encryptedData = cipherText + ":" + ivText;
+
+            return {
+              encryptedHeaders: encryptedData,
+            };
+          },
+        });
+        setUppyInstance(uppy);
+        return () => {
+          uppy.close();
+        };
+      } catch (error: any) {
+        console.log(error);
+      }
+    };
+
+    initializeUppy();
+  }, []);
+
+  useEffect(() => {
+    if (selectFiles.length > 0) {
+      selectFileRef.current = selectFiles;
+    }
+  }, [selectFiles]);
+
+  return (
+    <Fragment>
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+        >
+          Upload file
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setIsOpenFolder(true);
+          }}
+        >
+          Upload folder
+        </Button>
+      </Box>
+
+      <UploadFolderManual
+        isOpen={isOpenFolder}
+        handleClose={() => {
+          setIsOpenFolder(false);
+        }}
+      />
+
+      <MUI.UploadDialogContainer
+        //   onClose={canClose ? () => {} : handleCloseModal}
+        // open={open || false}
+        fullWidth={true}
+        open={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+        }}
+      >
+        <MUI.UploadUppyContainer>
+          <MUI.UppyHeader>
+            <Typography variant="h2">Upload and attach files</Typography>
+          </MUI.UppyHeader>
+          {uppyInstance && (
+            <Fragment>
+              <Dashboard
+                uppy={uppyInstance}
+                width={`${100}%`}
+                showProgressDetails={true}
+                locale={{
+                  strings: {
+                    addMore: "Add more",
+                    cancel: "Cancel",
+                    // dropPaste: "Hello files",
+                    // browse: "browse",
+                    browseFiles: "browse files",
+                    dropHint: "Drop your files here",
+                  },
+                }}
+                plugins={[
+                  "Webcam",
+                  "AudioFile",
+                  "Dropbox",
+                  "Instagram",
+                  "Url",
+                  "PauseResumeButton",
+                ]}
+                hideUploadButton={true}
+                proudlyDisplayPoweredByUppy={false}
+              />
+
+              <MUI.ButtonActionBody>
+                <MUI.ButtonActionContainer>
+                  <MUI.ButtonCancelAction onClick={handleIsUploading}>
+                    Cancel
+                  </MUI.ButtonCancelAction>
+                  <MUI.ButtonUploadAction
+                    disabled={isUploading}
+                    onClick={handleUpload}
+                  >
+                    Upload now
+                  </MUI.ButtonUploadAction>
+                </MUI.ButtonActionContainer>
+              </MUI.ButtonActionBody>
+            </Fragment>
+          )}
+        </MUI.UploadUppyContainer>
+      </MUI.UploadDialogContainer>
+    </Fragment>
+  );
+}
+
+export default UppyUpload;

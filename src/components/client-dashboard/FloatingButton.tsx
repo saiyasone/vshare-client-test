@@ -25,6 +25,7 @@ import {
   QUERY_FOLDER,
 } from "api/graphql/folder.graphql";
 import ShowUpload from "components/ShowUpload";
+// import UppyUpload from "components/UppyUpload";
 import { ENV_KEYS } from "constants/env.constant";
 import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 import useAuth from "hooks/useAuth";
@@ -259,6 +260,8 @@ export default function FloatingButton() {
           />
         </SpeedDial>
       </Box>
+
+      {/* {open && <UppyUpload open={open} />} */}
 
       {selectFiles && (
         <ShowUpload

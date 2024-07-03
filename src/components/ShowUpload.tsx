@@ -107,7 +107,7 @@ export default function ShowUpload(props) {
   const [folderStartTimeMap, setFolderStartTimeMap] = useState({});
   const eventUploadTrigger = useContext(EventUploadTriggerContext);
   const [folderProgressMap, setFolderProgressMap] = useState({});
-  const [country, _setCountry] = useState(null);
+  const [country, setCountry] = useState("");
   const LOAD_UPLOAD_URL = ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL;
   // const useDataSetting = useManageSetting();
   const user = trackingFolderData?.createdBy?._id
@@ -125,9 +125,9 @@ export default function ShowUpload(props) {
   });
 
   React.useEffect(() => {
-    /* const fetchIPAddress = async () => {
+    const fetchIPAddress = async () => {
       try {
-        const responseIp = await axios.get("https://load.vshare.net/getIP");
+        const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
         const ip = responseIp?.data;
         if (ip) {
           const res = await axios.get(
@@ -138,10 +138,11 @@ export default function ShowUpload(props) {
           }
         }
       } catch (error) {
-        // console.error("Error fetching IP address:", error);
+        setCountry("other");
+        console.error("Error fetching IP address:");
       }
-    }; */
-    /* fetchIPAddress(); */
+    };
+    fetchIPAddress();
   }, []);
 
   // functions
@@ -304,7 +305,6 @@ export default function ShowUpload(props) {
 
       const response = await axios.post(LOAD_UPLOAD_URL, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
           encryptedHeaders: encryptedData,
         },
         cancelToken,
