@@ -40,9 +40,12 @@ import useAuth from "hooks/useAuth";
 function UppyUpload() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenFolder, setIsOpenFolder] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [canClose, setCanClose] = useState(false);
+
   const [fileId, setFileId] = useState({});
   const [selectFiles, setSelectFiles] = useState<any>([]);
-  const [isUploading, setIsUploading] = useState(false);
+
   const [uppyInstance, setUppyInstance] = useState(() => new Uppy());
   const selectFileRef = useRef(selectFiles);
   const fileIdRef = useRef(fileId);
@@ -60,6 +63,7 @@ function UppyUpload() {
     if (!uppyInstance.getFiles().length) return;
 
     setIsUploading(true);
+    setCanClose(true);
     try {
       const dataFile = uppyInstance.getFiles() as any[];
 
@@ -88,14 +92,14 @@ function UppyUpload() {
               [index]: fileId,
             };
             setFileId(fileIdRef.current);
-            await uppyInstance.upload();
+            await uppyInstance.upload().then(() => {
+              console.log("index: " + index);
+            });
           }
         }
       });
-
-      handleDoneUpload();
     } catch (error: any) {
-      // handleDoneUpload();
+      handleDoneUpload();
       console.log(error);
     }
   }
@@ -144,11 +148,12 @@ function UppyUpload() {
     setFileId({});
     setSelectFiles([]);
     setIsUploading(false);
+    setCanClose(false);
     console.log("Done uploading...");
   }
 
   function handleIsUploading() {
-    if (isUploading) {
+    if (canClose) {
       return;
     }
     setIsOpen(false);
@@ -219,6 +224,17 @@ function UppyUpload() {
           }
         });
         uppy.on("upload-error", () => {});
+        uppy.on("complete", (result) => {
+          const allFilesUploaded =
+            result.successful.length ===
+            result.successful.length + result.failed.length;
+          if (allFilesUploaded) {
+            console.log("All files uploaded successfully:", result);
+            handleDoneUpload();
+          } else {
+            console.error("Some files failed to upload:", result.failed);
+          }
+        });
 
         uppy.use(xhrUpload, {
           endpoint: ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL,
@@ -354,13 +370,13 @@ function UppyUpload() {
 
               <MUI.ButtonActionBody>
                 <MUI.ButtonActionContainer>
-                  <MUI.ButtonCancelAction onClick={handleIsUploading}>
+                  <MUI.ButtonCancelAction
+                    disabled={canClose}
+                    onClick={handleIsUploading}
+                  >
                     Cancel
                   </MUI.ButtonCancelAction>
-                  <MUI.ButtonUploadAction
-                    disabled={isUploading}
-                    onClick={handleUpload}
-                  >
+                  <MUI.ButtonUploadAction onClick={handleUpload}>
                     Upload now
                   </MUI.ButtonUploadAction>
                 </MUI.ButtonActionContainer>

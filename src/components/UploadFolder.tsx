@@ -36,6 +36,7 @@ import useManageGraphqlError from "hooks/useManageGraphqlError";
 
 // svg files
 import FolderUploadFull from "assets/images/client-dashboard/folderUppy.svg?react";
+import "react-circular-progressbar/dist/styles.css";
 
 // Graphql
 const { CancelToken } = axios;
@@ -56,7 +57,7 @@ function UploadFolderManual(props) {
 
   const [isDataSuccess, setIsDataSuccess] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isDone, setIsDone] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
   const [cancelFolderStatus, setCancelFolderStatus] = React.useState(false);
 
@@ -190,7 +191,6 @@ function UploadFolderManual(props) {
     const result = Object.keys(groupedFiles).map((key) => groupedFiles[key]);
     const foldersArray = result;
     const totalFolders = foldersArray.length;
-    console.log(totalFolders);
 
     try {
       let currentUploadPercentage = 0;
@@ -302,50 +302,50 @@ function UploadFolderManual(props) {
 
                   const source = folderCancelTokenSource;
 
-                  await axios.post(LOAD_UPLOAD_URL, formData, {
-                    headers: {
-                      // "Content-Type": "multipart/form-data",
-                      // ...headers,
-                      "Content-Type": "application/octet-stream",
-                      encryptedHeaders: encryptedData,
+                  await axios.post(
+                    "https://coding.load.vshare.net/upload",
+                    formData,
+                    {
+                      headers: {
+                        "Content-Type": "application/octet-stream",
+                        encryptedHeaders: encryptedData,
+                      },
+                      onUploadProgress: async (progressEvent) => {
+                        const bytesUploaded = progressEvent.loaded;
+                        const fileProgress =
+                          Math.round(bytesUploaded * 100) / file.size;
+                        progressArray[index] = fileProgress;
+
+                        const totalProgress = Math.round(
+                          progressArray.reduce((acc, p) => acc + p, 0) /
+                            progressArray.length,
+                        );
+
+                        setFolderProgress((prev) => ({
+                          ...prev,
+                          [folderKey]: totalProgress,
+                        }));
+
+                        uploadedSize += bytesUploaded - fileProgress;
+                        currentUploadPercentage = +(
+                          (uploadedSize / totalSize) *
+                          100
+                        ).toFixed(0);
+
+                        setTotalProgress(
+                          currentUploadPercentage > 99
+                            ? 100
+                            : currentUploadPercentage,
+                        );
+                      },
+                      cancelToken: source.token,
                     },
-                    onUploadProgress: async (progressEvent) => {
-                      const bytesUploaded = progressEvent.loaded;
-                      const fileProgress =
-                        Math.round(bytesUploaded * 100) / file.size;
-                      progressArray[index] = fileProgress;
-
-                      const totalProgress = Math.round(
-                        progressArray.reduce((acc, p) => acc + p, 0) /
-                          progressArray.length,
-                      );
-
-                      if (totalProgress > 99) {
-                        successFolderCount++;
-                        setTotalFolderUpload(successFolderCount);
-                      }
-
-                      setFolderProgress((prev) => ({
-                        ...prev,
-                        [folderKey]: totalProgress,
-                      }));
-
-                      uploadedSize += bytesUploaded - fileProgress;
-                      currentUploadPercentage = +(
-                        (uploadedSize / totalSize) *
-                        100
-                      ).toFixed(0);
-
-                      setTotalProgress(
-                        currentUploadPercentage > 99
-                          ? 100
-                          : currentUploadPercentage,
-                      );
-                    },
-                    cancelToken: source.token,
-                  });
+                  );
                 }),
               );
+
+              successFolderCount++;
+              setTotalFolderUpload(successFolderCount);
             }
           }
         } catch (error: any) {
@@ -358,7 +358,7 @@ function UploadFolderManual(props) {
         } finally {
           if (successFolderCount >= totalFolders) {
             successFolderCount = 0;
-            setIsSuccess(true);
+            setIsDone(true);
             setIsDataSuccess((prev: any) => ({
               ...prev,
               [folderKey]: true,
@@ -370,6 +370,201 @@ function UploadFolderManual(props) {
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
       errorMessage(
         manageGraphError.handleErrorMessage(cutErr || "") as string,
+        3000,
+      );
+    }
+  }
+
+  async function handleUploadFolderV2() {
+    let successFolderCount = 0;
+    setIsUploading(true);
+
+    type FileData = {
+      file: File & { path?: string; webkitRelativePath?: string };
+      webkitRelativePath: string;
+    };
+
+    const groupedFiles: Record<string, FileData[]> = folderData.reduce(
+      (acc: Record<string, FileData[]>, current: FileData) => {
+        const key = current.webkitRelativePath;
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(current);
+        return acc;
+      },
+      {},
+    );
+
+    const foldersArray: FileData[][] = Object.values(groupedFiles);
+    const totalFolders = foldersArray.length;
+
+    try {
+      let currentUploadPercentage = 0;
+      let uploadedSize = 0;
+      const totalSize = folderData.reduce(
+        (acc, folder) => acc + folder.file.size,
+        0,
+      );
+
+      console.log("Total Size:", totalSize); // Debugging output
+
+      for (const [key, files] of foldersArray.entries()) {
+        const folderKey = key.toString();
+        const progressArray = Array(files.length).fill(0);
+
+        setFolderProgress((prev) => ({ ...prev, [folderKey]: 0 }));
+
+        const newData = files.map((folder) => {
+          let pathFolder = folder.file.path || folder.file.webkitRelativePath;
+          if (pathFolder.startsWith("/")) {
+            pathFolder = pathFolder.substring(1);
+          }
+
+          return {
+            type: folder.file.type,
+            size: folder.file.size.toString(),
+            path: pathFolder,
+          };
+        });
+
+        const folderCancelTokenSource = CancelToken.source();
+        setFolderCancelTokenSource((prev) => ({
+          ...prev,
+          [folderKey]: folderCancelTokenSource,
+        }));
+
+        try {
+          const folderUpload = await uploadFolderAction({
+            variables: {
+              data: {
+                checkFolder: "main",
+                pathFolder: newData,
+                folder_type: "folder",
+              },
+            },
+          });
+
+          if (folderUpload.data?.uploadFolder.status === 200) {
+            setFolderUploadId(folderUpload?.data?.uploadFolder._id);
+            const arrayPath = folderUpload?.data?.uploadFolder.path || [];
+
+            if (arrayPath.length > 0) {
+              await Promise.all(
+                arrayPath.map(async (path, index) => {
+                  const file = files[index].file;
+                  setIsDataSuccess((prev: any) => ({
+                    ...prev,
+                    [folderKey]: false,
+                  }));
+
+                  const blob = new Blob([file], { type: file.type });
+                  const newFile = new File([blob], file.name, {
+                    type: file.type,
+                  });
+                  const formData = new FormData();
+                  formData.append("file", newFile);
+
+                  const lastIndex = path.newPath?.lastIndexOf("/");
+                  const resultPath = path.newPath?.substring(0, lastIndex);
+                  const resultFileName = path?.newPath?.substring(
+                    lastIndex + 1,
+                  );
+
+                  const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+                  const headers = {
+                    REGION: "sg",
+                    BASE_HOSTNAME: "storage.bunnycdn.com",
+                    STORAGE_ZONE_NAME: STORAGE_ZONE,
+                    ACCESS_KEY: ACCESS_KEY,
+                    PATH: `${userData.newName}-${userData._id}/${resultPath}`,
+                    FILENAME: resultFileName,
+                  };
+
+                  const key = CryptoJS.enc.Utf8.parse(secretKey);
+                  const iv = CryptoJS.lib.WordArray.random(16);
+                  const encrypted = CryptoJS.AES.encrypt(
+                    JSON.stringify(headers),
+                    key,
+                    {
+                      iv: iv,
+                      mode: CryptoJS.mode.CBC,
+                      padding: CryptoJS.pad.Pkcs7,
+                    },
+                  );
+                  const cipherText = encrypted.ciphertext.toString(
+                    CryptoJS.enc.Base64,
+                  );
+                  const ivText = iv.toString(CryptoJS.enc.Base64);
+                  const encryptedData = `${cipherText}:${ivText}`;
+
+                  const source = folderCancelTokenSource;
+
+                  await axios.post(
+                    "https://coding.load.vshare.net/upload",
+                    formData,
+                    {
+                      headers: {
+                        "Content-Type": "application/octet-stream",
+                        encryptedHeaders: encryptedData,
+                      },
+                      onUploadProgress: (progressEvent) => {
+                        const bytesUploaded = progressEvent.loaded;
+                        const fileProgress = bytesUploaded / file.size;
+                        progressArray[index] = fileProgress;
+
+                        const totalProgress =
+                          progressArray.reduce((acc, p) => acc + p, 0) /
+                          progressArray.length;
+
+                        setFolderProgress((prev) => ({
+                          ...prev,
+                          [folderKey]: Math.round(totalProgress * 100),
+                        }));
+
+                        uploadedSize +=
+                          bytesUploaded - file.size * fileProgress;
+                        currentUploadPercentage = Math.round(
+                          (uploadedSize / totalSize) * 100,
+                        );
+
+                        console.log("Uploaded Size:", uploadedSize); // Debugging output
+                        console.log(
+                          "Current Upload Percentage:",
+                          currentUploadPercentage,
+                        ); // Debugging output
+
+                        setTotalProgress(currentUploadPercentage);
+                      },
+                      cancelToken: source.token,
+                    },
+                  );
+                }),
+              );
+
+              successFolderCount++;
+              setTotalFolderUpload(successFolderCount);
+            }
+          }
+        } catch (error: any) {
+          console.log(error);
+          setIsFailed(true);
+          setTotalProgress(100);
+
+          const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
+          errorMessage(cutErr, 3000);
+        } finally {
+          if (successFolderCount >= totalFolders) {
+            successFolderCount = 0;
+            setIsDone(true);
+            setIsDataSuccess((prev: any) => ({ ...prev, [folderKey]: true }));
+          }
+        }
+      }
+    } catch (error: any) {
+      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
+      errorMessage(
+        manageGraphError.handleErrorMessage(cutErr || "") || "",
         3000,
       );
     }
@@ -410,7 +605,7 @@ function UploadFolderManual(props) {
     setFolderProgress({});
     setTotalProgress(0);
     setIsUploading(false);
-    setIsSuccess(false);
+    setIsDone(false);
     setIsDataSuccess(false);
     setTotalFolderUpload(0);
     folderRef.current.value = "";
@@ -567,7 +762,7 @@ function UploadFolderManual(props) {
                                     )}
                                   </Fragment>
                                 )}
-                                {!isMobileSuccess && (
+                                {/* {!isMobileSuccess && (
                                   <MUI.UploadFolderRemoveFolderList
                                     onClick={() => removeFolder(folderPath)}
                                   >
@@ -578,7 +773,7 @@ function UploadFolderManual(props) {
                                       }}
                                     />
                                   </MUI.UploadFolderRemoveFolderList>
-                                )}
+                                )} */}
                               </MUI.UploadFolderListBoxRight>
                             </MUI.UploadFolderListFlex>
                           </MUI.UploadFolderContainerList>
@@ -640,8 +835,8 @@ function UploadFolderManual(props) {
                                   <div
                                     style={{
                                       position: "absolute",
-                                      width: "35px",
-                                      height: "35px",
+                                      width: "20px",
+                                      height: "20px",
                                       display: "flex",
                                       justifyContent: "center",
                                       alignItems: "center",
@@ -649,9 +844,10 @@ function UploadFolderManual(props) {
                                     }}
                                   >
                                     <Chip
-                                      icon={<FaTimes fontSize={12} />}
+                                      icon={<FaTimes fontSize={10} />}
                                       color="error"
                                       variant="filled"
+                                      size="small"
                                     />
                                   </div>
                                 </div>
@@ -683,6 +879,7 @@ function UploadFolderManual(props) {
                                   </div>
                                 </div>
                               </MUI.UploadFolderBackgroundProgress> */}
+
                               <MUI.UploadFolderBackgroundProgress
                                 progress={progress}
                               >
@@ -721,10 +918,10 @@ function UploadFolderManual(props) {
                                       display: "flex",
                                       justifyContent: "center",
                                       alignItems: "center",
-                                      marginTop: "1rem",
                                     }}
                                   >
-                                    {progress >= 100 ? (
+                                    {/* start */}
+                                    {progress >= 99 ? (
                                       <img
                                         src={CheckSuccessIcon}
                                         style={{
@@ -732,6 +929,7 @@ function UploadFolderManual(props) {
                                           zIndex: 999,
                                           width: 23,
                                           height: 23,
+                                          marginTop: 10,
                                         }}
                                         alt="img-success"
                                       />
@@ -784,7 +982,7 @@ function UploadFolderManual(props) {
                                   </Box>
                                 </div>
 
-                                <div
+                                <Box
                                   style={{
                                     margin: "1rem 0",
                                     width: "100%",
@@ -792,7 +990,7 @@ function UploadFolderManual(props) {
                                     bottom: "-5px",
                                   }}
                                 >
-                                  <div
+                                  <Box
                                     style={{
                                       display: "flex",
                                       justifyContent: "center",
@@ -809,8 +1007,8 @@ function UploadFolderManual(props) {
                                     >
                                       1/{fileInFolder}
                                     </Typography>
-                                  </div>
-                                </div>
+                                  </Box>
+                                </Box>
                               </MUI.UploadFolderBackgroundProgress>
                               <MUI.UploadFolderNameContainer>
                                 <Typography variant="h4">
@@ -836,7 +1034,7 @@ function UploadFolderManual(props) {
                     <MUI.UploadFolderBottomProgress>
                       <MUI.UploadFolderBoxLeftProgress>
                         <MUI.UploadFolderMiniProgress>
-                          {isSuccess ? (
+                          {isDone ? (
                             <Fragment>
                               {isFailed ? (
                                 <AiOutlineClose fontSize={22} color="#FF0001" />
@@ -860,7 +1058,7 @@ function UploadFolderManual(props) {
                           )}
                         </MUI.UploadFolderMiniProgress>
                         <MUI.UploadFolderContentData>
-                          {isSuccess ? (
+                          {isDone ? (
                             <Typography variant="h2" sx={{ mb: 0.6 }}>
                               Uploaded to success
                             </Typography>
@@ -870,7 +1068,7 @@ function UploadFolderManual(props) {
                             </Typography>
                           )}
 
-                          {isSuccess ? (
+                          {isDone ? (
                             <Typography variant="h2">
                               {totalFolderUpload} of{" "}
                               {Array.from(folderNames).length} folders uploaded
