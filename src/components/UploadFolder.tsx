@@ -114,10 +114,6 @@ function UploadFolderManual(props) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
-  useEffect(() => {
-    return () => {};
-  }, []);
-
   function handleFolder(evt) {
     const { files } = evt.target;
     const newUploadProgress = { ...uploadProgress };
@@ -194,6 +190,7 @@ function UploadFolderManual(props) {
     const result = Object.keys(groupedFiles).map((key) => groupedFiles[key]);
     const foldersArray = result;
     const totalFolders = foldersArray.length;
+    console.log(totalFolders);
 
     try {
       let currentUploadPercentage = 0;
@@ -255,7 +252,11 @@ function UploadFolderManual(props) {
               await Promise.all(
                 await arrayPath.map(async (path, index) => {
                   const file = files[index].file;
-                  console.log(path);
+
+                  setIsDataSuccess((prev: any) => ({
+                    ...prev,
+                    [folderKey]: false,
+                  }));
 
                   const blob = new Blob([file], {
                     type: file.type,
@@ -271,16 +272,6 @@ function UploadFolderManual(props) {
                   const resultPath = path.newPath?.substring(0, lastIndex);
                   const resultFileName = path?.newPath?.substring(lastIndex);
 
-                  // const url = "http://192.168.100.100:4002/api/upload";
-                  // const headers = {
-                  //   REGION: "ap-southeast-1",
-                  //   ACCESSKEY: "S84EKWVHWX0Q6PRRQWAB",
-                  //   PATH: "pornhub" + "-" + userData._id + "/" + resultPath,
-                  //   FILENAME: resultFileName?.substring(1),
-                  //   BUCKET: "sbd-bob-buckets",
-                  //   ENDPOINT: "https://s3.ap-southeast-1.wasabisys.com",
-                  //   SECRETKEY: "eeMYRzXjS3WPM2viZAv1FLyyW96ihY7z55iPOnAo",
-                  // };
                   const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
                   const headers = {
                     REGION: "sg",
@@ -365,7 +356,8 @@ function UploadFolderManual(props) {
           const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
           errorMessage(cutErr, 3000);
         } finally {
-          if (successFolderCount === totalFolders) {
+          if (successFolderCount >= totalFolders) {
+            successFolderCount = 0;
             setIsSuccess(true);
             setIsDataSuccess((prev: any) => ({
               ...prev,
@@ -424,6 +416,12 @@ function UploadFolderManual(props) {
     folderRef.current.value = "";
   };
 
+  useEffect(() => {
+    if (folderData?.length > 0) {
+      //
+    }
+  }, [folderData]);
+
   return (
     <Fragment>
       <MUI.UploadDialogContainer
@@ -467,7 +465,8 @@ function UploadFolderManual(props) {
                       )}
                     </MUI.UploadFolderCancelButton>
                     <Typography variant="h2">
-                      {lengthOfFolder()} Folder selected
+                      {lengthOfFolder()}{" "}
+                      {isMobile ? "selected" : "Folder selected"}
                     </Typography>
 
                     <MUI.UploadFolderAddMoreButton
@@ -509,7 +508,7 @@ function UploadFolderManual(props) {
                   {isMobile ? (
                     <Fragment>
                       {Array.from(folderNames).map((folderPath, index) => {
-                        const isSuccess = !isDataSuccess[index]
+                        const isMobileSuccess = !isDataSuccess[index]
                           ? false
                           : isDataSuccess[index];
 
@@ -529,17 +528,11 @@ function UploadFolderManual(props) {
                             <MUI.UploadFolderListFlex>
                               <MUI.UploadFolderListBoxLeft>
                                 <MUI.UploadFolderListProgress>
-                                  <FolderUploadFull
-                                    style={{
-                                      width: 50,
-                                      height: 50,
-                                      objectFit: "cover",
-                                    }}
-                                  />
+                                  <FolderUploadFull className="folder-list" />
                                 </MUI.UploadFolderListProgress>
 
                                 <MUI.UploadFolderListBoxData>
-                                  <Typography variant="h2" sx={{ mb: 1 }}>
+                                  <Typography variant="h2" sx={{ mb: 0.6 }}>
                                     {folderPath as string}
                                   </Typography>
                                   <Typography variant="h2">
@@ -551,35 +544,41 @@ function UploadFolderManual(props) {
                               <MUI.UploadFolderListBoxRight>
                                 {isUploading && (
                                   <Fragment>
-                                    {!isSuccess ? (
+                                    {!isMobileSuccess ? (
                                       <CircularProgress
-                                        size="20px"
+                                        size="18px"
                                         value={progress || 0}
                                       />
                                     ) : (
                                       <IconButton
-                                        sx={{ background: "#EEFBF3" }}
+                                        sx={{
+                                          background: "#EEFBF3",
+                                          cursor: "inherit",
+                                        }}
+                                        size="medium"
                                       >
                                         <DownloadDoneIcon
-                                          sx={{ color: "#17766B" }}
+                                          sx={{
+                                            color: "#17766B",
+                                            fontSize: "17px",
+                                          }}
                                         />
                                       </IconButton>
                                     )}
                                   </Fragment>
                                 )}
-                                <MUI.UploadFolderRemoveFolder
-                                  style={{
-                                    cursor: "pointer",
-                                  }}
-                                  onClick={() => removeFolder(folderPath)}
-                                >
-                                  <FaTimesCircle
-                                    style={{
-                                      fontSize: "20px",
-                                      verticalAlign: "middle",
-                                    }}
-                                  />
-                                </MUI.UploadFolderRemoveFolder>
+                                {!isMobileSuccess && (
+                                  <MUI.UploadFolderRemoveFolderList
+                                    onClick={() => removeFolder(folderPath)}
+                                  >
+                                    <FaTimesCircle
+                                      style={{
+                                        fontSize: "17px",
+                                        verticalAlign: "middle",
+                                      }}
+                                    />
+                                  </MUI.UploadFolderRemoveFolderList>
+                                )}
                               </MUI.UploadFolderListBoxRight>
                             </MUI.UploadFolderListFlex>
                           </MUI.UploadFolderContainerList>
@@ -731,8 +730,8 @@ function UploadFolderManual(props) {
                                         style={{
                                           position: "relative",
                                           zIndex: 999,
-                                          width: 30,
-                                          height: 30,
+                                          width: 23,
+                                          height: 23,
                                         }}
                                         alt="img-success"
                                       />
@@ -845,8 +844,8 @@ function UploadFolderManual(props) {
                                 <img
                                   src={CheckSuccessIcon}
                                   style={{
-                                    width: 25,
-                                    height: 25,
+                                    width: 20,
+                                    height: 20,
                                   }}
                                   alt="img-success"
                                 />
@@ -862,7 +861,7 @@ function UploadFolderManual(props) {
                         </MUI.UploadFolderMiniProgress>
                         <MUI.UploadFolderContentData>
                           {isSuccess ? (
-                            <Typography variant="h2" sx={{ mb: 1 }}>
+                            <Typography variant="h2" sx={{ mb: 0.6 }}>
                               Uploaded to success
                             </Typography>
                           ) : (

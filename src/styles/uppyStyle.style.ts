@@ -219,20 +219,28 @@ export const UploadFolderListFlex = styled("div")({
 
 export const UploadFolderListProgress = styled("div")({
   position: "relative",
+  marginRight: "5px",
+
+  ".folder-list": {
+    width: 50,
+    height: 50,
+    objectFit: "cover",
+  },
 });
 
 export const UploadFolderListBoxData = styled("div")({
   textAlign: "left",
 
   h2: {
-    fontSize: "13px",
+    fontSize: "11px",
   },
 });
 
 export const UploadFolderListBoxRight = styled("div")({
-  display: "flex",
-  alignItems: "center",
-  gap: "1rem",
+  // display: "flex",
+  // alignItems: "center",
+  // gap: "1rem",
+  position: "relative",
 });
 
 export const UploadFolderBackgroundProgress = styled("div")<{
@@ -273,6 +281,10 @@ export const UploadFolderRemoveFolder = styled("div")({
   color: "#5C5C5C",
 });
 
+export const UploadFolderRemoveFolderList = styled("div")({
+  cursor: "pointer",
+});
+
 export const UploadFolderProgressContainer = styled("div")({
   marginTop: "10px",
   border: "1px solid #eee",
@@ -310,7 +322,7 @@ export const UploadFolderMiniProgress = styled("div")({
 
 export const UploadFolderContentData = styled("div")({
   h2: {
-    fontSize: "12px",
+    fontSize: "10px",
   },
 });
 

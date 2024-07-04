@@ -62,37 +62,36 @@ function UppyUpload() {
     setIsUploading(true);
     try {
       const dataFile = uppyInstance.getFiles() as any[];
-      Promise.all(
-        await dataFile.map(async (file, index) => {
-          const extension = file?.name?.lastIndexOf(".");
-          const fileExtension = file.name?.slice(extension);
-          if (uppyInstance) {
-            const result = await uploadFileAction({
-              variables: {
-                data: {
-                  newFilename: `${file.data.customeNewName}${fileExtension}`,
-                  filename: file.name,
-                  fileType: file.type,
-                  size: file.size.toString(),
-                  checkFile: "main",
-                  country: null,
-                  device: "Windows10",
-                  totalUploadFile: dataFile.length,
-                },
+
+      await dataFile.map(async (file, index) => {
+        const extension = file?.name?.lastIndexOf(".");
+        const fileExtension = file.name?.slice(extension);
+        if (uppyInstance) {
+          const result = await uploadFileAction({
+            variables: {
+              data: {
+                newFilename: `${file.data.customeNewName}${fileExtension}`,
+                filename: file.name,
+                fileType: file.type,
+                size: file.size.toString(),
+                checkFile: "main",
+                country: null,
+                device: "Windows10",
+                totalUploadFile: dataFile.length,
               },
-            });
-            const fileId = await result.data?.createFiles?._id;
-            if (fileId) {
-              fileIdRef.current = {
-                ...fileIdRef.current,
-                [index]: fileId,
-              };
-              await uppyInstance.upload();
-              setFileId(fileIdRef.current);
-            }
+            },
+          });
+          const fileId = await result.data?.createFiles?._id;
+          if (fileId) {
+            fileIdRef.current = {
+              ...fileIdRef.current,
+              [index]: fileId,
+            };
+            setFileId(fileIdRef.current);
+            await uppyInstance.upload();
           }
-        }),
-      );
+        }
+      });
 
       handleDoneUpload();
     } catch (error: any) {
@@ -145,6 +144,7 @@ function UppyUpload() {
     setFileId({});
     setSelectFiles([]);
     setIsUploading(false);
+    console.log("Done uploading...");
   }
 
   function handleIsUploading() {
@@ -166,7 +166,9 @@ function UppyUpload() {
       try {
         const uppy = new Uppy({
           id: "upload-file-id",
-          restrictions: {},
+          restrictions: {
+            maxNumberOfFiles: user?.packageId?.numberOfFileUpload || 1,
+          },
           autoProceed: false,
           allowMultipleUploadBatches: true,
         });
@@ -220,7 +222,7 @@ function UppyUpload() {
 
         uppy.use(xhrUpload, {
           endpoint: ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL,
-          formData: false,
+          formData: true,
           method: "POST",
           fieldName: "file",
 
@@ -231,8 +233,8 @@ function UppyUpload() {
             const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
             const headers = {
               REGION: "sg",
-              BASE_HOSTNAME: ENV_KEYS.VITE_APP_STORAGE_ZONE,
-              STORAGE_ZONE_NAME: "beta-vshare",
+              BASE_HOSTNAME: "storage.bunnycdn.com",
+              STORAGE_ZONE_NAME: ENV_KEYS.VITE_APP_STORAGE_ZONE,
               ACCESS_KEY: ENV_KEYS.VITE_APP_ACCESSKEY_BUNNY,
               PATH: `${user?.newName}-${user?._id}`,
               FILENAME: `${file.data?.customeNewName}${fileExtension}`,
@@ -260,7 +262,9 @@ function UppyUpload() {
             };
           },
         });
+
         setUppyInstance(uppy);
+
         return () => {
           uppy.close();
         };
@@ -270,7 +274,7 @@ function UppyUpload() {
     };
 
     initializeUppy();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (selectFiles.length > 0) {
@@ -280,7 +284,7 @@ function UppyUpload() {
 
   return (
     <Fragment>
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: "flex", gap: "1rem", mt: 4 }}>
         <Button
           variant="contained"
           onClick={() => {
@@ -301,6 +305,7 @@ function UppyUpload() {
 
       <UploadFolderManual
         isOpen={isOpenFolder}
+        userData={user}
         handleClose={() => {
           setIsOpenFolder(false);
         }}
