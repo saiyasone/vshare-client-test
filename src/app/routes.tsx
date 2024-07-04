@@ -33,6 +33,7 @@ import CreateTicket from "./pages/ticket/CreateTicket";
 import ReplyTicket from "./pages/ticket/ReplyTicket";
 import Ticket from "./pages/ticket/Ticket";
 import Trash from "./pages/trash/Trash";
+import UppyUpload from "components/UppyUpload";
 
 const routes: RouteObject[] = [
   {
@@ -165,11 +166,19 @@ const routes: RouteObject[] = [
         element: <Feedback />,
       },
       {
+        path: "uppy",
+        element: <UppyUpload />,
+      },
+      {
         path: "file/:user/:fileType/:status",
         element: <File />,
       },
     ],
   },
+  // {
+  //   path: "uppy",
+  //   element: <UppyUpload />,
+  // },
   {
     path: "*",
     element: (

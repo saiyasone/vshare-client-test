@@ -772,15 +772,6 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                 return;
                               }
 
-                              if (
-                                item.action === "delete" &&
-                                dataSelector?.selectionFileAndFolderData?.find(
-                                  (item) => item?.totalSize === 0,
-                                )
-                              ) {
-                                return;
-                              }
-
                               return (
                                 <Fragment key={index}>
                                   {item.action === "folder-download" &&
@@ -795,17 +786,23 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                         handleMenuAction(item.action);
                                       }}
                                       disabled={
+                                        !(
+                                          item.action === "delete" &&
+                                          dataSelector?.selectionFileAndFolderData?.some(
+                                            (selector) =>
+                                              selector?.totalSize === 0,
+                                          )
+                                        ) &&
                                         (item.action === "get link" ||
                                           item.action === "folder-download" ||
                                           item.action === "password" ||
                                           item.action === "delete" ||
                                           item.action === "share") &&
-                                        dataSelector?.selectionFileAndFolderData?.find(
+                                        dataSelector?.selectionFileAndFolderData?.some(
                                           (selector) =>
                                             selector?.totalSize === 0 ||
                                             selector?.dataPassword,
-                                        ) &&
-                                        true
+                                        )
                                       }
                                     >
                                       <Fragment>{item.icon}</Fragment>

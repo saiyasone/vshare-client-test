@@ -1,5 +1,5 @@
 import { AiOutlineCloud } from "react-icons/ai";
-import { BiTime } from "react-icons/bi";
+import { BiPackage, BiTime } from "react-icons/bi";
 import { BsPinAngleFill, BsTrash3 } from "react-icons/bs";
 import { FiFile } from "react-icons/fi";
 import { HiOutlineShare } from "react-icons/hi";
@@ -56,6 +56,14 @@ const recent = [
   },
 ];
 
+const Uppy = [
+  {
+    href: "/uppy",
+    icon: BiPackage,
+    title: "Uppy",
+  },
+];
+
 const myFavourite = [
   { href: "/favourite", icon: MdOutlineFavoriteBorder, title: "Favourite" },
 ];
@@ -83,10 +91,6 @@ const navItems: any = [
     title: "",
     pages: shareWithMe,
   },
-  // {
-  //   title: "",
-  //   pages: myTicket,
-  // },
   {
     title: "",
     pages: recent,
@@ -102,6 +106,10 @@ const navItems: any = [
   {
     title: "",
     pages: trash,
+  },
+  {
+    title: "",
+    pages: Uppy,
   },
 ];
 
