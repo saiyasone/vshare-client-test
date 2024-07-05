@@ -48,7 +48,7 @@ function UppyUpload() {
 
   const [uppyInstance, setUppyInstance] = useState(() => new Uppy());
   const selectFileRef = useRef(selectFiles);
-  const fileIdRef = useRef(fileId);
+  const fileIdRef = useRef<any>(fileId);
 
   // auth
   const { user }: any = useAuth();
@@ -64,6 +64,7 @@ function UppyUpload() {
 
     setIsUploading(true);
     setCanClose(true);
+
     try {
       const dataFile = uppyInstance.getFiles() as any[];
 
@@ -92,9 +93,7 @@ function UppyUpload() {
               [index]: fileId,
             };
             setFileId(fileIdRef.current);
-            await uppyInstance.upload().then(() => {
-              console.log("index: " + index);
-            });
+            await uppyInstance.upload();
           }
         }
       });
@@ -107,12 +106,11 @@ function UppyUpload() {
   async function handleCancelUpload({ file, index }) {
     try {
       const _id = fileIdRef.current[index];
+      setSelectFiles(() =>
+        selectFileRef.current.filter((selected) => selected.id !== file.id),
+      );
 
       if (_id) {
-        setSelectFiles(() =>
-          selectFileRef.current.filter((selected) => selected.id !== file.id),
-        );
-
         setFileId((prev) => {
           const newFileId = { ...prev };
           delete newFileId[index];
@@ -149,7 +147,7 @@ function UppyUpload() {
     setSelectFiles([]);
     setIsUploading(false);
     setCanClose(false);
-    console.log("Done uploading...");
+    fileIdRef.current.value = null;
   }
 
   function handleIsUploading() {
@@ -224,16 +222,18 @@ function UppyUpload() {
           }
         });
         uppy.on("upload-error", () => {});
-        uppy.on("complete", (result) => {
-          const allFilesUploaded =
-            result.successful.length ===
-            result.successful.length + result.failed.length;
-          if (allFilesUploaded) {
-            console.log("All files uploaded successfully:", result);
-            handleDoneUpload();
-          } else {
-            console.error("Some files failed to upload:", result.failed);
-          }
+        uppy.on("cancel-all", () => {
+          handleDoneUpload();
+        });
+        uppy.on("complete", () => {
+          // console.log({
+          //   uppyFile: result.successful.length,
+          //   selectFile: selectFileRef.current?.length,
+          // });
+          // if (result.successful.length === selectFileRef.current?.length) {
+          //   handleDoneUpload();
+          //   console.log("upload file successfully uploaded");
+          // }
         });
 
         uppy.use(xhrUpload, {
@@ -318,7 +318,7 @@ function UppyUpload() {
           Upload folder
         </Button>
       </Box>
-
+      {JSON.stringify(fileId)}
       <UploadFolderManual
         isOpen={isOpenFolder}
         userData={user}
@@ -326,7 +326,6 @@ function UppyUpload() {
           setIsOpenFolder(false);
         }}
       />
-
       <MUI.UploadDialogContainer
         //   onClose={canClose ? () => {} : handleCloseModal}
         // open={open || false}
