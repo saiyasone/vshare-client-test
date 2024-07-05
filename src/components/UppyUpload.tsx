@@ -106,6 +106,7 @@ function UppyUpload() {
   async function handleCancelUpload({ file, index }) {
     try {
       const _id = fileIdRef.current[index];
+      
       setSelectFiles(() =>
         selectFileRef.current.filter((selected) => selected.id !== file.id),
       );

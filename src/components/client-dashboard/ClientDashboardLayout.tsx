@@ -223,6 +223,7 @@ const ClientDashboardLayout = () => {
       setShowUploadFile(true);
     }
     setMobileOpen(false);
+    //
   }, [router.pathname, uploadContext?.sharePermission]);
 
   const theme = useTheme();

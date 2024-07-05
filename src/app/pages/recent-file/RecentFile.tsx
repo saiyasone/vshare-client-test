@@ -717,7 +717,15 @@ function RecentFile() {
             setShareDialog(false);
           }}
           open={shareDialog}
-          data={dataForEvent.data}
+          data={{
+            ...dataForEvent.data,
+            ownerId: {
+              _id: dataForEvent.data?.createdBy?._id,
+              email: dataForEvent.data?.createdBy?.email,
+              firstName: dataForEvent.data?.createdBy?.firstName,
+              lastName: dataForEvent.data?.createdBy?.lastName,
+            },
+          }}
           refetch={fileLoading || recentFileRefetch}
         />
       )}
