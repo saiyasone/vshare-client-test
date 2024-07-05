@@ -39,6 +39,7 @@ import useAuth from "hooks/useAuth";
 
 function UppyUpload() {
   const [isOpen, setIsOpen] = useState(false);
+  const [fileCount, setFileCount] = useState(0);
   const [isOpenFolder, setIsOpenFolder] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [canClose, setCanClose] = useState(false);
@@ -92,6 +93,7 @@ function UppyUpload() {
               ...fileIdRef.current,
               [index]: fileId,
             };
+
             setFileId(fileIdRef.current);
             await uppyInstance.upload();
           }
@@ -106,10 +108,9 @@ function UppyUpload() {
   async function handleCancelUpload({ file, index }) {
     try {
       const _id = fileIdRef.current[index];
-      
-      setSelectFiles(() =>
-        selectFileRef.current.filter((selected) => selected.id !== file.id),
-      );
+      // setSelectFiles(() =>
+      //   selectFileRef.current.filter((selected) => selected.id !== file.id),
+      // );
 
       if (_id) {
         setFileId((prev) => {
@@ -165,6 +166,14 @@ function UppyUpload() {
     );
   }
 
+  const checkAllFilesRemoved = () => {
+    const files = selectFileRef.current;
+    console.log(files);
+    // if (files.length === 0) {
+    //   console.log("All files removed");
+    // }
+  };
+
   useEffect(() => {
     const initializeUppy = () => {
       try {
@@ -217,7 +226,9 @@ function UppyUpload() {
         uppy.on("file-removed", (file) => {
           try {
             const index = getIndex(file.id);
+            console.log(file);
             handleCancelUpload({ file, index });
+            // checkAllFilesRemoved();
           } catch (error) {
             console.error("Error removing file:", error);
           }
