@@ -11,6 +11,7 @@ export const PACKAGE_TYPE = {
 export const PAYMENT_METHOD = {
   bcelOne: "Bcel One",
   stripe: "Credit card",
+  TwopaymentCheckout: "Payment Checkout",
 };
 
 const initialState = {
@@ -39,6 +40,7 @@ const initialState = {
   activeStep: 0,
   showBcelOne: false,
   showStripe: false,
+  showTwoPaymentCheckout: false,
   activePaymentMethod: PAYMENT_METHOD.bcelOne,
   recentPayment: {},
   paymentSteps: {
@@ -47,6 +49,7 @@ const initialState = {
     2: false,
     3: false,
   },
+  packageId: "",
 };
 
 const setDynamicData = (state) => {
@@ -89,6 +92,10 @@ export const paymentSlice = createSlice({
       }
     },
 
+    setPackageIdData: (state, action) => {
+      state.packageId = action.payload;
+    },
+
     setCalculatePrice: (state) => {
       setDynamicData(state);
     },
@@ -116,6 +123,10 @@ export const paymentSlice = createSlice({
 
     setShowBcel: (state, action) => {
       state.showBcelOne = action.payload;
+    },
+
+    setShowTwoPaymentCheckout: (state, action) => {
+      state.showTwoPaymentCheckout = action.payload;
     },
 
     setShowStrip: (state, action) => {
@@ -176,6 +187,8 @@ export const {
   setDiscountToPackage,
   setShowBcel,
   setShowStrip,
+  setShowTwoPaymentCheckout,
+  setPackageIdData,
 } = paymentSlice.actions;
 
 export const paymentState = (state: RootState) => state.payment;

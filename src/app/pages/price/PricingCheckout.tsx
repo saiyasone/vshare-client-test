@@ -36,6 +36,7 @@ import {
   setAddressData,
   setCalculatePrice,
   setPackageData,
+  setPackageIdData,
   setPaymentId,
   setShowBcel,
   setShowStrip,
@@ -60,6 +61,7 @@ function PricingCheckout() {
     params.packageId,
     ENV_KEYS.VITE_APP_ENCRYPTION_KEY,
   );
+
   const dispatch = useDispatch();
   const { activeStep, paymentSteps, packageType, ...paymentSelector } =
     useSelector(paymentState);
@@ -160,8 +162,13 @@ function PricingCheckout() {
   useEffect(() => {
     if (packageId) {
       dispatch(setActivePaymentId(packageId));
+
+      if (packages.data) {
+        const result = packages.data?.find((el) => el?._id === packageId);
+        dispatch(setPackageIdData(result?.packageId));
+      }
     }
-  }, [packageId, dispatch]);
+  }, [packageId, dispatch, packages.data]);
 
   useEffect(() => {
     if (paymentSelector.packageData && paymentSelector.activePackageId) {

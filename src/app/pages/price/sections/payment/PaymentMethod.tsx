@@ -7,10 +7,14 @@ import {
   PAYMENT_METHOD,
   paymentState,
   setActivePaymentMethod,
+  setActiveStep,
+  setPaymentStatus,
 } from "stores/features/paymentSlice";
 import NormalButton from "../../../../../components/NormalButton";
 import BCELOnePayment from "./BCELOnePayment";
 import StripePayment from "./StripePayment";
+import TwoPaymentCheckout from "./TwoPaymentCheckout";
+import useAuth from "hooks/useAuth";
 
 const PaymentMethodContainer = styled("div")({
   display: "flex",
@@ -21,6 +25,7 @@ const PaymentMethodContainer = styled("div")({
 const PaymentMethod = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const { generateNewToken }: { generateNewToken: () => void } = useAuth();
 
   const paymentSelector: any = useSelector(paymentState);
 
@@ -34,7 +39,7 @@ const PaymentMethod = () => {
     }
 
     if (!paymentSelector?.showStripe && paymentSelector?.showBcelOne) {
-      return [PAYMENT_METHOD.bcelOne];
+      return [PAYMENT_METHOD.bcelOne, PAYMENT_METHOD.TwopaymentCheckout];
     }
 
     return [];
@@ -53,9 +58,23 @@ const PaymentMethod = () => {
         );
       case PAYMENT_METHOD.stripe:
         return <StripePayment />;
+
+      case PAYMENT_METHOD.TwopaymentCheckout:
+        return (
+          <TwoPaymentCheckout
+            packageId={paymentSelector?.packageId || ""}
+            handleSuccess={handleTwoCheckoutSuccess}
+          />
+        );
       default:
         return;
     }
+  };
+
+  const handleTwoCheckoutSuccess = async () => {
+    dispatch(setPaymentStatus("success"));
+    dispatch(setActiveStep(3));
+    generateNewToken();
   };
 
   return (

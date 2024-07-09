@@ -107,10 +107,10 @@ const navItems: any = [
     title: "",
     pages: trash,
   },
-  {
-    title: "",
-    pages: Uppy,
-  },
+  // {
+  //   title: "",
+  //   pages: Uppy,
+  // },
 ];
 
 export default navItems;
