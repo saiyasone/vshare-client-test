@@ -83,8 +83,7 @@ function FileDrop() {
   // checked file pagination
   const generateFileDropLink = async () => {
     setIsCopy(false);
-    // const genLink = "http://localhost:5174/" + user?._id + "-" + generateRandomUniqueNumber();
-    const genLink = "link" + user?._id + "-" + generateRandomUniqueNumber();
+    const genLink = link + user?._id + "-" + generateRandomUniqueNumber();
     setValue(genLink);
     try {
       const createfiledropLink = await createFileDropLink({
