@@ -239,8 +239,8 @@
 .uppy-size--md
   .uppy-Dashboard-Item.is-complete
   .uppy-Dashboard-Item-progressIndicator {
-  width: 35px !important;
-  height: 35px !important;
+  width: 30px !important;
+  height: 30px !important;
 }
 [dir="ltr"]
   .uppy-size--md

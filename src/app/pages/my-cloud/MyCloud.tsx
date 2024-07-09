@@ -15,7 +15,7 @@ import {
   QUERY_FILE,
   QUERY_FILE_CATEGORY,
 } from "api/graphql/file.graphql";
-import { MUTATION_CREATE_FILEDROP_URL } from "api/graphql/fileDrop.graphql";
+import { MUTATION_CREATE_FILE_DROP_URL_PRIVATE } from "api/graphql/fileDrop.graphql";
 import {
   MUTATION_UPDATE_FOLDER,
   QUERY_FOLDER,
@@ -99,7 +99,7 @@ export function MyCloud() {
     },
   );
 
-  const [createFileDropLink] = useMutation(MUTATION_CREATE_FILEDROP_URL);
+  const [createFileDropLink] = useMutation(MUTATION_CREATE_FILE_DROP_URL_PRIVATE);
   const [updateFileDrop] = useMutation(MUTATION_UPDATE_FILE_PUBLIC);
 
   const [fileAction] = useMutation(MUTATION_ACTION_FILE);

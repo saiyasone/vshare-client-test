@@ -40,7 +40,6 @@ import DialogValidateFilePassword from "components/dialog/DialogValidateFilePass
 import ProgressingBar from "components/loading/ProgressingBar";
 import { ENV_KEYS } from "constants/env.constant";
 import { fileDropMenuItems } from "constants/menuItem.constant";
-import useFetchFile from "hooks/file/useFetchFile";
 import useGetUrlDownload from "hooks/url/useGetUrlDownload";
 import useBreadcrumbData from "hooks/useBreadcrumbData";
 import _ from "lodash";
@@ -55,6 +54,7 @@ import {
 } from "utils/file.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import FileDropDataGrid from "./FileDropDataGrid";
+import useFetchFile from "./hooks/useFetchFile";
 
 const ITEM_PER_PAGE = 10;
 
