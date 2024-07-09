@@ -39,13 +39,17 @@ import useAuth from "hooks/useAuth";
 
 function UppyUpload() {
   const [isOpen, setIsOpen] = useState(false);
+  const [fileCount, setFileCount] = useState(0);
   const [isOpenFolder, setIsOpenFolder] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [canClose, setCanClose] = useState(false);
+
   const [fileId, setFileId] = useState({});
   const [selectFiles, setSelectFiles] = useState<any>([]);
-  const [isUploading, setIsUploading] = useState(false);
+
   const [uppyInstance, setUppyInstance] = useState(() => new Uppy());
   const selectFileRef = useRef(selectFiles);
-  const fileIdRef = useRef(fileId);
+  const fileIdRef = useRef<any>(fileId);
 
   // auth
   const { user }: any = useAuth();
@@ -60,6 +64,8 @@ function UppyUpload() {
     if (!uppyInstance.getFiles().length) return;
 
     setIsUploading(true);
+    setCanClose(true);
+
     try {
       const dataFile = uppyInstance.getFiles() as any[];
 
@@ -87,15 +93,14 @@ function UppyUpload() {
               ...fileIdRef.current,
               [index]: fileId,
             };
+
             setFileId(fileIdRef.current);
             await uppyInstance.upload();
           }
         }
       });
-
-      handleDoneUpload();
     } catch (error: any) {
-      // handleDoneUpload();
+      handleDoneUpload();
       console.log(error);
     }
   }
@@ -103,12 +108,11 @@ function UppyUpload() {
   async function handleCancelUpload({ file, index }) {
     try {
       const _id = fileIdRef.current[index];
+      // setSelectFiles(() =>
+      //   selectFileRef.current.filter((selected) => selected.id !== file.id),
+      // );
 
       if (_id) {
-        setSelectFiles(() =>
-          selectFileRef.current.filter((selected) => selected.id !== file.id),
-        );
-
         setFileId((prev) => {
           const newFileId = { ...prev };
           delete newFileId[index];
@@ -144,11 +148,12 @@ function UppyUpload() {
     setFileId({});
     setSelectFiles([]);
     setIsUploading(false);
-    console.log("Done uploading...");
+    setCanClose(false);
+    fileIdRef.current.value = null;
   }
 
   function handleIsUploading() {
-    if (isUploading) {
+    if (canClose) {
       return;
     }
     setIsOpen(false);
@@ -160,6 +165,14 @@ function UppyUpload() {
       (selected) => selected.id === fileId,
     );
   }
+
+  const checkAllFilesRemoved = () => {
+    const files = selectFileRef.current;
+    console.log(files);
+    // if (files.length === 0) {
+    //   console.log("All files removed");
+    // }
+  };
 
   useEffect(() => {
     const initializeUppy = () => {
@@ -213,12 +226,27 @@ function UppyUpload() {
         uppy.on("file-removed", (file) => {
           try {
             const index = getIndex(file.id);
+            console.log(file);
             handleCancelUpload({ file, index });
+            // checkAllFilesRemoved();
           } catch (error) {
             console.error("Error removing file:", error);
           }
         });
         uppy.on("upload-error", () => {});
+        uppy.on("cancel-all", () => {
+          handleDoneUpload();
+        });
+        uppy.on("complete", () => {
+          // console.log({
+          //   uppyFile: result.successful.length,
+          //   selectFile: selectFileRef.current?.length,
+          // });
+          // if (result.successful.length === selectFileRef.current?.length) {
+          //   handleDoneUpload();
+          //   console.log("upload file successfully uploaded");
+          // }
+        });
 
         uppy.use(xhrUpload, {
           endpoint: ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL,
@@ -302,7 +330,7 @@ function UppyUpload() {
           Upload folder
         </Button>
       </Box>
-
+      {JSON.stringify(fileId)}
       <UploadFolderManual
         isOpen={isOpenFolder}
         userData={user}
@@ -310,7 +338,6 @@ function UppyUpload() {
           setIsOpenFolder(false);
         }}
       />
-
       <MUI.UploadDialogContainer
         //   onClose={canClose ? () => {} : handleCloseModal}
         // open={open || false}
@@ -354,13 +381,13 @@ function UppyUpload() {
 
               <MUI.ButtonActionBody>
                 <MUI.ButtonActionContainer>
-                  <MUI.ButtonCancelAction onClick={handleIsUploading}>
+                  <MUI.ButtonCancelAction
+                    disabled={canClose}
+                    onClick={handleIsUploading}
+                  >
                     Cancel
                   </MUI.ButtonCancelAction>
-                  <MUI.ButtonUploadAction
-                    disabled={isUploading}
-                    onClick={handleUpload}
-                  >
+                  <MUI.ButtonUploadAction onClick={handleUpload}>
                     Upload now
                   </MUI.ButtonUploadAction>
                 </MUI.ButtonActionContainer>

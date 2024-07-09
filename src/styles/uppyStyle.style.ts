@@ -16,6 +16,46 @@ export const UploadUppyContainer = styled("div")({
   },
 });
 
+export const UploadFolderCircularProgress = styled("div")<{ progress: number }>(
+  ({ progress }) => ({
+    width: "30px",
+    height: "30px",
+    borderRadius: "50%",
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "2px solid #ccc", // default border color
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      border: "2px solid #fff",
+      clip: "rect(0, 30px, 30px, 15px)", // clip to show half circle
+      transform: `rotate(${(progress / 100) * 180}deg)`, // rotate based on progress
+    },
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      border: "2px solid #fff",
+      clip: "rect(0, 15px, 30px, 0)", // clip to show half circle
+      transform:
+        progress > 50
+          ? `rotate(180deg)`
+          : `rotate(${(progress / 100) * 180}deg)`,
+    },
+  }),
+);
+
 export const UppyHeader = styled("div")({
   marginBottom: "2rem",
   textAlign: "center",
@@ -354,8 +394,14 @@ export const ButtonActionContainer = styled("div")({
 export const ButtonCancelAction = styled("button")({
   backgroundColor: "#E5E6E7",
   color: "#4B465C",
+
   "&:hover": {
     backgroundColor: "#cecece",
+  },
+
+  "&:disabled": {
+    backgroundColor: "#ddd",
+    cursor: "default",
   },
 });
 

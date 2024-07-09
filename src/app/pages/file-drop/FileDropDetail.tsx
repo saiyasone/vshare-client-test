@@ -191,16 +191,17 @@ function FileDropDetail() {
   React.useEffect(() => {
     const fetchIPAddress = async () => {
       try {
-        const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
-        const ip = responseIp?.data;
-        if (ip) {
-          const res = await axios.get(
-            `https://pro.ip-api.com/json/${ip}?key=x0TWf62F7ukWWpQ`,
-          );
-          if (res) {
-            setCountry(res?.data?.countryCode);
-          }
-        }
+        setCountry("other");
+        // const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
+        // const ip = responseIp?.data;
+        // if (ip) {
+        //   const res = await axios.get(
+        //     `https://pro.ip-api.com/json/${ip}?key=x0TWf62F7ukWWpQ`,
+        //   );
+        //   if (res) {
+        //     setCountry(res?.data?.countryCode);
+        //   }
+        // }
       } catch (error) {
         setCountry("other");
       }

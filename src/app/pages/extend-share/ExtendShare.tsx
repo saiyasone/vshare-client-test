@@ -69,7 +69,7 @@ import {
   getShortFileTypeFromFileType,
   removeFileNameOutOfPath,
 } from "utils/file.util";
-import {  encryptId } from "utils/secure.util";
+import { encryptId } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import ExtendFileDataGrid from "../extend-folder/ExtendFileDataGrid";
 import ExtendFolderDataGrid from "../extend-folder/ExtendFolderDataGrid";
@@ -274,7 +274,9 @@ function ExtendShare() {
   }, [eventUploadTrigger.triggerData]);
 
   useEffect(() => {
-    const shareData = fetchSubFoldersAndFiles.data?.folders?.data?.[0];
+    const shareData =
+      fetchSubFoldersAndFiles.data?.folders?.data?.[0] ||
+      fetchSubFoldersAndFiles.data?.files?.data?.[0];
     if (shareData) {
       if (shareData?.permission === "edit") {
         eventUploadTrigger.handleSharePermission("edit");
