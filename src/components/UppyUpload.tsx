@@ -53,6 +53,7 @@ function UppyUpload() {
 
   // auth
   const { user }: any = useAuth();
+  let uploadSuccess = 0;
 
   //   graphql
   const [uploadFileAction] = useMutation(MUTATION_CREATE_FILE);
@@ -105,14 +106,14 @@ function UppyUpload() {
     }
   }
 
-  async function handleCancelUpload({ file, index }) {
+  async function handleCancelUpload({ index }) {
     try {
       const _id = fileIdRef.current[index];
-      // setSelectFiles(() =>
-      //   selectFileRef.current.filter((selected) => selected.id !== file.id),
-      // );
 
       if (_id) {
+        // setSelectFiles(() =>
+        //   selectFileRef.current.filter((selected) => selected.id !== file.id),
+        // );
         setFileId((prev) => {
           const newFileId = { ...prev };
           delete newFileId[index];
@@ -149,7 +150,9 @@ function UppyUpload() {
     setSelectFiles([]);
     setIsUploading(false);
     setCanClose(false);
+    setFileCount(0);
     fileIdRef.current.value = null;
+    selectFileRef.current = [];
   }
 
   function handleIsUploading() {
@@ -226,8 +229,7 @@ function UppyUpload() {
         uppy.on("file-removed", (file) => {
           try {
             const index = getIndex(file.id);
-            console.log(file);
-            handleCancelUpload({ file, index });
+            handleCancelUpload({ index });
             // checkAllFilesRemoved();
           } catch (error) {
             console.error("Error removing file:", error);
@@ -237,11 +239,16 @@ function UppyUpload() {
         uppy.on("cancel-all", () => {
           handleDoneUpload();
         });
-        uppy.on("complete", () => {
+        uppy.on("upload-success", () => {
+          uploadSuccess++;
+          setFileCount(uploadSuccess);
           // console.log({
-          //   uppyFile: result.successful.length,
           //   selectFile: selectFileRef.current?.length,
           // });
+
+          if (uploadSuccess === selectFileRef.current?.length) {
+            handleDoneUpload();
+          }
           // if (result.successful.length === selectFileRef.current?.length) {
           //   handleDoneUpload();
           //   console.log("upload file successfully uploaded");
@@ -330,7 +337,7 @@ function UppyUpload() {
           Upload folder
         </Button>
       </Box>
-      {JSON.stringify(fileId)}
+
       <UploadFolderManual
         isOpen={isOpenFolder}
         userData={user}

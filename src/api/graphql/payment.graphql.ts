@@ -19,6 +19,12 @@ export const MUTATION_CREATE_PAYMENT = gql`
   }
 `;
 
+export const MUTATION_CREATE_TWO_CHECKOUT = gql`
+  mutation TwoCheckoutSubscription($packageId: String!) {
+    twoCheckoutSubscription(packageId: $packageId)
+  }
+`;
+
 export const QUERY_PAYMENT = gql`
   query GetPayments(
     $where: PaymentWhereInput
