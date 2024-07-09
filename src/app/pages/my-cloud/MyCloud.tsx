@@ -954,6 +954,7 @@ export function MyCloud() {
   const menuOnClick = async (action) => {
     setIsAutoClose(true);
     setGetValue(dataForEvent.data);
+
     setName(dataForEvent.data?.filename || dataForEvent.data?.folder_name);
     setTimeout(() => {
       setOptionsValue(false);
@@ -1725,7 +1726,15 @@ export function MyCloud() {
                   sharedUserList={manageUserFromShare.sharedUserList}
                   onClose={handleShareClose}
                   open={openShare}
-                  data={getValue || multiSelectId[0]}
+                  data={{
+                    ...(getValue || multiSelectId[0]),
+                    ownerId: {
+                      _id: dataForEvent.data?.createdBy?._id,
+                      email: dataForEvent.data?.createdBy?.email,
+                      firstName: dataForEvent.data?.createdBy?.firstName,
+                      lastName: dataForEvent.data?.createdBy?.lastName,
+                    },
+                  }}
                 />
               )}
 

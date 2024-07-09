@@ -34,6 +34,8 @@ export const QUERY_FOLDER = gql`
           email
           username
           newName
+          firstName
+          lastName
         }
         file_id {
           _id

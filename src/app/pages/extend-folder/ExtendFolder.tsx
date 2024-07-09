@@ -1477,11 +1477,20 @@ function ExtendFolder() {
               dataForEvent.data?.folder_type === "folder" ? "folder" : "",
             folder_name: dataForEvent.data.name,
             filename: dataForEvent.data.name,
+            ownerId: {
+              _id: dataForEvent.data?.createdBy?._id,
+              email: dataForEvent.data?.createdBy?.email,
+              firstName: dataForEvent.data?.createdBy?.firstName,
+              lastName: dataForEvent.data?.createdBy?.lastName,
+            },
           }}
           ownerId={{
             ...dataForEvent.data,
             _id: dataForEvent.data?.createdBy?._id,
             newName: dataForEvent.data?.createdBy?.newName,
+            email: dataForEvent.data?.createdBy?.email,
+            firstName: dataForEvent.data?.createdBy?.firstName,
+            lastName: dataForEvent.data?.createdBy?.lastName,
           }}
         />
       )}
