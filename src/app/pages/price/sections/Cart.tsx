@@ -71,7 +71,7 @@ const Cart = (props) => {
         value: true,
       }),
     );
-  }, []);
+  }, [dispatch]);
 
   return (
     <CartContainer>
