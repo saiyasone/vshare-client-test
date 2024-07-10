@@ -5,6 +5,7 @@ import { useMutation } from "@apollo/client";
 import { MUTATION_CREATE_TWO_CHECKOUT } from "api/graphql/payment.graphql";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import { errorMessage } from "utils/alert.util";
+import axios from "axios";
 
 type Prop = {
   packageId: string;
@@ -19,17 +20,20 @@ function TwoPaymentCheckout({ packageId, handleSuccess }: Prop) {
   const [paymentCheckout] = useMutation(MUTATION_CREATE_TWO_CHECKOUT);
 
   const handleTwoPaymentCheckout = async () => {
-    setIsLoading(true);
+    // setIsLoading(true);
     try {
-      await paymentCheckout({
-        variables: {
-          packageId,
-        },
-        onCompleted: () => {
-          setIsLoading(false);
-          handleSuccess?.();
-        },
-      });
+      await axios.get(
+        `http://coding.vshare.net/graphql/payments/checkout?productCode=${packageId}`,
+      );
+      // await paymentCheckout({
+      //   variables: {
+      //     packageId,
+      //   },
+      //   onCompleted: () => {
+      //     setIsLoading(false);
+      //     handleSuccess?.();
+      //   },
+      // });
     } catch (error: any) {
       setIsLoading(false);
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
