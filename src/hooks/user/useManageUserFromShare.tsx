@@ -34,9 +34,9 @@ const useManageUserFromShare = ({
           await getShares({
             variables: {
               where: {
-                parentKey: parentKey || 0,
-                isShare: isShare || "yes",
-                fromAccount: inputFileOrFolder.createdBy.email,
+                // parentKey: parentKey || 0,
+                // isShare: isShare || "yes",
+                // fromAccount: inputFileOrFolder.createdBy.email,
                 toAccount,
                 ...(inputType === "folder"
                   ? {

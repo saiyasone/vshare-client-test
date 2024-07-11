@@ -1,56 +1,25 @@
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { Box } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { useMutation } from "@apollo/client";
-import { MUTATION_CREATE_TWO_CHECKOUT } from "api/graphql/payment.graphql";
-import useManageGraphqlError from "hooks/useManageGraphqlError";
-import { errorMessage } from "utils/alert.util";
-import axios from "axios";
+
+import { ENV_KEYS } from "constants/env.constant";
 
 type Prop = {
   packageId: string;
   handleSuccess?: () => void;
 };
 
-function TwoPaymentCheckout({ packageId, handleSuccess }: Prop) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  // graphql
-  const manageGraphError = useManageGraphqlError();
-  const [paymentCheckout] = useMutation(MUTATION_CREATE_TWO_CHECKOUT);
-
+function TwoPaymentCheckout({ packageId }: Prop) {
   const handleTwoPaymentCheckout = async () => {
     // setIsLoading(true);
-    try {
-      await axios.get(
-        `http://coding.vshare.net/graphql/payments/checkout?productCode=${packageId}`,
-      );
-      // await paymentCheckout({
-      //   variables: {
-      //     packageId,
-      //   },
-      //   onCompleted: () => {
-      //     setIsLoading(false);
-      //     handleSuccess?.();
-      //   },
-      // });
-    } catch (error: any) {
-      setIsLoading(false);
-      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
-      errorMessage(
-        manageGraphError.handleErrorMessage(cutErr || "") as string,
-        3000,
-      );
-    }
+    window.open(
+      `${ENV_KEYS.VITE_APP_API_URL}/payments/checkout?productCode=${packageId}`,
+    );
   };
   return (
     <Fragment>
       <Box>
-        <LoadingButton
-          variant="contained"
-          loading={isLoading}
-          onClick={handleTwoPaymentCheckout}
-        >
+        <LoadingButton variant="contained" onClick={handleTwoPaymentCheckout}>
           Payment
         </LoadingButton>
       </Box>
