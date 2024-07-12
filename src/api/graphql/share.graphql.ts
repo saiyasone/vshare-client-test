@@ -6,8 +6,15 @@ export const QUERY_SHARE = gql`
     $orderBy: OrderByInput
     $skip: Int
     $limit: Int
+    $noLimit: Boolean
   ) {
-    getShare(where: $where, orderBy: $orderBy, skip: $skip, limit: $limit) {
+    getShare(
+      where: $where
+      orderBy: $orderBy
+      skip: $skip
+      limit: $limit
+      noLimit: $noLimit
+    ) {
       data {
         _id
         isShare
