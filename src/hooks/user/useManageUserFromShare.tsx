@@ -68,6 +68,7 @@ const useManageUserFromShare = ({
             await deleteShare({
               variables: {
                 id: data._id,
+                email: data?.toAccount?.email,
               },
             });
           }),

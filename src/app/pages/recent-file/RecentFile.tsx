@@ -587,7 +587,7 @@ function RecentFile() {
       onSuccess: () => {
         setDeleteDialogOpen(false);
         successMessage("Delete file successful!!", 2000);
-        recentFileRefetch();
+        customGetRecentFiles();
         resetDataForEvents();
         setIsAutoClose(true);
       },
@@ -901,8 +901,8 @@ function RecentFile() {
             }}
             onPressLockData={handleOpenMultiplePassword}
             onPressSuccess={() => {
+              customGetRecentFiles();
               handleClearFileAndFolderData();
-              recentFileRefetch();
             }}
           />
         ) : (

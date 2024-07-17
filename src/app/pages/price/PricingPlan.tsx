@@ -83,7 +83,7 @@ const PricingPlan = (props) => {
           product.
         </Typography>
         <Typography variant="h6">
-          Choose the beset plan to fit your needs
+          Choose the best plan to fit your needs
         </Typography>
         <MUI.BoxShowSwitchPlan>
           <Stack
