@@ -85,7 +85,7 @@ function Trash() {
     getDeletedFoldersAndFiles({
       variables: {
         where: {
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         orderBy: "updatedAt_DESC",
       },
@@ -268,7 +268,7 @@ function Trash() {
     getDeletedFoldersAndFiles({
       variables: {
         where: {
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         orderBy: "updatedAt_DESC",
       },
@@ -398,7 +398,7 @@ function Trash() {
                                     imagePath={
                                       user.newName +
                                       "-" +
-                                      user._id +
+                                      user?._id +
                                       "/" +
                                       (data.newPath
                                         ? removeFileNameOutOfPath(data.newPath)

@@ -463,7 +463,7 @@ function FileType() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -674,7 +674,7 @@ function FileType() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -782,7 +782,7 @@ function FileType() {
           imagePath={
             user.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)
@@ -978,7 +978,7 @@ function FileType() {
                             imagePath={
                               user.newName +
                               "-" +
-                              user._id +
+                              user?._id +
                               "/" +
                               (data.newPath
                                 ? removeFileNameOutOfPath(data.newPath)

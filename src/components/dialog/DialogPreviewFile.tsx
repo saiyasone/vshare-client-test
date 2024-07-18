@@ -85,7 +85,7 @@ export default function DialogPreviewFile(props) {
   // const newUrl = "http://192.168.100.100:4002/" + "preview?path=";
   const publicPath = props?.isPublicPath
     ? props?.isPublicPath + "/" + newFilename
-    : user.newName + "-" + user._id + "/" + real_path + newFilename;
+    : user.newName + "-" + user?._id + "/" + real_path + newFilename;
 
   const handleImageError = () => {
     setShowNotFoundImage(true);
@@ -183,7 +183,7 @@ export default function DialogPreviewFile(props) {
                   url +
                   user.newName +
                   "-" +
-                  user._id +
+                  user?._id +
                   "/" +
                   real_path +
                   newFilename
@@ -212,7 +212,7 @@ export default function DialogPreviewFile(props) {
                     url +
                     user.newName +
                     "-" +
-                    user._id +
+                    user?._id +
                     "/" +
                     real_path +
                     newFilename
@@ -288,7 +288,7 @@ export default function DialogPreviewFile(props) {
                   url +
                   user.newName +
                   "-" +
-                  user._id +
+                  user?._id +
                   "/" +
                   real_path +
                   newFilename
@@ -301,7 +301,7 @@ export default function DialogPreviewFile(props) {
                   url +
                   user.newName +
                   "-" +
-                  user._id +
+                  user?._id +
                   "/" +
                   real_path +
                   newFilename
@@ -314,7 +314,7 @@ export default function DialogPreviewFile(props) {
                   url +
                   user.newName +
                   "-" +
-                  user._id +
+                  user?._id +
                   "/" +
                   real_path +
                   newFilename

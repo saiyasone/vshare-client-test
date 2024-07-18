@@ -35,7 +35,7 @@ const useManageFolder = ({ user }) => {
           },
           data: {
             pin,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async (data) => {
@@ -65,7 +65,7 @@ const useManageFolder = ({ user }) => {
               parentkey: parseInt(parentKey),
             }),
             folder_name: inputNewFolderName,
-            updatedBy: _user?.id || user._id,
+            updatedBy: _user?.id || user?._id,
           },
         },
         onCompleted: (data) => {

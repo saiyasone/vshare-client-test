@@ -637,7 +637,7 @@ function ShareWithMe() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -764,7 +764,7 @@ function ShareWithMe() {
           },
           data: {
             pin: dataForEvent.data.folderId.pin ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async (data) => {

@@ -698,7 +698,7 @@ function ExtendFolder() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -829,7 +829,7 @@ function ExtendFolder() {
             },
             data: {
               status: "deleted",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -848,7 +848,7 @@ function ExtendFolder() {
             },
             data: {
               status: "deleted",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -976,7 +976,7 @@ function ExtendFolder() {
           },
           data: {
             favorite: dataForEvent.data.favorite ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -1019,7 +1019,7 @@ function ExtendFolder() {
       variables: {
         where: {
           path,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
       onCompleted: (data: any) => {
@@ -1331,7 +1331,7 @@ function ExtendFolder() {
                                       imagePath={
                                         user.newName +
                                         "-" +
-                                        user._id +
+                                        user?._id +
                                         "/" +
                                         (data.newPath
                                           ? removeFileNameOutOfPath(
@@ -1532,7 +1532,7 @@ function ExtendFolder() {
           imagePath={
             user.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)

@@ -48,7 +48,7 @@ const Cart = (props) => {
       getPayment({
         variables: {
           where: {
-            payerId: user._id,
+            payerId: user?._id,
             packageId: user.packageId.packageId,
           },
         },

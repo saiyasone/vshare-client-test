@@ -511,7 +511,7 @@ function ExtendShare() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -642,7 +642,7 @@ function ExtendShare() {
             data: {
               parentkey: parseInt(parentFolder?._id),
               folder_name: name,
-              updatedBy: user._id,
+              updatedBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -661,7 +661,7 @@ function ExtendShare() {
             },
             data: {
               filename: name,
-              updatedBy: user._id,
+              updatedBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -694,7 +694,7 @@ function ExtendShare() {
           },
           data: {
             pin: dataForEvent.data.pin ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -839,7 +839,7 @@ function ExtendShare() {
           },
           data: {
             favorite: dataForEvent.data.favorite ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -885,7 +885,7 @@ function ExtendShare() {
       variables: {
         where: {
           path,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -967,7 +967,7 @@ function ExtendShare() {
           imagePath={
             user.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)
@@ -1263,7 +1263,7 @@ function ExtendShare() {
                                     imagePath={
                                       user.newName +
                                       "-" +
-                                      user._id +
+                                      user?._id +
                                       "/" +
                                       (data.newPath
                                         ? removeFileNameOutOfPath(data.newPath)

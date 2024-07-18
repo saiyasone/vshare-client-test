@@ -119,7 +119,7 @@ const useManageFile = ({ user }) => {
           },
           data: {
             status: "deleted",
-            createdBy: user._id,
+            createdBy: user?._id,
           },
         },
         onCompleted: (data) => {
@@ -185,7 +185,7 @@ const useManageFile = ({ user }) => {
               folder_id: parentKey,
             }),
             filename: inputNewFilename,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: (data) => {
@@ -213,7 +213,7 @@ const useManageFile = ({ user }) => {
           },
           data: {
             favorite: inputFavorite,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: (data) => {

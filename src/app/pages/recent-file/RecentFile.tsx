@@ -241,7 +241,7 @@ function RecentFile() {
       variables: {
         where: {
           status: "active",
-          createdBy: user._id,
+          createdBy: user?._id,
           ...(actionStatus !== "all" && {
             actionStatus,
           }),
@@ -346,7 +346,7 @@ function RecentFile() {
       variables: {
         where: {
           status: "active",
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         orderBy: "actionDate_DESC",
         limit: 100,
@@ -531,7 +531,7 @@ function RecentFile() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -663,7 +663,7 @@ function RecentFile() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -780,7 +780,7 @@ function RecentFile() {
           imagePath={
             user.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)
@@ -827,7 +827,7 @@ function RecentFile() {
           fileType={dataForEvent.data.fileType}
           path={dataForEvent.data.newPath}
           user={user}
-          userId={user._id}
+          userId={user?._id}
         />
       )}
 
@@ -1048,7 +1048,7 @@ function RecentFile() {
                                     imagePath={
                                       user.newName +
                                       "-" +
-                                      user._id +
+                                      user?._id +
                                       "/" +
                                       (data.newPath
                                         ? removeFileNameOutOfPath(data.newPath)
