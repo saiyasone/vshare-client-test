@@ -115,7 +115,7 @@ function FileDropDetail() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -392,7 +392,7 @@ function FileDropDetail() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -486,7 +486,7 @@ function FileDropDetail() {
           },
           data: {
             filename: existName ? existName : name,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -829,7 +829,7 @@ function FileDropDetail() {
           fileType={dataForEvent.data.fileType}
           path={dataForEvent.data.newPath ?? "public"}
           user={user}
-          userId={user._id}
+          userId={user?._id}
         />
       )}
 

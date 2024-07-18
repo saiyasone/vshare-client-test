@@ -258,8 +258,8 @@ export default function ShowUpload(props) {
     }
 
     // const url =
-    BUNNY_URL + user.newName + "-" + user._id + filePath + "/" + newName;
-    const pathBunny = user.newName + "-" + user._id + filePath;
+    BUNNY_URL + user.newName + "-" + user?._id + filePath + "/" + newName;
+    const pathBunny = user.newName + "-" + user?._id + filePath;
 
     setFileId((prev) => ({
       ...prev,
@@ -269,13 +269,14 @@ export default function ShowUpload(props) {
     try {
       const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
       const headers = {
+        createdBy: user?._id,
         REGION: "sg",
         BASE_HOSTNAME: "storage.bunnycdn.com",
         STORAGE_ZONE_NAME: STORAGE_ZONE,
         ACCESS_KEY: ACCESS_KEY,
         PATH: pathBunny,
         FILENAME: newName,
-        PATH_FOR_THUMBNAIL: user.newName + "-" + user._id,
+        PATH_FOR_THUMBNAIL: user.newName + "-" + user?._id,
       };
 
       const source = CancelToken.source();
@@ -505,9 +506,9 @@ export default function ShowUpload(props) {
                     BASE_HOSTNAME: "storage.bunnycdn.com",
                     STORAGE_ZONE_NAME: STORAGE_ZONE,
                     ACCESS_KEY: ACCESS_KEY,
-                    PATH: user.newName + "-" + user._id + "/" + resultPath,
+                    PATH: user.newName + "-" + user?._id + "/" + resultPath,
                     FILENAME: resultFileName?.substring(1),
-                    PATH_FOR_THUMBNAIL: user.newName + "-" + user._id,
+                    PATH_FOR_THUMBNAIL: user.newName + "-" + user?._id,
                   };
 
                   const key = CryptoJS.enc.Utf8.parse(secretKey);
@@ -675,7 +676,7 @@ export default function ShowUpload(props) {
       await actionFile({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(id),
             actionStatus: "upload",
           },

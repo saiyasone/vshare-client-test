@@ -62,7 +62,7 @@ function ExtendFolderDataGrid(props) {
     if (isTablet || isMobile) {
       if (props.user.permission) {
         const base64URL = Base64.encodeURI(
-          props.user._id +
+          props.user?._id +
             "/" +
             props.user.newName +
             "/" +
@@ -201,7 +201,7 @@ function ExtendFolderDataGrid(props) {
       const { url } = dataForEvents.data || {};
       if (props.user.permission) {
         const base64URL = Base64.encodeURI(
-          props.user._id +
+          props.user?._id +
             "/" +
             props.user.newName +
             "/" +

@@ -694,12 +694,6 @@ function FileDrop() {
               getRowId={(row) => row?._id}
               rows={manageFileDrop?.data || []}
               columns={columns}
-              initialState={{
-                pagination: {
-                  page: 0,
-                  pageSize: 5,
-                },
-              }}
               checkboxSelection
               disableSelectionOnClick
               disableColumnFilter
@@ -735,7 +729,7 @@ function FileDrop() {
                 <PaginationStyled
                   currentPage={filter.data.currentPageNumber}
                   total={Math.ceil(
-                    manageFileDrop.total / filter.data.pageLimit,
+                    manageFileDrop.total / manageFileDrop.pageLimit,
                   )}
                   setCurrentPage={(e) =>
                     filter.dispatch({

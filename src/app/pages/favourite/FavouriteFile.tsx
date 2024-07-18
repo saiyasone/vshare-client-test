@@ -260,7 +260,7 @@ function FavouriteFile() {
         where: {
           status: "active",
           pin: 1,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         ...(dataFolderFilters.skip && {
           skip: dataFolderFilters.skip,
@@ -277,7 +277,7 @@ function FavouriteFile() {
         where: {
           status: "active",
           favorite: 1,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         ...(dataFileFilters.skip && {
           skip: dataFileFilters.skip,
@@ -294,7 +294,7 @@ function FavouriteFile() {
         where: {
           status: "active",
           favorite: 1,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         orderBy: "actionDate_DESC",
         limit: limitScroll,
@@ -616,7 +616,7 @@ function FavouriteFile() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -692,7 +692,7 @@ function FavouriteFile() {
             },
             data: {
               status: "deleted",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -705,7 +705,7 @@ function FavouriteFile() {
                 where: {
                   status: "active",
                   pin: 1,
-                  createdBy: user._id,
+                  createdBy: user?._id,
                 },
                 orderBy: "updatedAt_DESC",
                 limit: ITEM_PER_PAGE_LIST,
@@ -747,7 +747,7 @@ function FavouriteFile() {
             },
             data: {
               folder_name: name,
-              updatedBy: user._id,
+              updatedBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -794,7 +794,7 @@ function FavouriteFile() {
           },
           data: {
             pin: dataForEvent.data.pin ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -937,7 +937,7 @@ function FavouriteFile() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -1050,7 +1050,7 @@ function FavouriteFile() {
           imagePath={
             user.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)
@@ -1097,7 +1097,7 @@ function FavouriteFile() {
           fileType={dataForEvent.data.fileType}
           path={dataForEvent.data.newPath}
           user={user}
-          userId={user._id}
+          userId={user?._id}
         />
       )}
 
@@ -1249,7 +1249,7 @@ function FavouriteFile() {
                                           imagePath={
                                             user.newName +
                                             "-" +
-                                            user._id +
+                                            user?._id +
                                             "/" +
                                             (data?.newPath
                                               ? removeFileNameOutOfPath(

@@ -11,7 +11,7 @@ export const PACKAGE_TYPE = {
 export const PAYMENT_METHOD = {
   bcelOne: "Bcel One",
   stripe: "Credit card",
-  TwopaymentCheckout: "Payment Checkout",
+  TwopaymentCheckout: "Payment 2 checkout",
 };
 
 const initialState = {

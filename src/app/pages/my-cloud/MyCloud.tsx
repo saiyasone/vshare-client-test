@@ -480,7 +480,7 @@ export function MyCloud() {
         await getFile({
           variables: {
             where: {
-              createdBy: user._id,
+              createdBy: user?._id,
               checkFile: "main",
               status: "active",
               source: "default",
@@ -559,7 +559,7 @@ export function MyCloud() {
             where: {
               checkFolder: "main",
               restore: "show",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
             orderBy: "pin_DESC",
             limit: viewMore,
@@ -756,7 +756,7 @@ export function MyCloud() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(data?._id ? data?._id : getValue?._id),
             actionStatus: val,
           },
@@ -828,7 +828,7 @@ export function MyCloud() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -1583,7 +1583,7 @@ export function MyCloud() {
                                   imagePath={
                                     user.newName +
                                     "-" +
-                                    user._id +
+                                    user?._id +
                                     (item?.path
                                       ? removeFileNameOutOfPath(item?.path)
                                       : "") +
@@ -1788,7 +1788,7 @@ export function MyCloud() {
                   imagePath={
                     user.newName +
                     "-" +
-                    user._id +
+                    user?._id +
                     "/" +
                     (getValue?.newPath
                       ? removeFileNameOutOfPath(getValue?.newPath)

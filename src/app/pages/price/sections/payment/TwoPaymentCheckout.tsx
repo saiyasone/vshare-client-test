@@ -1,54 +1,52 @@
-import { Fragment, useState } from "react";
-import { Box } from "@mui/material";
-import { LoadingButton } from "@mui/lab";
-import { useMutation } from "@apollo/client";
-import { MUTATION_CREATE_TWO_CHECKOUT } from "api/graphql/payment.graphql";
-import useManageGraphqlError from "hooks/useManageGraphqlError";
-import { errorMessage } from "utils/alert.util";
+import { Fragment } from "react";
+import { Box, Button, styled } from "@mui/material";
+import PaymentIcon from "assets/images/wallet-checkout.png";
+import IconAction from "@mui/icons-material/Payment";
+
+import { ENV_KEYS } from "constants/env.constant";
+
+const ImageIcon = styled("img")({
+  width: "150px",
+  height: "150px",
+  objectFit: "cover",
+});
 
 type Prop = {
   packageId: string;
   handleSuccess?: () => void;
 };
 
-function TwoPaymentCheckout({ packageId, handleSuccess }: Prop) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  // graphql
-  const manageGraphError = useManageGraphqlError();
-  const [paymentCheckout] = useMutation(MUTATION_CREATE_TWO_CHECKOUT);
-
+function TwoPaymentCheckout({ packageId }: Prop) {
   const handleTwoPaymentCheckout = async () => {
-    setIsLoading(true);
-    try {
-      await paymentCheckout({
-        variables: {
-          packageId,
-        },
-        onCompleted: () => {
-          setIsLoading(false);
-          handleSuccess?.();
-        },
-      });
-    } catch (error: any) {
-      setIsLoading(false);
-      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
-      errorMessage(
-        manageGraphError.handleErrorMessage(cutErr || "") as string,
-        3000,
-      );
-    }
+    // setIsLoading(true);
+    window.open(
+      `${ENV_KEYS.VITE_APP_API_URL}/payments/checkout?productCode=${packageId}`,
+    );
   };
   return (
     <Fragment>
-      <Box>
-        <LoadingButton
-          variant="contained"
-          loading={isLoading}
-          onClick={handleTwoPaymentCheckout}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
         >
-          Payment
-        </LoadingButton>
+          <ImageIcon src={PaymentIcon} alt="payment-icons" />
+
+          <Box sx={{ marginTop: "2rem" }}>
+            <Button variant="contained" onClick={handleTwoPaymentCheckout}>
+              <IconAction sx={{ mr: 2 }} /> Payments
+            </Button>
+          </Box>
+        </Box>
       </Box>
     </Fragment>
   );
