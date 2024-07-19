@@ -327,6 +327,61 @@ const useManageFile = ({ user }) => {
     }
   };
 
+  // download single file
+  const handleDownloadSingleFile = async (
+    { multipleData },
+    { onSuccess, onProcess, onFailed, onClosure },
+  ) => {
+    try {
+      const newModelData = multipleData.map((file) => {
+        let real_path = "";
+        if (file.newPath) {
+          real_path = removeFileNameOutOfPath(file?.newPath);
+        }
+
+        return {
+          isFolder: file.checkType === "folder" ? true : false,
+          path: `${file.createdBy?.newName}-${file.createdBy?._id}/${real_path}${file.newFilename}`,
+          _id: file.id,
+          createdBy: file.createdBy?._id,
+        };
+      });
+
+      const headers = {
+        accept: "*/*",
+        lists: newModelData,
+        createdBy: multipleData?.[0].createdBy?._id,
+      };
+
+      const encryptedData = dataEncrypted({ headers });
+      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
+      const response: any = await fetch(baseUrl);
+
+      const reader = response.body.getReader();
+      const contentLength = +response.headers.get("Content-Length");
+      let receivedLength = 0;
+      const chunks: any[] = [];
+      let countPercentage = 0;
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedLength += value.length;
+        countPercentage = Math.round((receivedLength / contentLength) * 100);
+        onProcess?.(countPercentage);
+      }
+
+      startDownload({ baseUrl });
+      onSuccess();
+    } catch (error) {
+      onFailed?.(error);
+    } finally {
+      onClosure?.();
+    }
+  };
+
   // download multiple files
   const handleMultipleDownloadFile = async (
     { multipleData },
@@ -563,6 +618,7 @@ const useManageFile = ({ user }) => {
     handleMultipleDownloadFileAndFolder,
     handleMultipleFileDropDownloadFile,
     handleMultipleSaveToClound,
+    handleDownloadSingleFile,
   };
 };
 

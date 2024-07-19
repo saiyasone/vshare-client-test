@@ -47,7 +47,6 @@ import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 import { FolderContext } from "contexts/FolderProvider";
 import { useMenuDropdownState } from "contexts/MenuDropdownProvider";
 import useManageFile from "hooks/file/useManageFile";
-import useManageFolder from "hooks/folder/useManageFolder";
 import useGetUrl from "hooks/url/useGetUrl";
 import useGetUrlDownload from "hooks/url/useGetUrlDownload";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
@@ -76,7 +75,6 @@ function ShareWithMe() {
     fetchPolicy: "no-cache",
   });
 
-  const manageFolder = useManageFolder({ user });
   const manageFile = useManageFile({ user });
 
   const [getFolders] = useLazyQuery(QUERY_FOLDER, { fetchPolicy: "no-cache" });
@@ -124,7 +122,6 @@ function ShareWithMe() {
     toAccount: user.email,
   });
 
-  const [afterDowload, setAfterDowload] = useState<any>(null);
   const [folderDrop, setFolderDrop] = useState<any>("");
 
   //dialog
@@ -346,18 +343,6 @@ function ShareWithMe() {
       localStorage.setItem("toggle", "list");
     }
   }, []);
-
-  function useDownloadFile() {
-    throw new Error("Function not implemented.");
-  }
-
-  const totalDownloadHandle = useDownloadFile;
-
-  useEffect(() => {
-    if (afterDowload) {
-      totalDownloadHandle?.();
-    }
-  }, [afterDowload]);
 
   useEffect(() => {
     if (!_.isEmpty(dataForEvent.data) && dataForEvent.action === "get link") {
@@ -651,58 +636,108 @@ function ShareWithMe() {
   const handleDownloadFileAndFolder = async () => {
     setShowProgressing(true);
     setProcesing(true);
-    if (dataForEvent.data.folderId?._id) {
-      await manageFolder.handleDownloadFolder(
-        {
-          id: dataForEvent.data.folderId._id,
-          folderName: dataForEvent?.data.folderId?.folder_name,
-          newPath: dataForEvent.data.folderId?.newPath,
-          user: dataForEvent.data.ownerId,
+
+    const dataId =
+      dataForEvent.data?.folderId?._id || dataForEvent.data?.fileId?._id;
+
+    const dataNewPath =
+      dataForEvent.data?.folderId?.newPath ||
+      dataForEvent.data?.fileId?.newPath;
+
+    const dataNewFilename =
+      dataForEvent.data?.folderId?.newFolder_name ||
+      dataForEvent.data?.fileId?.newFilename;
+
+    const checkType = dataForEvent.data?.folderId?._id ? "folder" : "file";
+    const createdBy = dataForEvent.data?.ownerId;
+    const newFileData = [
+      {
+        id: dataId,
+        newPath: dataNewPath,
+        newFilename: dataNewFilename,
+        createdBy,
+        checkType,
+      },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
+      {
+        onSuccess: () => {
+          resetDataForEvents();
+          setShowProgressing(false);
+          queryGetShare();
+          setFileDetailsOpen(false);
+          successMessage("Download successful", 3000);
         },
-        {
-          onFailed: async (error) => {
-            errorMessage(error, 2000);
-          },
-          onSuccess: async () => {
-            resetDataForEvents();
-            setShowProgressing(false);
-            queryGetShare();
-            setFileDetailsOpen(false);
-            successMessage("Download successful", 2000);
-          },
+        onFailed: (error) => {
+          errorMessage(error, 3000);
         },
-      );
-    } else {
-      await manageFile.handleDownloadFile(
-        {
-          id: dataForEvent.data._id,
-          newPath: dataForEvent.data.fileId.newPath,
-          newFilename: dataForEvent.data.fileId.newFilename,
-          filename: dataForEvent.data.fileId.filename,
-          user: dataForEvent.data.ownerId,
+        onProcess: (percentage) => {
+          setProgressing(percentage);
         },
-        {
-          onProcess: async (countPercentage) => {
-            setProgressing(countPercentage);
-          },
-          onSuccess: async () => {
-            setAfterDowload(dataForEvent.data.fileId._id);
-            successMessage("Download successful", 2000);
-            queryGetShare();
-          },
-          onFailed: (error) => {
-            errorMessage(error, 2000);
-          },
-          onClosure: () => {
-            resetDataForEvents();
-            setIsAutoClose(false);
-            setShowProgressing(false);
-            setProcesing(false);
-            setShowPreview(false);
-          },
+        onClosure: () => {
+          resetDataForEvents();
+          setIsAutoClose(false);
+          setShowProgressing(false);
+          setProcesing(false);
+          setShowPreview(false);
         },
-      );
-    }
+      },
+    );
+
+    // if (dataForEvent.data.folderId?._id) {
+    //   await manageFolder.handleDownloadFolder(
+    //     {
+    //       id: dataForEvent.data.folderId._id,
+    //       folderName: dataForEvent?.data.folderId?.folder_name,
+    //       newPath: dataForEvent.data.folderId?.newPath,
+    //       user: dataForEvent.data.ownerId,
+    //     },
+    //     {
+    //       onFailed: async (error) => {
+    //         errorMessage(error, 2000);
+    //       },
+    //       onSuccess: async () => {
+    //         resetDataForEvents();
+    //         setShowProgressing(false);
+    //         queryGetShare();
+    //         setFileDetailsOpen(false);
+    //         successMessage("Download successful", 2000);
+    //       },
+    //     },
+    //   );
+    // } else {
+    //   await manageFile.handleDownloadFile(
+    //     {
+    //       id: dataForEvent.data._id,
+    //       newPath: dataForEvent.data.fileId.newPath,
+    //       newFilename: dataForEvent.data.fileId.newFilename,
+    //       filename: dataForEvent.data.fileId.filename,
+    //       user: dataForEvent.data.ownerId,
+    //     },
+    //     {
+    //       onProcess: async (countPercentage) => {
+    //         setProgressing(countPercentage);
+    //       },
+    //       onSuccess: async () => {
+    //         setAfterDowload(dataForEvent.data.fileId._id);
+    //         successMessage("Download successful", 2000);
+    //         queryGetShare();
+    //       },
+    //       onFailed: (error) => {
+    //         errorMessage(error, 2000);
+    //       },
+    //       onClosure: () => {
+    //         resetDataForEvents();
+    //         setIsAutoClose(false);
+    //         setShowProgressing(false);
+    //         setProcesing(false);
+    //         setShowPreview(false);
+    //       },
+    //     },
+    //   );
+    // }
   };
 
   const handleRename = async () => {

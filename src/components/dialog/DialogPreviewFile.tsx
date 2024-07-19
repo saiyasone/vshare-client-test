@@ -85,7 +85,7 @@ export default function DialogPreviewFile(props) {
   // const newUrl = "http://192.168.100.100:4002/" + "preview?path=";
   const publicPath = props?.isPublicPath
     ? props?.isPublicPath + "/" + newFilename
-    : user.newName + "-" + user?._id + "/" + real_path + newFilename;
+    : user?.newName + "-" + user?._id + "/" + real_path + newFilename;
 
   const handleImageError = () => {
     setShowNotFoundImage(true);
@@ -181,7 +181,7 @@ export default function DialogPreviewFile(props) {
                   "https://view.officeapps.live.com/op/embed.aspx?" +
                   "src=" +
                   url +
-                  user.newName +
+                  user?.newName +
                   "-" +
                   user?._id +
                   "/" +
@@ -210,7 +210,7 @@ export default function DialogPreviewFile(props) {
                 <ReactAudioPlayer
                   src={
                     url +
-                    user.newName +
+                    user?.newName +
                     "-" +
                     user?._id +
                     "/" +
@@ -286,7 +286,7 @@ export default function DialogPreviewFile(props) {
                 width={"100%"}
                 url={
                   url +
-                  user.newName +
+                  user?.newName +
                   "-" +
                   user?._id +
                   "/" +
@@ -299,7 +299,7 @@ export default function DialogPreviewFile(props) {
               <iframe
                 src={
                   url +
-                  user.newName +
+                  user?.newName +
                   "-" +
                   user?._id +
                   "/" +
@@ -312,7 +312,7 @@ export default function DialogPreviewFile(props) {
               <iframe
                 src={
                   url +
-                  user.newName +
+                  user?.newName +
                   "-" +
                   user?._id +
                   "/" +

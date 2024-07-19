@@ -406,13 +406,13 @@ function ExtendFolder() {
           checkboxAction.setFileAndFolderData({
             data: {
               id: optionValue?._id,
-              name: optionValue?.name ?? "",
-              newPath: optionValue?.newPath ?? "",
+              name: optionValue?.name || "",
+              newPath: optionValue?.newPath || "",
               checkType: "folder",
-              dataPassword: optionValue?.access_password ?? "",
-              newFilename: optionValue?.newFolder_name ?? "",
+              dataPassword: optionValue?.access_password || "",
+              newFilename: optionValue?.newFolder_name || "",
               totalSize: optionValue?.isContainsFiles ? 1 : 0,
-              shortLink: optionValue?.shortUrl ?? "",
+              shortLink: optionValue?.shortUrl || "",
               createdBy: {
                 _id: optionValue?.createdBy?._id,
                 newName: optionValue?.createdBy?.newName,
@@ -713,25 +713,68 @@ function ExtendFolder() {
   const handleDownloadFolder = async () => {
     setShowProgressing(true);
     setProcesing(true);
-    await manageFolder.handleDownloadFolder(
+
+    const newFileData = [
       {
         id: dataForEvent.data?._id,
-        folderName: dataForEvent.data?.name,
-        newPath: dataForEvent.data.newPath,
+        checkType: "folder",
+        newPath: dataForEvent.data?.newPath || "",
+        newFilename: dataForEvent.data?.newFolder_name || "",
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
+        },
       },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
       {
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
+        onSuccess: () => {
+          successMessage("Download successful", 3000);
+          setDataForEvent((state) => ({
+            ...state,
+            action: null,
+            data: {
+              ...state.data,
+              totalDownload: dataForEvent.data.totalDownload + 1,
+            },
+          }));
+          customGetSubFoldersAndFiles();
         },
-        onSuccess: async () => {
-          successMessage("Download successful", 2000);
+        onFailed: (error) => {
+          errorMessage(error, 3000);
         },
-        onClosure: async () => {
+        onProcess: (percentage) => {
+          setProgressing(percentage);
+        },
+        onClosure: () => {
+          setIsAutoClose(false);
+          setFileDetailsDialog(false);
           setShowProgressing(false);
-          resetDataForEvent();
+          setProcesing(false);
         },
       },
     );
+    // await manageFolder.handleDownloadFolder(
+    //   {
+    //     id: dataForEvent.data?._id,
+    //     folderName: dataForEvent.data?.name,
+    //     newPath: dataForEvent.data.newPath,
+    //   },
+    //   {
+    //     onFailed: async (error) => {
+    //       errorMessage(error, 2000);
+    //     },
+    //     onSuccess: async () => {
+    //       successMessage("Download successful", 2000);
+    //     },
+    //     onClosure: async () => {
+    //       setShowProgressing(false);
+    //       resetDataForEvent();
+    //     },
+    //   },
+    // );
   };
 
   const handleCreateFileDrop = async (
@@ -786,18 +829,25 @@ function ExtendFolder() {
   const handleDownloadFile = async () => {
     setShowProgressing(true);
     setProcesing(true);
-    await manageFile.handleDownloadFile(
+
+    const newFileData = [
       {
-        id: dataForEvent.data._id,
-        newPath: dataForEvent.data.newPath,
-        newFilename: dataForEvent.data.newName,
-        filename: dataForEvent.data.name,
-      },
-      {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
+        id: dataForEvent.data?._id,
+        checkType: "file",
+        newPath: dataForEvent.data?.newPath || "",
+        newFilename: dataForEvent.data?.newFilename || "",
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
         },
-        onSuccess: async () => {
+      },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
+      {
+        onSuccess: () => {
+          successMessage("Download successful", 3000);
           setDataForEvent((state) => ({
             ...state,
             action: null,
@@ -808,15 +858,52 @@ function ExtendFolder() {
           }));
           customGetSubFoldersAndFiles();
         },
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
+        onFailed: (error) => {
+          errorMessage(error, 3000);
+        },
+        onProcess: (percentage) => {
+          setProgressing(percentage);
         },
         onClosure: () => {
+          setIsAutoClose(false);
+          setFileDetailsDialog(false);
           setShowProgressing(false);
           setProcesing(false);
         },
       },
     );
+
+    // await manageFile.handleDownloadFile(
+    //   {
+    //     id: dataForEvent.data._id,
+    //     newPath: dataForEvent.data.newPath,
+    //     newFilename: dataForEvent.data.newName,
+    //     filename: dataForEvent.data.name,
+    //   },
+    //   {
+    //     onProcess: async (countPercentage) => {
+    //       setProgressing(countPercentage);
+    //     },
+    //     onSuccess: async () => {
+    //       setDataForEvent((state) => ({
+    //         ...state,
+    //         action: null,
+    //         data: {
+    //           ...state.data,
+    //           totalDownload: dataForEvent.data.totalDownload + 1,
+    //         },
+    //       }));
+    //       customGetSubFoldersAndFiles();
+    //     },
+    //     onFailed: async (error) => {
+    //       errorMessage(error, 2000);
+    //     },
+    //     onClosure: () => {
+    //       setShowProgressing(false);
+    //       setProcesing(false);
+    //     },
+    //   },
+    // );
   };
 
   const handleDeleteFilesAndFolders = async () => {
@@ -1329,7 +1416,7 @@ function ExtendFolder() {
                                       isCheckbox={true}
                                       filePassword={data?.filePassword}
                                       imagePath={
-                                        user.newName +
+                                        user?.newName +
                                         "-" +
                                         user?._id +
                                         "/" +
@@ -1530,7 +1617,7 @@ function ExtendFolder() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
             user?._id +
             "/" +

@@ -753,7 +753,7 @@ const Navbar = ({ onDrawerToggle }) => {
                                               data.type,
                                             )}
                                             imagePath={
-                                              user.newName +
+                                              user?.newName +
                                               "-" +
                                               user?._id +
                                               "/" +
@@ -955,7 +955,7 @@ const Navbar = ({ onDrawerToggle }) => {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
             user?._id +
             "/" +

@@ -780,7 +780,7 @@ function FileType() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
             user?._id +
             "/" +
@@ -976,7 +976,7 @@ function FileType() {
                             id={data?._id}
                             filePassword={data?.filePassword}
                             imagePath={
-                              user.newName +
+                              user?.newName +
                               "-" +
                               user?._id +
                               "/" +

@@ -64,7 +64,7 @@ function ExtendFolderDataGrid(props) {
         const base64URL = Base64.encodeURI(
           props.user?._id +
             "/" +
-            props.user.newName +
+            props.user?.newName +
             "/" +
             props.user.permission +
             "/" +
@@ -203,7 +203,7 @@ function ExtendFolderDataGrid(props) {
         const base64URL = Base64.encodeURI(
           props.user?._id +
             "/" +
-            props.user.newName +
+            props.user?.newName +
             "/" +
             props.user.permission +
             "/" +

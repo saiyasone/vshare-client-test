@@ -396,7 +396,7 @@ function Trash() {
                                       }),
                                     }}
                                     imagePath={
-                                      user.newName +
+                                      user?.newName +
                                       "-" +
                                       user?._id +
                                       "/" +
