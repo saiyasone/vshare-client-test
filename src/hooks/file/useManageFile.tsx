@@ -54,6 +54,18 @@ const useManageFile = ({ user }) => {
     return encryptedData;
   };
 
+  const startDownload = ({ baseUrl }) => {
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+
+    iframe.onload = () => {
+      document.body.removeChild(iframe);
+    };
+
+    iframe.src = baseUrl;
+    document.body.appendChild(iframe);
+  };
+
   const splitDataByDate = (data, accessorKey) => {
     const result: any = [
       { title: "Today", data: [] },
@@ -382,6 +394,55 @@ const useManageFile = ({ user }) => {
     }
   };
 
+  const handleSingleFileDropDownload = async (
+    { multipleData },
+    { onSuccess, onFailed, onClosure, onProcess },
+  ) => {
+    try {
+      const newModelData = multipleData.map((file) => {
+        return {
+          isFolder: false,
+          path: `public/${file.newFilename}`,
+          _id: file.id,
+          createdBy: "0",
+        };
+      });
+
+      const headers = {
+        accept: "*/*",
+        lists: newModelData,
+        createdBy: "0",
+      };
+
+      const encryptedData = dataEncrypted({ headers });
+      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
+      const response: any = await fetch(baseUrl);
+
+      const reader = response.body.getReader();
+      const contentLength = +response.headers.get("Content-Length");
+      let receivedLength = 0;
+      const chunks: any[] = [];
+      let countPercentage = 0;
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedLength += value.length;
+        countPercentage = Math.round((receivedLength / contentLength) * 100);
+        onProcess?.(countPercentage);
+      }
+
+      startDownload({ baseUrl });
+      onSuccess();
+    } catch (error) {
+      onFailed?.(error);
+    } finally {
+      onClosure?.();
+    }
+  };
+
   // download multiple files
   const handleMultipleDownloadFile = async (
     { multipleData },
@@ -395,13 +456,9 @@ const useManageFile = ({ user }) => {
         }
 
         return {
-          accept: "*/*",
-          storageZoneName: ENV_KEYS.VITE_APP_STORAGE_ZONE,
           isFolder: false,
           path: `${file.createdBy?.newName}-${file.createdBy?._id}/${real_path}/${file.newFilename}`,
           _id: file.id,
-          fileName: CryptoJS.enc.Utf8.parse(file.name),
-          AccessKey: ENV_KEYS.VITE_APP_ACCESSKEY_BUNNY,
           createdBy: file.createdBy?._id,
         };
       });
@@ -412,7 +469,7 @@ const useManageFile = ({ user }) => {
       };
 
       const encryptedData = dataEncrypted({ headers });
-      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifiles?download=${encryptedData}`;
+      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
 
       startDownload({ baseUrl });
       setTimeout(() => {
@@ -440,23 +497,21 @@ const useManageFile = ({ user }) => {
         }
 
         return {
-          accept: "*/*",
-          storageZoneName: ENV_KEYS.VITE_APP_STORAGE_ZONE,
-          isFolder: false,
-          path: real_path,
           _id: file.id,
-          fileName: CryptoJS.enc.Utf8.parse(file.name),
-          AccessKey: ENV_KEYS.VITE_APP_ACCESSKEY_BUNNY,
+          path: real_path,
+          isFolder: false,
+          createdBy: "0",
         };
       });
 
       const headers = {
         accept: "*/*",
         lists: newModelData,
+        downloadBy: "0",
       };
 
       const encryptedData = dataEncrypted({ headers });
-      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifiles?download=${encryptedData}`;
+      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
 
       startDownload({ baseUrl });
       setTimeout(() => {
@@ -467,18 +522,6 @@ const useManageFile = ({ user }) => {
       console.error(error);
     }
   };
-
-  async function startDownload({ baseUrl }) {
-    const iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-
-    iframe.onload = () => {
-      document.body.removeChild(iframe);
-    };
-
-    iframe.src = baseUrl;
-    document.body.appendChild(iframe);
-  }
 
   const handleMultipleDownloadFileAndFolder = async (
     { multipleData, isShare },
@@ -619,6 +662,7 @@ const useManageFile = ({ user }) => {
     handleMultipleFileDropDownloadFile,
     handleMultipleSaveToClound,
     handleDownloadSingleFile,
+    handleSingleFileDropDownload,
   };
 };
 

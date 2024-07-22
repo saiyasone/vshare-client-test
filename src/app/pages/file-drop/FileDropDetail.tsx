@@ -407,17 +407,16 @@ function FileDropDetail() {
     setShowProgressing(true);
     setProcesing(true);
 
-    await manageFile.handleDownloadFile(
+    const multipleData = [
       {
         id: dataForEvent.data._id,
         newPath: dataForEvent?.data?.newPath || "public",
-        newFilename: dataForEvent.data.newFilename,
-        filename: combineOldAndNewFileNames(
-          dataForEvent.data.filename,
-          dataForEvent.data.newFilename,
-        ),
-        isPublicPath: true,
+        newFilename: dataForEvent.data.newFilename || "",
       },
+    ];
+
+    await manageFile.handleSingleFileDropDownload(
+      { multipleData },
       {
         onProcess: async (countPercentage) => {
           setProgressing(countPercentage);
