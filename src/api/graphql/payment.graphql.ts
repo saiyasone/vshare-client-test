@@ -203,3 +203,13 @@ export const SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION = gql`
     }
   }
 `;
+
+export const SUBSCRIPTION_TWO_CHECKOUT_SUBSCRIPTION = gql`
+  subscription SubscribeTwoCheckoutSubscription($email: String) {
+    subscribeTwoCheckoutSubscription(email: $email) {
+      error
+      email
+      message
+    }
+  }
+`;

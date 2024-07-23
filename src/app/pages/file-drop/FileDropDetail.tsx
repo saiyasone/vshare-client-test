@@ -653,6 +653,7 @@ function FileDropDetail() {
                             "/" +
                             data?.newPath;
                           const publicPath = "public/" + data.newFilename;
+
                           return (
                             <FileCardItem
                               cardProps={{

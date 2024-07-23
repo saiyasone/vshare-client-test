@@ -28,6 +28,7 @@ import {
 } from "utils/file.util";
 import { safeGetProperty } from "utils/object.util";
 import { v4 as uuidv4 } from "uuid";
+
 const useManageFile = ({ user }) => {
   const [updateFile] = useMutation(MUTATION_UPDATE_FILE);
   const [updateFiles] = useMutation(MUTATION_CREATE_FILE);
@@ -466,6 +467,7 @@ const useManageFile = ({ user }) => {
       const headers = {
         accept: "*/*",
         lists: newModelData,
+        createdBy: newModelData?.[0]?.createdBy,
       };
 
       const encryptedData = dataEncrypted({ headers });
@@ -507,7 +509,7 @@ const useManageFile = ({ user }) => {
       const headers = {
         accept: "*/*",
         lists: newModelData,
-        downloadBy: "0",
+        createdBy: "0",
       };
 
       const encryptedData = dataEncrypted({ headers });
@@ -547,6 +549,7 @@ const useManageFile = ({ user }) => {
         accept: "*/*",
         lists: newModelData,
         downloadBy: multipleData[0]?.toAccount?.email,
+        createdBy: multipleData[0].createdBy?._id,
       };
 
       const encryptedData = dataEncrypted({ headers });

@@ -18,7 +18,6 @@ type Prop = {
 
 function TwoPaymentCheckout({ packageId }: Prop) {
   const handleTwoPaymentCheckout = async () => {
-    // setIsLoading(true);
     window.open(
       `${ENV_KEYS.VITE_APP_API_URL}/payments/checkout?productCode=${packageId}`,
     );
