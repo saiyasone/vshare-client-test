@@ -108,7 +108,7 @@ export default function TicketForm() {
             setImgLoading(true);
             for (let i = 0; i < fileUploads.length; i++) {
               await axios.put(
-                `${bunnyUrl}/${user.newName}-${user._id}/${imageAccess[i].newNameImage}`,
+                `${bunnyUrl}/${user?.newName}-${user?._id}/${imageAccess[i].newNameImage}`,
                 fileUploads[i],
                 {
                   headers: {

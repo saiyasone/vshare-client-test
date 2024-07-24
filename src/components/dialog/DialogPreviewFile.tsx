@@ -82,9 +82,10 @@ export default function DialogPreviewFile(props) {
     }
   }, [open, newFilename]);
   const url = ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE;
+  const newUrl = ENV_KEYS.VITE_APP_LOAD_URL + "preview?path=";
   const publicPath = props?.isPublicPath
     ? props?.isPublicPath + "/" + newFilename
-    : user.newName + "-" + user._id + "/" + real_path + newFilename;
+    : user?.newName + "-" + user?._id + "/" + real_path + newFilename;
 
   const handleImageError = () => {
     setShowNotFoundImage(true);
@@ -141,7 +142,7 @@ export default function DialogPreviewFile(props) {
                 {!showNotFoundImage ? (
                   <MUI.ImagePreview
                     className="image-preview"
-                    src={url + publicPath}
+                    src={newUrl + publicPath}
                     onError={handleImageError}
                     alt=""
                     style={{ objectFit: "contain" }}
@@ -180,9 +181,9 @@ export default function DialogPreviewFile(props) {
                   "https://view.officeapps.live.com/op/embed.aspx?" +
                   "src=" +
                   url +
-                  user.newName +
+                  user?.newName +
                   "-" +
-                  user._id +
+                  user?._id +
                   "/" +
                   real_path +
                   newFilename
@@ -209,9 +210,9 @@ export default function DialogPreviewFile(props) {
                 <ReactAudioPlayer
                   src={
                     url +
-                    user.newName +
+                    user?.newName +
                     "-" +
-                    user._id +
+                    user?._id +
                     "/" +
                     real_path +
                     newFilename
@@ -285,9 +286,9 @@ export default function DialogPreviewFile(props) {
                 width={"100%"}
                 url={
                   url +
-                  user.newName +
+                  user?.newName +
                   "-" +
-                  user._id +
+                  user?._id +
                   "/" +
                   real_path +
                   newFilename
@@ -298,9 +299,9 @@ export default function DialogPreviewFile(props) {
               <iframe
                 src={
                   url +
-                  user.newName +
+                  user?.newName +
                   "-" +
-                  user._id +
+                  user?._id +
                   "/" +
                   real_path +
                   newFilename
@@ -311,9 +312,9 @@ export default function DialogPreviewFile(props) {
               <iframe
                 src={
                   url +
-                  user.newName +
+                  user?.newName +
                   "-" +
-                  user._id +
+                  user?._id +
                   "/" +
                   real_path +
                   newFilename

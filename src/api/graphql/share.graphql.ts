@@ -6,8 +6,15 @@ export const QUERY_SHARE = gql`
     $orderBy: OrderByInput
     $skip: Int
     $limit: Int
+    $noLimit: Boolean
   ) {
-    getShare(where: $where, orderBy: $orderBy, skip: $skip, limit: $limit) {
+    getShare(
+      where: $where
+      orderBy: $orderBy
+      skip: $skip
+      limit: $limit
+      noLimit: $noLimit
+    ) {
       data {
         _id
         isShare
@@ -100,8 +107,8 @@ export const MUTATION_CREATE_SHARE = gql`
 `;
 
 export const MUTATION_DELETE_SHARE = gql`
-  mutation RemoveShare($id: ID!) {
-    removeShare(ID: $id)
+  mutation DeleteShare($id: ID!, $email: String!) {
+    deleteShare(ID: $id, email: $email)
   }
 `;
 

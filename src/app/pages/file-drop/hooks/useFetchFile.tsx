@@ -38,8 +38,8 @@ const useFetchFile = ({ filter }) => {
       data: queryData,
       total: queryTotal,
       loading,
-      customgetFiles,
       isDataFound,
+      customgetFiles,
     };
   }, [dataFetching, isDataFound]);
 

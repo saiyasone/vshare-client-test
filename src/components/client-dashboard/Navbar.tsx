@@ -320,7 +320,7 @@ const Navbar = ({ onDrawerToggle }) => {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(activeData._id),
             actionStatus: val,
           },
@@ -449,7 +449,7 @@ const Navbar = ({ onDrawerToggle }) => {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -471,7 +471,7 @@ const Navbar = ({ onDrawerToggle }) => {
           },
           data: {
             favorite: currentActiveData.favorite ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -508,7 +508,7 @@ const Navbar = ({ onDrawerToggle }) => {
           },
           data: {
             pin: currentActiveData.pin ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -580,7 +580,7 @@ const Navbar = ({ onDrawerToggle }) => {
             },
             data: {
               status: "deleted",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -598,7 +598,7 @@ const Navbar = ({ onDrawerToggle }) => {
             },
             data: {
               status: "deleted",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -753,9 +753,9 @@ const Navbar = ({ onDrawerToggle }) => {
                                               data.type,
                                             )}
                                             imagePath={
-                                              user.newName +
+                                              user?.newName +
                                               "-" +
-                                              user._id +
+                                              user?._id +
                                               "/" +
                                               (data.newPath
                                                 ? removeFileNameOutOfPath(
@@ -955,9 +955,9 @@ const Navbar = ({ onDrawerToggle }) => {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (activeData.newPath
               ? removeFileNameOutOfPath(activeData?.newPath)
@@ -994,7 +994,7 @@ const Navbar = ({ onDrawerToggle }) => {
           fileType={activeData.type}
           path={activeData.newPath}
           user={user}
-          userId={user._id}
+          userId={user?._id}
         />
       )}
 

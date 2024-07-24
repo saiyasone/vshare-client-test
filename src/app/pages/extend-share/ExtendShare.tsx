@@ -50,7 +50,6 @@ import { FolderContext } from "contexts/FolderProvider";
 import { useMenuDropdownState } from "contexts/MenuDropdownProvider";
 import useManageFile from "hooks/file/useManageFile";
 import useFetchFolder from "hooks/folder/useFetchFolder";
-import useManageFolder from "hooks/folder/useManageFolder";
 import useGetUrlExtendFolder from "hooks/url/useGetUrlExtendFolder";
 import useGetUrlExtendFolderDownload from "hooks/url/useGetUrlExtendFolderDownload";
 import useBreadcrumbData from "hooks/useBreadcrumbData";
@@ -122,7 +121,6 @@ function ExtendShare() {
   const [showEncryptPassword, setShowEncryptPassword] = useState<any>(false);
   const [eventClick, setEventClick] = useState<any>(false);
 
-  const manageFolder = useManageFolder({ user });
   const manageFile = useManageFile({ user });
   const breadCrumbData = useBreadcrumbData(parentFolder?.path, "");
   const [progressing, setProgressing] = useState<any>(0);
@@ -511,7 +509,7 @@ function ExtendShare() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -526,26 +524,64 @@ function ExtendShare() {
   const handleDownloadFolders = async () => {
     setShowProgressing(true);
     setProcesing(true);
-    await manageFolder.handleDownloadFolder(
+
+    const newFileData = [
       {
         id: dataForEvent.data?._id,
-        folderName: dataForEvent.data?.name,
-        newPath: dataForEvent.data.newPath,
+        checkType: "folder",
+        newPath: dataForEvent.data?.newPath || "",
+        newFilename: dataForEvent.data?.newFolder_name || "",
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
+        },
       },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
       {
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
+        onSuccess: () => {
+          successMessage("Download successful", 3000);
+          setDataForEvent((state) => ({
+            ...state,
+            action: "",
+          }));
         },
-        onSuccess: async () => {
-          successMessage("Download successful", 2000);
+        onFailed: (error) => {
+          errorMessage(error, 3000);
         },
-        onClosure: async () => {
+        onProcess: (percentage) => {
+          setProgressing(percentage);
+        },
+        onClosure: () => {
           setShowProgressing(false);
           setIsAutoClose(false);
           resetDataForEvents();
         },
       },
     );
+
+    // await manageFolder.handleDownloadFolder(
+    //   {
+    //     id: dataForEvent.data?._id,
+    //     folderName: dataForEvent.data?.name,
+    //     newPath: dataForEvent.data.newPath,
+    //   },
+    //   {
+    //     onFailed: async (error) => {
+    //       errorMessage(error, 2000);
+    //     },
+    //     onSuccess: async () => {
+    //       successMessage("Download successful", 2000);
+    //     },
+    //     onClosure: async () => {
+    //       setShowProgressing(false);
+    //       setIsAutoClose(false);
+    //       resetDataForEvents();
+    //     },
+    //   },
+    // );
   };
 
   const handleCreateFileDrop = async (link, date) => {
@@ -570,18 +606,24 @@ function ExtendShare() {
   const handleDownloadFile = async () => {
     setShowProgressing(true);
     setProcesing(true);
-    await manageFile.handleDownloadFile(
+
+    const newFileData = [
       {
-        id: dataForEvent.data._id,
-        newPath: dataForEvent.data.newPath,
-        newFilename: dataForEvent.data.newName,
-        filename: dataForEvent.data.name,
-      },
-      {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
+        id: dataForEvent.data?._id,
+        checkType: "file",
+        newPath: dataForEvent.data?.newPath || "",
+        newFilename: dataForEvent.data?.newFilename || "",
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
         },
-        onSuccess: async () => {
+      },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
+      {
+        onSuccess: () => {
           successMessage("Download successful", 2000);
           setDataForEvent((state) => ({
             ...state,
@@ -593,17 +635,55 @@ function ExtendShare() {
           }));
           fetchSubFoldersAndFiles.refetch();
         },
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
+        onFailed: (error) => {
+          errorMessage(error, 3000);
+        },
+        onProcess: (percentage) => {
+          setProgressing(percentage);
         },
         onClosure: () => {
           setIsAutoClose(false);
-          setShowPreview(false);
+          setFileDetailsDialog(false);
           setShowProgressing(false);
           setProcesing(false);
         },
       },
     );
+
+    // await manageFile.handleDownloadFile(
+    //   {
+    //     id: dataForEvent.data._id,
+    //     newPath: dataForEvent.data.newPath,
+    //     newFilename: dataForEvent.data.newName,
+    //     filename: dataForEvent.data.name,
+    //   },
+    //   {
+    //     onProcess: async (countPercentage) => {
+    //       setProgressing(countPercentage);
+    //     },
+    //     onSuccess: async () => {
+    //       successMessage("Download successful", 2000);
+    //       setDataForEvent((state) => ({
+    //         ...state,
+    //         action: null,
+    //         data: {
+    //           ...state.data,
+    //           totalDownload: dataForEvent.data.totalDownload + 1,
+    //         },
+    //       }));
+    //       fetchSubFoldersAndFiles.refetch();
+    //     },
+    //     onFailed: async (error) => {
+    //       errorMessage(error, 2000);
+    //     },
+    //     onClosure: () => {
+    //       setIsAutoClose(false);
+    //       setShowPreview(false);
+    //       setShowProgressing(false);
+    //       setProcesing(false);
+    //     },
+    //   },
+    // );
   };
 
   const handleDeleteFilesAndFolders = async () => {
@@ -642,7 +722,7 @@ function ExtendShare() {
             data: {
               parentkey: parseInt(parentFolder?._id),
               folder_name: name,
-              updatedBy: user._id,
+              updatedBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -661,7 +741,7 @@ function ExtendShare() {
             },
             data: {
               filename: name,
-              updatedBy: user._id,
+              updatedBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -694,7 +774,7 @@ function ExtendShare() {
           },
           data: {
             pin: dataForEvent.data.pin ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -839,7 +919,7 @@ function ExtendShare() {
           },
           data: {
             favorite: dataForEvent.data.favorite ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -885,7 +965,7 @@ function ExtendShare() {
       variables: {
         where: {
           path,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -965,9 +1045,9 @@ function ExtendShare() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)
@@ -1261,9 +1341,9 @@ function ExtendShare() {
                                       },
                                     }}
                                     imagePath={
-                                      user.newName +
+                                      user?.newName +
                                       "-" +
-                                      user._id +
+                                      user?._id +
                                       "/" +
                                       (data.newPath
                                         ? removeFileNameOutOfPath(data.newPath)

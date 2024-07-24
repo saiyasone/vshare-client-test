@@ -10,7 +10,6 @@ function useManageFileDrop({ filter }) {
   });
   const [selectedRow, setSelectedRow] = React.useState([]);
   const { pageLimit, currentPageNumber, status } = filter;
-
   const customeFileDrop = () => {
     const skip = (currentPageNumber - 1) * pageLimit;
     getFileDrop({
@@ -39,6 +38,7 @@ function useManageFileDrop({ filter }) {
       ...value,
       no: index + 1,
     })),
+    pageLimit,
     total: data?.getPrivateFileDropUrl?.total,
   };
 }

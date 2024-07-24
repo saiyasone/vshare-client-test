@@ -260,7 +260,7 @@ function FavouriteFile() {
         where: {
           status: "active",
           pin: 1,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         ...(dataFolderFilters.skip && {
           skip: dataFolderFilters.skip,
@@ -277,7 +277,7 @@ function FavouriteFile() {
         where: {
           status: "active",
           favorite: 1,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         ...(dataFileFilters.skip && {
           skip: dataFileFilters.skip,
@@ -294,7 +294,7 @@ function FavouriteFile() {
         where: {
           status: "active",
           favorite: 1,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
         orderBy: "actionDate_DESC",
         limit: limitScroll,
@@ -616,7 +616,7 @@ function FavouriteFile() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -640,18 +640,23 @@ function FavouriteFile() {
     setShowProgressing(true);
     setProcesing(true);
 
-    await manageFile.handleDownloadFile(
+    const newFileData = [
       {
-        id: dataForEvent.data._id,
-        newPath: dataForEvent.data.newPath,
-        newFilename: dataForEvent.data.newFilename,
-        filename: dataForEvent.data.filename,
-      },
-      {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
+        id: dataForEvent.data?._id,
+        checkType: "file",
+        newPath: dataForEvent.data?.newPath ? dataForEvent.data.newPath : "",
+        newFilename: dataForEvent.data?.newFilename || "",
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
         },
-        onSuccess: async () => {
+      },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
+      {
+        onSuccess: () => {
           successMessage("Download successful", 2000);
 
           setDataForEvent((state) => ({
@@ -669,8 +674,11 @@ function FavouriteFile() {
             filesRefetch();
           }
         },
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
+        onFailed: (error) => {
+          errorMessage(error, 3000);
+        },
+        onProcess: (percentage) => {
+          setProgressing(percentage);
         },
         onClosure: () => {
           setIsAutoClose(false);
@@ -680,6 +688,47 @@ function FavouriteFile() {
         },
       },
     );
+
+    // await manageFile.handleDownloadFile(
+    //   {
+    //     id: dataForEvent.data._id,
+    //     newPath: dataForEvent.data.newPath,
+    //     newFilename: dataForEvent.data.newFilename,
+    //     filename: dataForEvent.data.filename,
+    //   },
+    //   {
+    //     onProcess: async (countPercentage) => {
+    //       setProgressing(countPercentage);
+    //     },
+    //     onSuccess: async () => {
+    //       successMessage("Download successful", 2000);
+
+    //       setDataForEvent((state) => ({
+    //         ...state,
+    //         action: null,
+    //         data: {
+    //           ...state.data,
+    //           totalDownload: dataForEvent.data.totalDownload + 1,
+    //         },
+    //       }));
+
+    //       if (toggle === "grid") {
+    //         filesRefetchForGrid();
+    //       } else {
+    //         filesRefetch();
+    //       }
+    //     },
+    //     onFailed: async (error) => {
+    //       errorMessage(error, 2000);
+    //     },
+    //     onClosure: () => {
+    //       setIsAutoClose(false);
+    //       setFileDetailsDialog(false);
+    //       setShowProgressing(false);
+    //       setProcesing(false);
+    //     },
+    //   },
+    // );
   };
 
   const handleDeleteFilesAndFolders = async () => {
@@ -692,7 +741,7 @@ function FavouriteFile() {
             },
             data: {
               status: "deleted",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -705,7 +754,7 @@ function FavouriteFile() {
                 where: {
                   status: "active",
                   pin: 1,
-                  createdBy: user._id,
+                  createdBy: user?._id,
                 },
                 orderBy: "updatedAt_DESC",
                 limit: ITEM_PER_PAGE_LIST,
@@ -747,7 +796,7 @@ function FavouriteFile() {
             },
             data: {
               folder_name: name,
-              updatedBy: user._id,
+              updatedBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -794,7 +843,7 @@ function FavouriteFile() {
           },
           data: {
             pin: dataForEvent.data.pin ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -937,7 +986,7 @@ function FavouriteFile() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -1048,9 +1097,9 @@ function FavouriteFile() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)
@@ -1097,7 +1146,7 @@ function FavouriteFile() {
           fileType={dataForEvent.data.fileType}
           path={dataForEvent.data.newPath}
           user={user}
-          userId={user._id}
+          userId={user?._id}
         />
       )}
 
@@ -1247,9 +1296,9 @@ function FavouriteFile() {
                                             },
                                           }}
                                           imagePath={
-                                            user.newName +
+                                            user?.newName +
                                             "-" +
-                                            user._id +
+                                            user?._id +
                                             "/" +
                                             (data?.newPath
                                               ? removeFileNameOutOfPath(

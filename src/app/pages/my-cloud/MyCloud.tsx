@@ -99,7 +99,9 @@ export function MyCloud() {
     },
   );
 
-  const [createFileDropLink] = useMutation(MUTATION_CREATE_FILE_DROP_URL_PRIVATE);
+  const [createFileDropLink] = useMutation(
+    MUTATION_CREATE_FILE_DROP_URL_PRIVATE,
+  );
   const [updateFileDrop] = useMutation(MUTATION_UPDATE_FILE_PUBLIC);
 
   const [fileAction] = useMutation(MUTATION_ACTION_FILE);
@@ -480,7 +482,7 @@ export function MyCloud() {
         await getFile({
           variables: {
             where: {
-              createdBy: user._id,
+              createdBy: user?._id,
               checkFile: "main",
               status: "active",
               source: "default",
@@ -559,7 +561,7 @@ export function MyCloud() {
             where: {
               checkFolder: "main",
               restore: "show",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
             orderBy: "pin_DESC",
             limit: viewMore,
@@ -611,18 +613,24 @@ export function MyCloud() {
     const data = inputData || getValue;
     setShowProgressing(true);
     setProcesing(true);
-    await manageFile.handleDownloadFile(
+
+    const newFileData = [
       {
-        id: data._id,
-        newPath: data.newPath,
-        newFilename: data.newFilename,
-        filename: data.filename,
-      },
-      {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
+        id: data?._id,
+        checkType: "file",
+        newPath: data?.newPath ? data.newPath : "",
+        newFilename: data?.newFilename || "",
+        createdBy: {
+          _id: data?.createdBy._id,
+          newName: data?.createdBy?.newName,
         },
-        onSuccess: async () => {
+      },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
+      {
+        onSuccess: () => {
           successMessage("Download successful", 3000);
           setGetValue((prev) => {
             return {
@@ -636,8 +644,11 @@ export function MyCloud() {
             queryFileGrid();
           }
         },
-        onFailed: async (error) => {
+        onFailed: (error) => {
           errorMessage(error, 3000);
+        },
+        onProcess: (percentage) => {
+          setProgressing(percentage);
         },
         onClosure: () => {
           setIsAutoClose(true);
@@ -650,6 +661,46 @@ export function MyCloud() {
         },
       },
     );
+
+    // await manageFile.handleDownloadFile(
+    //   {
+    //     id: data._id,
+    //     newPath: data.newPath,
+    //     newFilename: data.newFilename,
+    //     filename: data.filename,
+    //   },
+    //   {
+    //     onProcess: async (countPercentage) => {
+    //       setProgressing(countPercentage);
+    //     },
+    //     onSuccess: async () => {
+    //       successMessage("Download successful", 3000);
+    //       setGetValue((prev) => {
+    //         return {
+    //           ...prev,
+    //           totalDownload: parseInt(getValue?.totalDownload + 1),
+    //         };
+    //       });
+    //       if (toggle === "list") {
+    //         queryFile();
+    //       } else {
+    //         queryFileGrid();
+    //       }
+    //     },
+    //     onFailed: async (error) => {
+    //       errorMessage(error, 3000);
+    //     },
+    //     onClosure: () => {
+    //       setIsAutoClose(true);
+    //       setFileDetailsDialog(false);
+    //       setGetValue(null);
+    //       resetDataForEvent();
+    //       setShowProgressing(false);
+    //       setProcesing(false);
+    //       setProgressing(0);
+    //     },
+    //   },
+    // );
   };
 
   // download more folder
@@ -662,12 +713,22 @@ export function MyCloud() {
   const handleDownloadFolder = async (data) => {
     setShowProgressing(true);
     setProcesing(true);
-    await manageFolder.handleDownloadFolder(
+
+    const multipleData = [
       {
-        id: data._id,
-        folderName: data.folder_name,
-        newPath: data.newPath,
+        id: data?._id,
+        checkType: "folder",
+        newPath: data?.newPath ? data.newPath : "",
+        newFilename: data?.newFolder_name || "",
+        createdBy: {
+          _id: data?.createdBy._id,
+          newName: data?.createdBy?.newName,
+        },
       },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData },
       {
         onFailed: async (error) => {
           errorMessage(error, 3000);
@@ -682,8 +743,31 @@ export function MyCloud() {
           setFileDetailsDialog(false);
           setIsOpenMenu(false);
         },
+        onProcess: () => {},
       },
     );
+    // await manageFolder.handleDownloadFolder(
+    //   {
+    //     id: data._id,
+    //     folderName: data.folder_name,
+    //     newPath: data.newPath,
+    //   },
+    //   {
+    //     onFailed: async (error) => {
+    //       errorMessage(error, 3000);
+    //     },
+    //     onSuccess: async () => {
+    //       successMessage("Download successful", 3000);
+    //     },
+    //     onClosure: async () => {
+    //       setShowProgressing(false);
+    //       setShowProgressing(false);
+    //       resetDataForEvent();
+    //       setFileDetailsDialog(false);
+    //       setIsOpenMenu(false);
+    //     },
+    //   },
+    // );
   };
 
   const handleDeleteFile = async (data) => {
@@ -756,7 +840,7 @@ export function MyCloud() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(data?._id ? data?._id : getValue?._id),
             actionStatus: val,
           },
@@ -778,10 +862,10 @@ export function MyCloud() {
           id: optionValue?._id,
           name: optionValue?.folder_name,
           checkType: "folder",
-          newPath: optionValue?.newPath ?? "",
+          newPath: optionValue?.newPath || "",
           totalSize: parseInt(optionValue?.total_size),
-          newFilename: optionValue?.newFolder_name ?? "",
-          dataPassword: optionValue?.access_password ?? "",
+          newFilename: optionValue?.newFolder_name || "",
+          dataPassword: optionValue?.access_password || "",
           shortLink: optionValue?.shortUrl,
           createdBy: {
             _id: optionValue?.createdBy?._id,
@@ -801,11 +885,11 @@ export function MyCloud() {
         data: {
           id: optionValue?._id,
           name: optionValue?.filename,
-          newPath: optionValue?.newPath ?? "",
-          newFilename: optionValue?.newFilename ?? "",
+          newPath: optionValue?.newPath || "",
+          newFilename: optionValue?.newFilename || "",
           totalDownload: optionValue?.totalDownload || 0,
           checkType: "file",
-          dataPassword: optionValue?.filePassword ?? "",
+          dataPassword: optionValue?.filePassword || "",
           shortLink: optionValue?.shortUrl,
           createdBy: {
             _id: optionValue?.createdBy?._id,
@@ -828,7 +912,7 @@ export function MyCloud() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -1581,9 +1665,9 @@ export function MyCloud() {
                               <Fragment key={index}>
                                 <FileCardItem
                                   imagePath={
-                                    user.newName +
+                                    user?.newName +
                                     "-" +
-                                    user._id +
+                                    user?._id +
                                     (item?.path
                                       ? removeFileNameOutOfPath(item?.path)
                                       : "") +
@@ -1786,9 +1870,9 @@ export function MyCloud() {
                     resetDataForEvent();
                   }}
                   imagePath={
-                    user.newName +
+                    user?.newName +
                     "-" +
-                    user._id +
+                    user?._id +
                     "/" +
                     (getValue?.newPath
                       ? removeFileNameOutOfPath(getValue?.newPath)
@@ -1914,7 +1998,7 @@ export function MyCloud() {
 
       <DialogValidateFilePassword
         isOpen={showEncryptPassword}
-        filename={dataForEvent.data?.filename ?? dataForEvent.data?.folder_name}
+        filename={dataForEvent.data?.filename || dataForEvent.data?.folder_name}
         newFilename={dataForEvent.data?.newFilename}
         filePassword={
           dataForEvent.data?.folder_type === "folder"

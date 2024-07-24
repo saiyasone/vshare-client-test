@@ -189,9 +189,9 @@ const DialogCreateShare = (props) => {
             title: `${user.firstName} ${user.lastName}`,
             thumbnailSrc:
               ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
-              user.newName +
+              user?.newName +
               "-" +
-              user._id +
+              user?._id +
               "/" +
               ENV_KEYS.VITE_APP_THUMBNAIL_PATH +
               "/" +
@@ -735,9 +735,9 @@ const DialogCreateShare = (props) => {
                         title: `${user.firstName} ${user.lastName}`,
                         thumbnailSrc:
                           ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
-                          user.newName +
+                          user?.newName +
                           "-" +
-                          user._id +
+                          user?._id +
                           "/" +
                           ENV_KEYS.VITE_APP_THUMBNAIL_PATH +
                           "/" +

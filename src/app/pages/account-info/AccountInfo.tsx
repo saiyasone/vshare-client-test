@@ -400,7 +400,7 @@ function AccountInfo() {
       filePath = "/" + path;
     }
 
-    const pathBunny = user.newName + "-" + user._id + filePath;
+    const pathBunny = user?.newName + "-" + user?._id + filePath;
     try {
       const headers = {
         REGION: "sg",
@@ -409,7 +409,7 @@ function AccountInfo() {
         ACCESS_KEY: ENV_KEYS.VITE_APP_ACCESSKEY_BUNNY,
         PATH: pathBunny,
         FILENAME: newName,
-        PATH_FOR_THUMBNAIL: user.newName + "-" + user._id,
+        PATH_FOR_THUMBNAIL: user?.newName + "-" + user?._id,
       };
 
       const key = CryptoJS.enc.Utf8.parse(SECRET_KEY);

@@ -115,7 +115,7 @@ function FileDropDetail() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -392,7 +392,7 @@ function FileDropDetail() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -407,17 +407,16 @@ function FileDropDetail() {
     setShowProgressing(true);
     setProcesing(true);
 
-    await manageFile.handleDownloadFile(
+    const multipleData = [
       {
         id: dataForEvent.data._id,
         newPath: dataForEvent?.data?.newPath || "public",
-        newFilename: dataForEvent.data.newFilename,
-        filename: combineOldAndNewFileNames(
-          dataForEvent.data.filename,
-          dataForEvent.data.newFilename,
-        ),
-        isPublicPath: true,
+        newFilename: dataForEvent.data.newFilename || "",
       },
+    ];
+
+    await manageFile.handleSingleFileDropDownload(
+      { multipleData },
       {
         onProcess: async (countPercentage) => {
           setProgressing(countPercentage);
@@ -486,7 +485,7 @@ function FileDropDetail() {
           },
           data: {
             filename: existName ? existName : name,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -654,6 +653,7 @@ function FileDropDetail() {
                             "/" +
                             data?.newPath;
                           const publicPath = "public/" + data.newFilename;
+
                           return (
                             <FileCardItem
                               cardProps={{
@@ -829,7 +829,7 @@ function FileDropDetail() {
           fileType={dataForEvent.data.fileType}
           path={dataForEvent.data.newPath ?? "public"}
           user={user}
-          userId={user._id}
+          userId={user?._id}
         />
       )}
 

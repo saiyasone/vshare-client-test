@@ -112,7 +112,6 @@ export const MUTATION_CREATE_FILE_DROP_URL_PRIVATE = gql`
 
 export const MUTATION_DELETE_FILE_DROP_URL = gql`
   mutation DeleteFileDropUrl($id: ID!) {
-    deleteFil
-    DropUrl(ID: $id)
+    deleteFileDropUrl(ID: $id)
   }
 `;
