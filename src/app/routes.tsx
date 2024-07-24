@@ -34,6 +34,7 @@ import ReplyTicket from "./pages/ticket/ReplyTicket";
 import Ticket from "./pages/ticket/Ticket";
 import Trash from "./pages/trash/Trash";
 import UppyUpload from "components/UppyUpload";
+import ConfirmPayment from "./pages/confirm-payment/Confirmpayment";
 
 const routes: RouteObject[] = [
   {
@@ -179,6 +180,10 @@ const routes: RouteObject[] = [
   //   path: "uppy",
   //   element: <UppyUpload />,
   // },
+  {
+    path: "confirm",
+    element: <ConfirmPayment />,
+  },
   {
     path: "*",
     element: (
