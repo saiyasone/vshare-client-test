@@ -20,7 +20,7 @@ const useBcelSubscirption = () => {
       variables: {
         data: {
           amount: 1,
-          card: "VISA",
+          card: "BCEL",
           category: "package",
           description: "test",
           packageId: "asdadasdaf",
