@@ -31,6 +31,11 @@ export const ConfirmImage = styled("img")({
   width: "50px",
   height: "50px",
   objectFit: "cover",
+
+  [theme.breakpoints.down("md")]: {
+    width: "45px",
+    height: "45px",
+  },
 });
 
 export const BodyContainer = styled("div")({
@@ -117,5 +122,9 @@ export const ActionButton = styled("button")({
 
   "&:hover": {
     backgroundColor: "#00A95B",
+  },
+
+  [theme.breakpoints.down("md")]: {
+    padding: "9px 22px",
   },
 });

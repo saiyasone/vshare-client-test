@@ -12,8 +12,16 @@ const useBcelSubscirption = () => {
   );
 
   const [qrCode, setQrCode] = useState<string>("");
+  const [platform, setPlatform] = useState("ANDROID");
   const [link, setLink] = useState<string>("");
   const [transactionId, setTransactionId] = useState<string>("");
+  const userAgent = navigator.userAgent;
+
+  useEffect(() => {
+    if (userAgent.match(/iPhone|iPad|iPod/i)) {
+      setPlatform("IOS");
+    }
+  }, [userAgent]);
 
   useEffect(() => {
     createQrAndSubscription({
@@ -23,11 +31,12 @@ const useBcelSubscirption = () => {
           card: "BCEL",
           category: "package",
           description: "test",
-          packageId: "asdadasdaf",
-          paymentMethod: "onepay",
+          packageId: "1021338450144",
+          paymentMethod: "bcelone",
           service: "BCELONE_PAY",
           status: "success",
           type: "monthly",
+          platform,
         },
       },
     }).then((res) => {

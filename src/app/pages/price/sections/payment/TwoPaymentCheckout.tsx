@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import { Box, Button, styled } from "@mui/material";
 import PaymentIcon from "assets/images/wallet-checkout.png";
 import IconAction from "@mui/icons-material/Payment";
@@ -19,21 +19,33 @@ type Prop = {
   handleSuccess?: () => void;
 };
 
-function TwoPaymentCheckout({ packageId }: Prop) {
+function TwoPaymentCheckout({ packageId, handleSuccess }: Prop) {
   const { user: userAuth }: any = useAuth();
 
-  const _checkoutSubscription = useSubscription(SUBSCRIPTION_TWO_CHECKOUT, {
-    variables: {
-      code: userAuth?.email,
+  const { data: dataSubscription } = useSubscription(
+    SUBSCRIPTION_TWO_CHECKOUT,
+    {
+      variables: {
+        code: userAuth?.email,
+      },
+      onData: () => {},
     },
-  });
-  console.log(_checkoutSubscription);
+  );
 
   const handleTwoPaymentCheckout = async () => {
     window.open(
       `${ENV_KEYS.VITE_APP_API_URL}/payments/checkout?productCode=${packageId}`,
     );
   };
+
+  useEffect(() => {
+    if (dataSubscription) {
+      const result = dataSubscription?.twoCheckoutSubscription?.message;
+      if (result === "SUCCESS") {
+        handleSuccess?.();
+      }
+    }
+  }, [dataSubscription]);
 
   return (
     <Fragment>

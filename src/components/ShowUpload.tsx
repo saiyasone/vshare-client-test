@@ -258,7 +258,7 @@ export default function ShowUpload(props) {
       filePath = "/" + path;
     }
 
-    // const url =
+    // const url =f
     BUNNY_URL + user?.newName + "-" + user?._id + filePath + "/" + newName;
     const pathBunny = user?.newName + "-" + user?._id + filePath;
 
@@ -279,6 +279,7 @@ export default function ShowUpload(props) {
         PATH_FOR_THUMBNAIL: user?.newName + "-" + user?._id,
       };
 
+      console.log({ headers });
       const source = CancelToken.source();
       const cancelToken = source.token;
       setCancelToken((prev) => ({

@@ -22,10 +22,11 @@ const BCELOnePayment: React.FC<any> = (props) => {
     SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION,
     {
       variables: { transactionId: props.transactionId },
-      /* onComplete: () => {
+      onComplete: () => {
         console.log("test");
-      }, */
+      },
       onData: () => {
+        console.log("on data");
         setActiveStep(3);
       },
     },
