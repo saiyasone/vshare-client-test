@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import { Box, Button, styled } from "@mui/material";
 import PaymentIcon from "assets/images/wallet-checkout.png";
 import IconAction from "@mui/icons-material/Payment";
@@ -22,18 +22,32 @@ type Prop = {
 function TwoPaymentCheckout({ packageId }: Prop) {
   const { user: userAuth }: any = useAuth();
 
-  const _checkoutSubscription = useSubscription(SUBSCRIPTION_TWO_CHECKOUT, {
+  const { data, loading, error } = useSubscription(SUBSCRIPTION_TWO_CHECKOUT, {
     variables: {
       code: userAuth?.email,
     },
   });
-  console.log(_checkoutSubscription);
+
+  console.log(data);
 
   const handleTwoPaymentCheckout = async () => {
     window.open(
       `${ENV_KEYS.VITE_APP_API_URL}/payments/checkout?productCode=${packageId}`,
     );
   };
+
+  useEffect(() => {
+    if (data) {
+      console.log("Ok");
+    }
+
+    if (error) {
+      const cutErr = error?.message.replace(/(ApolloError: )?Error: /, "");
+      console.log(cutErr);
+    }
+  }, [data, error]);
+
+  if (loading) return <p> "Loading..." </p>;
 
   return (
     <Fragment>

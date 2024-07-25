@@ -206,7 +206,7 @@ export const RightBox = styled(Box)({
   alignItems: "center",
   justifyContent: "center",
   flexDirection: "column",
-  [theme.breakpoints.down("sm")]: {
+  [theme.breakpoints.down(768)]: {
     display: "none",
   },
   [theme.breakpoints.between("sm", "md")]: {
