@@ -4,8 +4,9 @@ import { styled, useTheme } from "@mui/material/styles";
 import { SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION } from "api/graphql/payment.graphql";
 import { useRef } from "react";
 import QRCode from "react-qr-code";
-import { setActiveStep } from "stores/features/paymentSlice";
+import { setActiveStep, setPaymentStatus, setRecentPayment } from "stores/features/paymentSlice";
 import NormalButton from "../../../../../components/NormalButton";
+import { useDispatch } from "react-redux";
 
 const BCELOnePaymentContainer = styled("div")({
   display: "flex",
@@ -16,17 +17,27 @@ const BCELOnePaymentContainer = styled("div")({
 const BCELOnePayment: React.FC<any> = (props) => {
   const theme = useTheme();
   const qrCodeRef = useRef<any>(null);
+  const dispatch = useDispatch();
   const isMobile = useMediaQuery("(max-width:900px)");
-
   const _bcelOneSubscription = useSubscription(
     SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION,
     {
       variables: { transactionId: props.transactionId },
-      /* onComplete: () => {
+      onComplete: () => {
         console.log("test");
-      }, */
-      onData: () => {
-        setActiveStep(3);
+      },
+      onData: ({data}) => {
+        
+        if(data && data?.data?.subscribeBcelOneSubscriptionQr?.message === "SUCCESS")
+        {
+          dispatch(setPaymentStatus("Subscription is succeeded"));
+        }
+        else
+        {
+          dispatch(setPaymentStatus("Subscription is failed!"));
+        }
+        // setActiveStep(3);
+        dispatch(setActiveStep(3));
       },
     },
   );

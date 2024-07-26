@@ -38,9 +38,9 @@ function SignIn() {
   const { oauthLogin }: any = useAuth();
   const [signInCaptcha, setSignInCaptcha] = useState(null);
   const [signInLimit, setSignInLimit] = useState(null);
-  const [showGithub, setShowGithub] = useState(false);
-  const [showGoogle, setShowGoogle] = useState(false);
-  const [showFacebook, setShowFacebook] = useState(false);
+  const [showGithub, setShowGithub] = useState(true);
+  const [showGoogle, setShowGoogle] = useState(true);
+  const [showFacebook, setShowFacebook] = useState(true);
   const [hideLogin, setHideLogin] = useState(false);
   const [initialTime, setInitialTime] = useState(0);
   const [initialTimeMessage, setInitialTimeMessage] = useState("");
@@ -52,8 +52,9 @@ function SignIn() {
   const [loginWithGithub] = useMutation(MUTATION_SOCIAL_AUTH);
   const useDataSetting = useManageSetting();
 
-  const googleOauth = useGoogleOauth(ENV_KEYS.VITE_APP_GOOGLE_CLIENT_ID, {
+  const googleOauth = useGoogleOauth(ENV_KEYS.VITE_APP_GOOGLE_CLIENT_ID,{
     onSuccess: async (googleDetails) => {
+      console.log({googleDetails});
       try {
         await loginWithGoogle({
           variables: {
@@ -70,6 +71,7 @@ function SignIn() {
           },
         });
       } catch (error: any) {
+        console.log('gooogle login : ', error);
         const message = manageGraphqlError.handleErrorMessage(error.message);
         if (message) {
           errorMessage(message, 3000);

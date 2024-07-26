@@ -38,7 +38,8 @@ export const clientMockup = new ApolloClient({
   link: from([
     authLink.concat(
       createHttpLink({
-        uri: "https://coding.vshare.net/api",
+        // uri: "http://192.168.100.121:4000/graphql",
+        uri: "https://coding.vshare.net/graphql",
       }),
     ),
   ]),
@@ -50,7 +51,8 @@ export const clientMockup = new ApolloClient({
 
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: "wss://coding.vshare.net/api",
+    // url: "ws://192.168.100.121:4000/graphql",
+    url: "wss://coding.vshare.net/graphql",
   }),
 );
 
@@ -79,7 +81,7 @@ const client = new ApolloClient({
 });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <Provider store={store}>
       <ApolloProvider client={client}>
         <ThemeProvider>
@@ -89,5 +91,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </ThemeProvider>
       </ApolloProvider>
     </Provider>
-  </React.StrictMode>,
+  // </React.StrictMode>,
 );
