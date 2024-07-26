@@ -97,6 +97,7 @@ export default function ShowUpload(props) {
   const [uploadingId, setUploadingId] = useState(0);
   const [canClose, setCanClose] = useState(false);
 
+  const [uploadId, setUploadId] = useState("second");
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
   const [isHideFolder, setIsHideFolder] = useState<any>(false);
@@ -114,6 +115,8 @@ export default function ShowUpload(props) {
   const user = trackingFolderData?.createdBy?._id
     ? trackingFolderData?.createdBy
     : userAuth;
+
+  const chunkSize = 50 * 1024 * 1024;
 
   // const settingKeys = {};
 
@@ -418,7 +421,6 @@ export default function ShowUpload(props) {
       }
 
       const responseData = await initialResponse.data;
-      
 
       const response = await axios.post(LOAD_UPLOAD_URL, formData, {
         headers: {
@@ -803,6 +805,63 @@ export default function ShowUpload(props) {
     }
   };
 
+  const uploadPart = async (partNumber: number, blob: Blob) => {
+    const formData = new FormData();
+    formData.append("partNumber", partNumber.toString());
+    formData.append("uploadId", uploadId!);
+    const _encryptHeader = null;
+    const presignedResponse = await fetch(
+      `${ENV_KEYS.VITE_APP_LOAD_URL}`,
+      {
+        method: "POST",
+        headers: {
+          encryptedheaders: _encryptHeader!,
+        },
+        body: formData,
+      },
+    );
+
+    if (!presignedResponse.ok) {
+      throw new Error(
+        `Error generating presigned URL for part ${partNumber}: ${await presignedResponse.text()}`,
+      );
+    }
+
+    const { url } = await presignedResponse.json();
+
+    return new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", url, true);
+      xhr.setRequestHeader("Content-Type", file!.type);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round(
+            (partNumber * 100) / Math.ceil(file!.size / chunkSize),
+          );
+          setProgress(percentComplete);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setParts((prev) => [
+            ...prev,
+            { ETag: xhr.getResponseHeader("ETag"), PartNumber: partNumber },
+          ]);
+          resolve();
+        } else {
+          reject(`Error uploading part ${partNumber}: ${xhr.statusText}`);
+        }
+      };
+
+      xhr.onerror = () =>
+        reject(`Error uploading part ${partNumber}: ${xhr.statusText}`);
+
+      xhr.send(blob);
+    });
+  };
+
   const mobileScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   function LinearProgressWithLabel(props) {
@@ -850,6 +909,29 @@ export default function ShowUpload(props) {
   }
 
   const { isDragActive } = useDropzone();
+
+  React.useEffect(() => {
+    const uploadEachPart = async () => {
+      if (uploadId) {
+        const numParts = Math.ceil(file.size / chunkSize);
+
+        for (let partNumber = 1; partNumber <= numParts; partNumber++) {
+          const start = (partNumber - 1) * chunkSize;
+          const end = Math.min(start + chunkSize, file.size);
+          const blob = file.slice(start, end);
+
+          try {
+            await uploadPart(partNumber, blob);
+          } catch (error) {
+            console.error(`Error uploading part ${partNumber}:`, error);
+            setRetryParts((prev) => [...prev, { partNumber, start, end }]);
+          }
+        }
+
+        setUploadFinished(true);
+      }
+    };
+  }, [uploadId]);
 
   return (
     <React.Fragment>

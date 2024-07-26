@@ -11,6 +11,7 @@ const useResizeImage = ({
   width = 200,
   height = 200,
   storageZoneName = ENV_KEYS.VITE_APP_STORAGE_ZONE,
+  isPublic = false,
 }) => {
   const [imageSrc, setImageSrc] = useState<any>("");
   const [imageFound, setImageFound] = useState<any>(null);
@@ -21,10 +22,11 @@ const useResizeImage = ({
           const enData = encryptData({
             storageZoneName,
             path: imagePath,
-            createdBy: userId,
+            createdBy: isPublic ? "0" : userId,
             width: `${width}`,
             height: `${height}`,
           });
+
           const res = await axios.get(
             `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/resize-image?file=${enData}`,
             {
