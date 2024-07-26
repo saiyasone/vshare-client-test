@@ -648,10 +648,10 @@ function FileDropDetail() {
                         {fetchFiles.data.map((data, index) => {
                           const privatePath =
                             user?.newName +
-                            "-" +
-                            user?._id +
-                            "/" +
-                            data?.newPath;
+                              "-" +
+                              user?._id +
+                              "/" +
+                              data?.newPath || "";
                           const publicPath = "public/" + data.newFilename;
 
                           return (

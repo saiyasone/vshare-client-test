@@ -79,7 +79,6 @@ function FileDrop() {
 
   const filter = useFilter();
   const manageFileDrop = useManageFileDrop({ filter: filter.data });
-  console.log(manageFileDrop.data)
 
   // checked file pagination
   const generateFileDropLink = async () => {

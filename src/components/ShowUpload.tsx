@@ -279,7 +279,6 @@ export default function ShowUpload(props) {
         PATH_FOR_THUMBNAIL: user?.newName + "-" + user?._id,
       };
 
-      console.log({ headers });
       const source = CancelToken.source();
       const cancelToken = source.token;
       setCancelToken((prev) => ({
@@ -296,6 +295,130 @@ export default function ShowUpload(props) {
       formData.append("file", newFile);
 
       const encryptedData = encryptData(headers);
+
+      const response = await axios.post(LOAD_UPLOAD_URL, formData, {
+        headers: {
+          encryptedHeaders: encryptedData,
+        },
+        cancelToken,
+        onUploadProgress: (progressEvent: any) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
+          setFileProgress((prev) => ({
+            ...prev,
+            [index]: percentCompleted,
+          }));
+          const speed = convertBytetoMBandGB(
+            progressEvent.loaded / ((Date.now() - startTime) / 1000),
+          );
+          const endTime = Date.now();
+          const duration = calculateTime(endTime - startTime);
+          setFileSpeeds((prev) => {
+            const arr: any[] = [...prev];
+            arr[index] = speed;
+            return arr;
+          });
+          setFileTimes((prev) => {
+            const arr: any[] = [...prev];
+            arr[index] = duration;
+            return arr;
+          });
+        },
+      });
+
+      if (response.data) {
+        handleUploadSuccess(index);
+      }
+      setIsSuccess((prev) => ({
+        ...prev,
+        [index]: true,
+      }));
+      setIsHide((prev) => ({
+        ...prev,
+        [index]: false,
+      }));
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        successMessage("Upload cancelled", 2000);
+      } else {
+        errorMessage("Upload failed", 3000);
+      }
+    } finally {
+      setSuccessfulFiles([]);
+    }
+  };
+
+  const handleUploadDemo = async (index, id, file, newName, path) => {
+    const startTime: any = new Date();
+    setIsHide((prev) => ({
+      ...prev,
+      [index]: true,
+    }));
+
+    let filePath = "";
+    if (path === "main") {
+      filePath = "";
+    } else {
+      filePath = "/" + path;
+    }
+
+    // const url =f
+    BUNNY_URL + user?.newName + "-" + user?._id + filePath + "/" + newName;
+    const pathBunny = user?.newName + "-" + user?._id + filePath;
+
+    setFileId((prev) => ({
+      ...prev,
+      [index]: id,
+    }));
+
+    try {
+      const headers = {
+        createdBy: user?._id,
+        REGION: "sg",
+        BASE_HOSTNAME: "storage.bunnycdn.com",
+        STORAGE_ZONE_NAME: STORAGE_ZONE,
+        ACCESS_KEY: ACCESS_KEY,
+        PATH: pathBunny,
+        FILENAME: newName,
+        PATH_FOR_THUMBNAIL: user?.newName + "-" + user?._id,
+      };
+
+      const source = CancelToken.source();
+      const cancelToken = source.token;
+      setCancelToken((prev) => ({
+        ...prev,
+        [index]: source,
+      }));
+
+      const blob = new Blob([file], {
+        type: file.type,
+      });
+      const newFile = new File([blob], file.name, { type: file.type });
+
+      const formData = new FormData();
+      formData.append("file", newFile);
+
+      const encryptedData = encryptData(headers);
+
+      const initialResponse = await axios.post(
+        `${ENV_KEYS.VITE_APP_LOAD_URL}initiate-multipart-upload`,
+        {},
+        {
+          headers: {
+            encryptedHeaders: encryptedData,
+          },
+        },
+      );
+
+      if (initialResponse.statusText !== "ok") {
+        throw new Error(
+          `Error initiating multipart upload: ${await initialResponse.statusText}`,
+        );
+      }
+
+      const responseData = await initialResponse.data;
+      
 
       const response = await axios.post(LOAD_UPLOAD_URL, formData, {
         headers: {
