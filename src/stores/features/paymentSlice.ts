@@ -66,6 +66,7 @@ const setDynamicData = (state) => {
       const monthNumber = 1;
       const price = changedPrice * monthNumber;
       const taxPrice = price * (state.taxPercent / 100);
+      
       state.activePackageData = activePackage;
       state.price = price;
       state.taxPrice = taxPrice;

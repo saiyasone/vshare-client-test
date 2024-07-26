@@ -619,7 +619,7 @@ const useManageFile = ({ user }) => {
           },
         });
         if (uploading?.data?.createFiles?._id) {
-          const sourcePath = "public/" + file?.newFilename;
+          const sourcePath = file?.newFilename;
           const destinationPath =
             file?.createdBy?.newName +
             "-" +

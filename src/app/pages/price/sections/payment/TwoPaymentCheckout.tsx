@@ -19,16 +19,18 @@ type Prop = {
   handleSuccess?: () => void;
 };
 
-function TwoPaymentCheckout({ packageId }: Prop) {
+function TwoPaymentCheckout({ packageId, handleSuccess }: Prop) {
   const { user: userAuth }: any = useAuth();
 
-  const { data, loading, error } = useSubscription(SUBSCRIPTION_TWO_CHECKOUT, {
-    variables: {
-      code: userAuth?.email,
+  const { data: dataSubscription } = useSubscription(
+    SUBSCRIPTION_TWO_CHECKOUT,
+    {
+      variables: {
+        code: userAuth?.email,
+      },
+      onData: () => {},
     },
-  });
-
-  console.log(data);
+  );
 
   const handleTwoPaymentCheckout = async () => {
     window.open(
@@ -37,17 +39,13 @@ function TwoPaymentCheckout({ packageId }: Prop) {
   };
 
   useEffect(() => {
-    if (data) {
-      console.log("Ok");
+    if (dataSubscription) {
+      const result = dataSubscription?.twoCheckoutSubscription?.message;
+      if (result === "SUCCESS") {
+        handleSuccess?.();
+      }
     }
-
-    if (error) {
-      const cutErr = error?.message.replace(/(ApolloError: )?Error: /, "");
-      console.log(cutErr);
-    }
-  }, [data, error]);
-
-  if (loading) return <p> "Loading..." </p>;
+  }, [dataSubscription]);
 
   return (
     <Fragment>
