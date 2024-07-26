@@ -62,9 +62,26 @@ const Confirmation: React.FC<any> = (_props) => {
         >
           Thank You! 😇
         </Typography>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 600,
+            paddingY:2,
+            paddingX: 5,
+            marginY: 2,
+            borderRadius: 10,
+            backgroundColor:'rgb(0, 128, 34,0.1)'
+          }}
+        >
+          {paymentSelector.paymentStatus}
+          
+        </Typography>
         <Typography variant="body1">
           Your order #{paymentSelector.recentPayment?.paymentId} has been
           placed!
+          {
+            paymentSelector.recentPayment
+          }
         </Typography>
         <Typography
           variant="body1"
