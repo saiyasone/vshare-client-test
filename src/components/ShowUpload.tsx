@@ -97,7 +97,13 @@ export default function ShowUpload(props) {
   const [uploadingId, setUploadingId] = useState(0);
   const [canClose, setCanClose] = useState(false);
 
-  const [uploadId, setUploadId] = useState("second");
+  const [uploadId, setUploadId] = useState("");
+  const [retryParts, setRetryParts] = useState<
+    { partNumber: number; start: number; end: number }[]
+  >([]);
+  const [uploadFinished, setUploadFinished] = useState<boolean>(false);
+  const [parts, setParts] = useState([]);
+
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
   const [isHideFolder, setIsHideFolder] = useState<any>(false);
@@ -353,7 +359,6 @@ export default function ShowUpload(props) {
   };
 
   const handleUploadDemo = async (index, id, file, newName, path) => {
-    const startTime: any = new Date();
     setIsHide((prev) => ({
       ...prev,
       [index]: true,
@@ -421,41 +426,8 @@ export default function ShowUpload(props) {
       }
 
       const responseData = await initialResponse.data;
+      setUploadId(responseData.uploadId);
 
-      const response = await axios.post(LOAD_UPLOAD_URL, formData, {
-        headers: {
-          encryptedHeaders: encryptedData,
-        },
-        cancelToken,
-        onUploadProgress: (progressEvent: any) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total,
-          );
-          setFileProgress((prev) => ({
-            ...prev,
-            [index]: percentCompleted,
-          }));
-          const speed = convertBytetoMBandGB(
-            progressEvent.loaded / ((Date.now() - startTime) / 1000),
-          );
-          const endTime = Date.now();
-          const duration = calculateTime(endTime - startTime);
-          setFileSpeeds((prev) => {
-            const arr: any[] = [...prev];
-            arr[index] = speed;
-            return arr;
-          });
-          setFileTimes((prev) => {
-            const arr: any[] = [...prev];
-            arr[index] = duration;
-            return arr;
-          });
-        },
-      });
-
-      if (response.data) {
-        handleUploadSuccess(index);
-      }
       setIsSuccess((prev) => ({
         ...prev,
         [index]: true,
@@ -806,60 +778,57 @@ export default function ShowUpload(props) {
   };
 
   const uploadPart = async (partNumber: number, blob: Blob) => {
-    const formData = new FormData();
-    formData.append("partNumber", partNumber.toString());
-    formData.append("uploadId", uploadId!);
-    const _encryptHeader = null;
-    const presignedResponse = await fetch(
-      `${ENV_KEYS.VITE_APP_LOAD_URL}`,
-      {
-        method: "POST",
-        headers: {
-          encryptedheaders: _encryptHeader!,
-        },
-        body: formData,
-      },
-    );
+    // const formData = new FormData();
+    // formData.append("partNumber", partNumber.toString());
+    // formData.append("uploadId", uploadId!);
+    // const _encryptHeader = null;
+    // const presignedResponse = await fetch(`${ENV_KEYS.VITE_APP_LOAD_URL}`, {
+    //   method: "POST",
+    //   headers: {
+    //     encryptedheaders: _encryptHeader!,
+    //   },
+    //   body: formData,
+    // });
 
-    if (!presignedResponse.ok) {
-      throw new Error(
-        `Error generating presigned URL for part ${partNumber}: ${await presignedResponse.text()}`,
-      );
-    }
+    // if (!presignedResponse.ok) {
+    //   throw new Error(
+    //     `Error generating presigned URL for part ${partNumber}: ${await presignedResponse.text()}`,
+    //   );
+    // }
 
-    const { url } = await presignedResponse.json();
+    // const { url } = await presignedResponse.json();
 
-    return new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", url, true);
-      xhr.setRequestHeader("Content-Type", file!.type);
+    // return new Promise<void>((resolve, reject) => {
+    //   const xhr = new XMLHttpRequest();
+    //   xhr.open("PUT", url, true);
+    //   xhr.setRequestHeader("Content-Type", file!.type);
 
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round(
-            (partNumber * 100) / Math.ceil(file!.size / chunkSize),
-          );
-          setProgress(percentComplete);
-        }
-      };
+    //   xhr.upload.onprogress = (event) => {
+    //     if (event.lengthComputable) {
+    //       const percentComplete = Math.round(
+    //         (partNumber * 100) / Math.ceil(file!.size / chunkSize),
+    //       );
+    //       setProgress(percentComplete);
+    //     }
+    //   };
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setParts((prev) => [
-            ...prev,
-            { ETag: xhr.getResponseHeader("ETag"), PartNumber: partNumber },
-          ]);
-          resolve();
-        } else {
-          reject(`Error uploading part ${partNumber}: ${xhr.statusText}`);
-        }
-      };
+    //   xhr.onload = () => {
+    //     if (xhr.status >= 200 && xhr.status < 300) {
+    //       setParts((prev) => [
+    //         ...prev,
+    //         { ETag: xhr.getResponseHeader("ETag"), PartNumber: partNumber },
+    //       ]);
+    //       resolve();
+    //     } else {
+    //       reject(`Error uploading part ${partNumber}: ${xhr.statusText}`);
+    //     }
+    //   };
 
-      xhr.onerror = () =>
-        reject(`Error uploading part ${partNumber}: ${xhr.statusText}`);
+    //   xhr.onerror = () =>
+    //     reject(`Error uploading part ${partNumber}: ${xhr.statusText}`);
 
-      xhr.send(blob);
-    });
+    //   xhr.send(blob);
+    // });
   };
 
   const mobileScreen = useMediaQuery(theme.breakpoints.down("md"));
@@ -910,28 +879,96 @@ export default function ShowUpload(props) {
 
   const { isDragActive } = useDropzone();
 
+  const tryCompleteMultipartUpload = async () => {
+    if (retryParts.length > 0) return;
+
+    // const formData = new FormData();
+    // formData.append("parts", JSON.stringify(parts));
+    // formData.append("uploadId", uploadId!);
+    // const _encryptHeader = await encryptHeader();
+
+    // try {
+    //   const completeResponse = await fetch(
+    //     "https://coding.load.vshare.net/complete-multipart-upload",
+    //     {
+    //       method: "POST",
+    //       headers: {
+    //         encryptedheaders: _encryptHeader!,
+    //       },
+    //       body: formData,
+    //     },
+    //   );
+
+    //   if (!completeResponse.ok) {
+    //     const errorText = await completeResponse.text();
+    //     throw new Error(`Error completing multipart upload: ${errorText}`);
+    //   }
+
+    //   setParts([]);
+    // } catch (error: any) {
+    //   console.error("Error completing multipart upload:", error);
+    //   alert("Error completing multipart upload: " + error.message);
+    // }
+  };
+
+  const retryFailedParts = async () => {
+    // if (!navigator.onLine || retryParts.length === 0) return;
+    // const partsToRetry = [...retryParts];
+    // setRetryParts([]);
+    // for (const { partNumber, start, end } of partsToRetry) {
+    //   const blob = file!.slice(start, end);
+    //   try {
+    //     await uploadPart(partNumber, blob);
+    //   } catch (error) {
+    //     console.error(`Error retrying part ${partNumber}:`, error);
+    //     setRetryParts((prev) => [...prev, { partNumber, start, end }]);
+    //   }
+    // }
+    // await tryCompleteMultipartUpload();
+  };
+
   React.useEffect(() => {
     const uploadEachPart = async () => {
-      if (uploadId) {
-        const numParts = Math.ceil(file.size / chunkSize);
+      // if (uploadId) {
+      //   const numParts = Math.ceil(file.size / chunkSize);
 
-        for (let partNumber = 1; partNumber <= numParts; partNumber++) {
-          const start = (partNumber - 1) * chunkSize;
-          const end = Math.min(start + chunkSize, file.size);
-          const blob = file.slice(start, end);
+      //   for (let partNumber = 1; partNumber <= numParts; partNumber++) {
+      //     const start = (partNumber - 1) * chunkSize;
+      //     const end = Math.min(start + chunkSize, file.size);
+      //     const blob = file.slice(start, end);
 
-          try {
-            await uploadPart(partNumber, blob);
-          } catch (error) {
-            console.error(`Error uploading part ${partNumber}:`, error);
-            setRetryParts((prev) => [...prev, { partNumber, start, end }]);
-          }
-        }
+      //     try {
+      //       await uploadPart(partNumber, blob);
+      //     } catch (error) {
+      //       console.error(`Error uploading part ${partNumber}:`, error);
+      //       setRetryParts((prev) => [...prev, { partNumber, start, end }]);
+      //     }
+      //   }
 
-        setUploadFinished(true);
-      }
+      //   setUploadFinished(true);
+      // }
     };
   }, [uploadId]);
+
+  React.useEffect(() => {
+    const _uploadFinished = async () => {
+      await tryCompleteMultipartUpload();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    window.addEventListener("online", retryFailedParts);
+    window.addEventListener("offline", () =>
+      console.log("Network connection lost"),
+    );
+
+    return () => {
+      window.removeEventListener("online", retryFailedParts);
+      window.removeEventListener("offline", () =>
+        console.log("Network connection lost"),
+      );
+    };
+  }, [retryParts]);
 
   return (
     <React.Fragment>

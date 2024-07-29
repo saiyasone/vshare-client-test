@@ -1211,6 +1211,7 @@ function ShareWithMe() {
                                     </Fragment>
                                   );
                                 }
+
                                 // Files
                                 else {
                                   if (data?.fileId?.filename) {
@@ -1245,7 +1246,6 @@ function ShareWithMe() {
                                           data.ownerId?.newName +
                                           "-" +
                                           data.ownerId?._id +
-                                          "/" +
                                           (data?.fileId?.newPath ||
                                           data?.fileId?.newPath !== null
                                             ? removeFileNameOutOfPath(
