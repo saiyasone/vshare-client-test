@@ -246,6 +246,7 @@ function FileDropDetail() {
   const menuOnClick = async (action) => {
     setIsAutoClose(true);
     const checkPassword = isCheckPassword();
+    console.log(dataForEvent.data);
     switch (action) {
       case "download":
         setEventClick("download");
@@ -354,8 +355,7 @@ function FileDropDetail() {
         },
       });
       if (uploading?.data?.createFiles?._id) {
-        successMessage("Download to cloud success!", 3000);
-        const sourcePath = "public/" + dataForEvent?.data?.newFilename;
+        const sourcePath = dataForEvent?.data?.newFilename || "";
         const destinationPath =
           user?.newName +
           "-" +
@@ -379,6 +379,9 @@ function FileDropDetail() {
             sourceFilePath: sourcePath,
             destinationFilePath: destinationPath,
           },
+        },
+        onCompleted: () => {
+          successMessage("Download to cloud success!", 3000);
         },
       });
     } catch (error: any) {
@@ -648,10 +651,10 @@ function FileDropDetail() {
                         {fetchFiles.data.map((data, index) => {
                           const privatePath =
                             user?.newName +
-                            "-" +
-                            user?._id +
-                            "/" +
-                            data?.newPath;
+                              "-" +
+                              user?._id +
+                              "/" +
+                              data?.newPath || "";
                           const publicPath = "public/" + data.newFilename;
 
                           return (
@@ -667,6 +670,9 @@ function FileDropDetail() {
                               id={data?._id}
                               imagePath={
                                 data?.newPath ? privatePath : publicPath
+                              }
+                              isPublic={
+                                data?.createdBy?._id === "0" ? true : false
                               }
                               user={user}
                               isCheckbox={true}
@@ -753,6 +759,7 @@ function FileDropDetail() {
             getFileType(dataForEvent.data.filename) ||
             "folder"
           }
+          data={dataForEvent.data}
           size={
             dataForEvent.data.size
               ? convertBytetoMBandGB(dataForEvent.data.size)

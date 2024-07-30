@@ -91,7 +91,7 @@ const Confirmation: React.FC<any> = (_props) => {
           
         </Typography>
         <Typography variant="body1">
-          Your order #{paymentSelector.recentPayment?.paymentId || paymentSelector.recentPayment?.transactionId} has been
+          Your order <b>#{paymentSelector.recentPayment?.paymentId || paymentSelector.recentPayment?.transactionId}</b> has been
           placed!
         </Typography>
         <div>

@@ -22,9 +22,8 @@ function TokenValidation({ children, tokenCheck }) {
           return navigate("/dashboard");
         }
       } catch (error) {
-        // localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
-        // return navigate("/auth/sign-in");
-        console.log('social auth, disable code here temp => open later in IsLoggedClientAuthGuard.tsx');
+        localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
+        return navigate("/auth/sign-in");
       }
     })();
   }, [tokenValidation]);

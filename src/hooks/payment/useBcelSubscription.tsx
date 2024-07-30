@@ -38,13 +38,10 @@ const useBcelSubscirption = () => {
           platform: ['WINDOWS','OTHER'].includes(getOS()) ? 'ANDROID' : 'ios'
         },
       },
-
     }).then((res) => {
       const { qrCode, transactionId } =
         res.data.createQrAndSubscribeForPayment || {};
 
-      // console.log('qr=',qrCode);
-      // console.log({transactionId:transactionId});
       setTransactionId(`${transactionId}`);
       setQrCode(`${qrCode}`);
       setLink(`onepay://qr/${qrCode}`);
