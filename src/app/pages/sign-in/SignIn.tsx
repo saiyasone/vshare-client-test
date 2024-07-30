@@ -1,9 +1,9 @@
 import { IconButton, Link, Typography } from "@mui/material";
-import React, { Fragment, useCallback, useEffect, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import "react-multi-carousel/lib/styles.css";
 
 // components
-import { useMutation } from "@apollo/client";
+import { useMutation, useSubscription } from "@apollo/client";
 import {
   Facebook as FacebookIcon,
   GitHub as GitHubIcon,
@@ -20,6 +20,7 @@ import {
   MUTATION_FACEBOOK_OAUTH,
   MUTATION_GOOGLE_AUTH,
   MUTATION_SOCIAL_AUTH,
+  USER_SIGNUP_SUBSCRIPTION,
 } from "api/graphql/social.graphql";
 import BaseSignin from "components/BaseSignin";
 import { ENV_KEYS } from "constants/env.constant";
@@ -32,15 +33,18 @@ import useManageGraphqlError from "hooks/useManageGraphqlError";
 import useManageSetting from "hooks/useManageSetting";
 import moment from "moment";
 import { errorMessage } from "utils/alert.util";
+import { v4 as uuidv4 } from "uuid";
 
 function SignIn() {
   const theme: any = useTheme();
+  const clientIdRef = useRef<string>(uuidv4());
+  const authWindowRef = useRef<Window | null>(null);
   const { oauthLogin }: any = useAuth();
   const [signInCaptcha, setSignInCaptcha] = useState(null);
   const [signInLimit, setSignInLimit] = useState(null);
-  const [showGithub, setShowGithub] = useState(true);
-  const [showGoogle, setShowGoogle] = useState(true);
-  const [showFacebook, setShowFacebook] = useState(true);
+  const [showGithub, setShowGithub] = useState(false);
+  const [showGoogle, setShowGoogle] = useState(false);
+  const [showFacebook, setShowFacebook] = useState(false);
   const [hideLogin, setHideLogin] = useState(false);
   const [initialTime, setInitialTime] = useState(0);
   const [initialTimeMessage, setInitialTimeMessage] = useState("");
@@ -131,6 +135,13 @@ function SignIn() {
     },
   });
 
+  //Social media auth (new)
+  const SocialMediaAuths = async(str_path: string) =>{
+    // console.log({str_path});
+    const url = `https://coding.vshare.net/social/auth${str_path}?clientId=${clientIdRef.current}`;
+    authWindowRef.current = window.open(url, '_blank', 'width=500,height=600'); 
+  }
+
   const loginLimitFailure = useCallback(
     (error: any) => {
       const cutErr = error.message?.replace(/(ApolloError: )?Error: /, "");
@@ -204,6 +215,42 @@ function SignIn() {
     handleLoginLimit();
   }, [useDataSetting.data]);
 
+  ///wss for social auth
+  const { data, error } = useSubscription(USER_SIGNUP_SUBSCRIPTION, {
+    variables: {
+      "signupId": clientIdRef.current,
+    }
+  }); 
+
+  useEffect(() => {
+    if (data) {
+
+      if(!data || data?.subscribeSignupWithSocial?.message !== "SUCCESS"){
+        return;
+      }
+
+      if (authWindowRef.current) {
+        authWindowRef.current.close();
+      }
+      
+      if(data && data.subscribeSignupWithSocial){
+        const token = data?.subscribeSignupWithSocial?.token;
+        const obj = data?.subscribeSignupWithSocial?.data;
+        console.log({data: obj, token});
+
+        if(token && obj){
+          oauthLogin(obj[0], token);
+        }
+        else{
+          alert('Nothing to auth')
+        }
+      }
+    }
+    if (error) {
+      console.error("Subscription error:", error);
+    }
+  }, [data, error]);
+
   return (
     <React.Fragment>
       <MUI.MainBox>
@@ -231,7 +278,8 @@ function SignIn() {
               <MUI.BoxShowSocialMediaLogin>
                 {showGoogle && (
                   <IconButton
-                    onClick={() => googleOauth.googleButton.click()}
+                    // onClick={() => googleOauth.googleButton.click()}
+                    onClick={()=>SocialMediaAuths('/google')}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
@@ -245,7 +293,8 @@ function SignIn() {
 
                 {showFacebook && (
                   <IconButton
-                    onClick={() => facebookOauth.signIn()}
+                    // onClick={() => facebookOauth.signIn()}
+                    onClick={()=>SocialMediaAuths('/facebook')}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
@@ -259,7 +308,8 @@ function SignIn() {
 
                 {showGithub && (
                   <IconButton
-                    onClick={() => githubOauth.handleGithubSignIn()}
+                    // onClick={() => githubOauth.handleGithubSignIn()}
+                    onClick={()=>SocialMediaAuths('/github')}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",

@@ -34,6 +34,7 @@ import ReplyTicket from "./pages/ticket/ReplyTicket";
 import Ticket from "./pages/ticket/Ticket";
 import Trash from "./pages/trash/Trash";
 import UppyUpload from "components/UppyUpload";
+import GoogleACC from "./pages/sign-in/authSocialMedia.login";
 
 const routes: RouteObject[] = [
   {
@@ -63,6 +64,10 @@ const routes: RouteObject[] = [
             path: "forgot-password",
             element: <ForgotPassword />,
           },
+          {
+            path:"acc",
+            element: <GoogleACC/>
+          }
         ],
       },
     ],

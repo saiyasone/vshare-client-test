@@ -38,7 +38,7 @@ export const clientMockup = new ApolloClient({
   link: from([
     authLink.concat(
       createHttpLink({
-        // uri: "http://192.168.100.121:4000/graphql",
+        // uri: "https://coding.vshare.net/social",
         uri: "https://coding.vshare.net/graphql",
       }),
     ),
@@ -51,7 +51,7 @@ export const clientMockup = new ApolloClient({
 
 const wsLink = new GraphQLWsLink(
   createClient({
-    // url: "ws://192.168.100.121:4000/graphql",
+    // url: "wss://coding.vshare.net/social",
     url: "wss://coding.vshare.net/graphql",
   }),
 );

@@ -29,13 +29,15 @@ function TokenValidation({ children, tokenCheck }) {
         });
         if (data?.tokenValidation?.status !== 200) {
           // localStorage.removeItem("accessToken");
-          localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
-          navigate("/auth/sign-in");
+          // localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
+          // navigate("/auth/sign-in");
+          console.log('social auth, disable code here temp => open later in ClientAuthProvider.tsx');
         }
       } catch (error) {
         // localStorage.removeItem("accessToken");
-        localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
-        navigate("/auth/sign-in");
+        // localStorage.removeItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
+        // navigate("/auth/sign-in");
+        console.log('social auth, disable code here temp => open later in ClientAuthProvider.tsx');
       }
     })();
   }, [tokenValidation]);
@@ -47,6 +49,7 @@ function ClientAuthGuard({ children }) {
   const token = localStorage.getItem(ENV_KEYS.VITE_APP_ACCESS_TOKEN_KEY);
 
   const { isAuthenticated, isInitialized } = useAuth();
+
 
   if (isInitialized && !isAuthenticated) {
     // localStorage.removeItem("accessToken");

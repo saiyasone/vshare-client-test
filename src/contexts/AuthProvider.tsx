@@ -355,6 +355,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const oauthLogin = async (data, token) => {
+    console.log('hey===>>>', {fac2: data?.twoFactorIsEnabled,data, token});
     const role = "customer";
     if (token && role === "customer") {
       const checkRole = token;

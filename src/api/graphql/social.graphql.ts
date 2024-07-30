@@ -180,3 +180,42 @@ export const MUTATION_SOCIAL_AUTH = gql`
     }
   }
 `;
+
+
+///new social auth...
+export const USER_SIGNUP_SUBSCRIPTION = gql`
+subscription Subscription($signupId: String) {
+  subscribeSignupWithSocial(signupId: $signupId) {
+    message
+    token
+    refreshToken
+    data {
+      _id
+      accountId
+      firstName
+      lastName
+      phone
+      email
+      username
+      newName
+      address
+      state
+      zipCode
+      country
+      ip
+      device
+      browser
+      profile
+      currentDevice
+      newDevice
+      twoFactorSecret
+      twoFactorQrCode
+      twoFactorIsEnabled
+      twoFactorIsVerified
+      createdAt
+      updatedAt
+    }
+    signupId
+  }
+} 
+`;
