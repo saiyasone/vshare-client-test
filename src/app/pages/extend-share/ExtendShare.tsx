@@ -657,21 +657,20 @@ function ExtendShare() {
 
   const handleDeleteFilesAndFolders = async () => {
     try {
-      console.log(dataForEvent.data)
-      // await deleteShareFileAndFolder({
-      //   variables: {
-      //     id: dataForEvent.data?.sharedId,
-      //     email: dataForEvent.data?
-      //   },
-      //   onCompleted: async () => {
-      //     if (dataForEvent.type === "folder") {
-      //       successMessage("Delete folder successful !", 2000);
-      //     } else {
-      //       successMessage("Delete file successful !", 2000);
-      //     }
-      //     fetchSubFoldersAndFiles.refetch();
-      //   },
-      // });
+      await deleteShareFileAndFolder({
+        variables: {
+          id: dataForEvent.data?.sharedId,
+          email: userAuth?.email,
+        },
+        onCompleted: async () => {
+          if (dataForEvent.type === "folder") {
+            successMessage("Delete folder successful !", 2000);
+          } else {
+            successMessage("Delete file successful !", 2000);
+          }
+          fetchSubFoldersAndFiles.refetch();
+        },
+      });
     } catch (err: any) {
       errorMessage(err, 3000);
       errorMessage("Sorry! Something went wrong. Please try again!", 3000);
@@ -940,6 +939,7 @@ function ExtendShare() {
       variables: {
         where: {
           path,
+          // createdBy: user?._id,
           createdBy: user?._id,
         },
       },
@@ -1020,16 +1020,16 @@ function ExtendShare() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user?.newName +
+            dataForEvent.data?.createdBy?.newName +
             "-" +
-            user?._id +
+            dataForEvent.data?.createdBy?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)
               : "") +
             dataForEvent?.data?.newName
           }
-          user={user}
+          user={dataForEvent.data?.createdBy}
           {...{
             favouriteIcon: {
               isShow: true,
@@ -1071,7 +1071,7 @@ function ExtendShare() {
           newFilename={dataForEvent.data.newName}
           fileType={dataForEvent.data.type}
           path={dataForEvent.data.newPath}
-          user={user}
+          user={dataForEvent.data?.createdBy}
         />
       )}
 

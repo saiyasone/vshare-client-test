@@ -1,11 +1,17 @@
 import { IconButton, Link, Typography } from "@mui/material";
-import React, { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import "react-multi-carousel/lib/styles.css";
 
 // components
-import { 
-  // useMutation, 
-  useSubscription 
+import {
+  // useMutation,
+  useSubscription,
 } from "@apollo/client";
 import {
   Facebook as FacebookIcon,
@@ -139,20 +145,20 @@ function SignIn() {
   // });
 
   //Social media auth new 20240730 ---> Phonesai
-  const SocialMediaAuths = async(str_path: string) =>{
+  const SocialMediaAuths = async (str_path: string) => {
     const width = 500;
     const height = 600;
-    const left = (window.screen.width / 2) - (width / 2);
-    const top = (window.screen.height / 2) - (height / 2);
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
 
-    const url = `${ENV_KEYS.VITE_APP_API_URL}/auth/${str_path}?clientId=${clientIdRef.current}`
+    const url = `${ENV_KEYS.VITE_APP_API_URL}/auth/${str_path}?clientId=${clientIdRef.current}`;
 
     authWindowRef.current = window.open(
       url,
-      '_blank',
-      `width=${width},height=${height},left=${left},top=${top} rel='noopener noreferrer'`
+      "_blank",
+      `width=${width},height=${height},left=${left},top=${top} rel='noopener noreferrer'`,
     );
-  }
+  };
 
   const loginLimitFailure = useCallback(
     (error: any) => {
@@ -230,35 +236,36 @@ function SignIn() {
   ///wss for social auth 20240730 ---> Phonesai
   const { data, error } = useSubscription(USER_SIGNUP_SUBSCRIPTION, {
     variables: {
-      "signupId": clientIdRef.current,
-    }
-  }); 
+      signupId: clientIdRef.current,
+    },
+  });
 
   useEffect(() => {
     if (data) {
-
-      if(!data || data?.subscribeSignupWithSocial?.message !== "SUCCESS"){
+      if (!data || data?.subscribeSignupWithSocial?.message !== "SUCCESS") {
         return;
       }
 
       if (authWindowRef.current) {
         authWindowRef.current.close();
       }
-      
-      if(data && data.subscribeSignupWithSocial){
+
+      if (data && data.subscribeSignupWithSocial) {
         const token = data?.subscribeSignupWithSocial?.token;
         const obj = data?.subscribeSignupWithSocial?.data;
 
-        if(token && obj){
+        if (token && obj) {
           oauthLogin(obj[0], token);
-        }
-        else{
+        } else {
           warningMessage("Login failed. Please, try again later.", 3000);
         }
       }
     }
     if (error) {
-      errorMessage("Subscription error at => "+ (error?.message || error), 3000);
+      errorMessage(
+        "Subscription error at => " + (error?.message || error),
+        3000,
+      );
     }
   }, [data, error]);
 
@@ -290,7 +297,7 @@ function SignIn() {
                 {showGoogle && (
                   <IconButton
                     // onClick={() => googleOauth.googleButton.click()}
-                    onClick={()=>SocialMediaAuths('/google')}
+                    onClick={() => SocialMediaAuths("/google")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
@@ -305,7 +312,7 @@ function SignIn() {
                 {showFacebook && (
                   <IconButton
                     // onClick={() => facebookOauth.signIn()}
-                    onClick={()=>SocialMediaAuths('/facebook')}
+                    onClick={() => SocialMediaAuths("/facebook")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
@@ -320,7 +327,7 @@ function SignIn() {
                 {showGithub && (
                   <IconButton
                     // onClick={() => githubOauth.handleGithubSignIn()}
-                    onClick={()=>SocialMediaAuths('/github')}
+                    onClick={() => SocialMediaAuths("/github")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
