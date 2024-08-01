@@ -939,7 +939,6 @@ function ExtendShare() {
       variables: {
         where: {
           path,
-          // createdBy: user?._id,
           createdBy: user?._id,
         },
       },
