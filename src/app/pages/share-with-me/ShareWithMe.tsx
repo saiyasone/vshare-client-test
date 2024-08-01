@@ -606,7 +606,7 @@ function ShareWithMe() {
 
   const handleOpenFolder = (value) => {
     setFolderId(value?._id);
-    const base64URL = Base64.encodeURI(value?.folderId?.url);
+    const base64URL = Base64.encodeURI(value?.folderId?._id);
     navigate(`/folder/share/${base64URL}`);
   };
 
@@ -634,8 +634,8 @@ function ShareWithMe() {
   };
 
   const handleDownloadFileAndFolder = async () => {
-    setShowProgressing(true);
-    setProcesing(true);
+    // setShowProgressing(true);
+    // setProcesing(true);
 
     const dataId =
       dataForEvent.data?.folderId?._id || dataForEvent.data?.fileId?._id;
@@ -653,91 +653,31 @@ function ShareWithMe() {
     const newFileData = [
       {
         id: dataId,
-        newPath: dataNewPath,
+        newPath: dataNewPath || "",
         newFilename: dataNewFilename,
         createdBy,
         checkType,
       },
     ];
 
-    await manageFile.handleDownloadSingleFile(
-      { multipleData: newFileData },
+    await manageFile.handleMultipleDownloadFileAndFolder(
+      {
+        isShare: true,
+        multipleData: newFileData,
+      },
       {
         onSuccess: () => {
           resetDataForEvents();
-          setShowProgressing(false);
-          queryGetShare();
           setFileDetailsOpen(false);
+          setIsAutoClose(false);
+          setShowPreview(false);
           successMessage("Download successful", 3000);
         },
         onFailed: (error) => {
           errorMessage(error, 3000);
         },
-        onProcess: (percentage) => {
-          setProgressing(percentage);
-        },
-        onClosure: () => {
-          resetDataForEvents();
-          setIsAutoClose(false);
-          setShowProgressing(false);
-          setProcesing(false);
-          setShowPreview(false);
-        },
       },
     );
-
-    // if (dataForEvent.data.folderId?._id) {
-    //   await manageFolder.handleDownloadFolder(
-    //     {
-    //       id: dataForEvent.data.folderId._id,
-    //       folderName: dataForEvent?.data.folderId?.folder_name,
-    //       newPath: dataForEvent.data.folderId?.newPath,
-    //       user: dataForEvent.data.ownerId,
-    //     },
-    //     {
-    //       onFailed: async (error) => {
-    //         errorMessage(error, 2000);
-    //       },
-    //       onSuccess: async () => {
-    //         resetDataForEvents();
-    //         setShowProgressing(false);
-    //         queryGetShare();
-    //         setFileDetailsOpen(false);
-    //         successMessage("Download successful", 2000);
-    //       },
-    //     },
-    //   );
-    // } else {
-    //   await manageFile.handleDownloadFile(
-    //     {
-    //       id: dataForEvent.data._id,
-    //       newPath: dataForEvent.data.fileId.newPath,
-    //       newFilename: dataForEvent.data.fileId.newFilename,
-    //       filename: dataForEvent.data.fileId.filename,
-    //       user: dataForEvent.data.ownerId,
-    //     },
-    //     {
-    //       onProcess: async (countPercentage) => {
-    //         setProgressing(countPercentage);
-    //       },
-    //       onSuccess: async () => {
-    //         setAfterDowload(dataForEvent.data.fileId._id);
-    //         successMessage("Download successful", 2000);
-    //         queryGetShare();
-    //       },
-    //       onFailed: (error) => {
-    //         errorMessage(error, 2000);
-    //       },
-    //       onClosure: () => {
-    //         resetDataForEvents();
-    //         setIsAutoClose(false);
-    //         setShowProgressing(false);
-    //         setProcesing(false);
-    //         setShowPreview(false);
-    //       },
-    //     },
-    //   );
-    // }
   };
 
   const handleRename = async () => {
@@ -837,6 +777,7 @@ function ShareWithMe() {
         await deleteShareFileAndFolder({
           variables: {
             id: item?.id,
+            email: item?.toAccount?.email,
           },
 
           onCompleted: () => {
@@ -858,6 +799,7 @@ function ShareWithMe() {
       await deleteShareFileAndFolder({
         variables: {
           id: dataForEvent.data?._id,
+          email: dataForEvent.data?.toAccount?.email,
         },
 
         onCompleted: async () => {
@@ -1211,6 +1153,7 @@ function ShareWithMe() {
                                     </Fragment>
                                   );
                                 }
+
                                 // Files
                                 else {
                                   if (data?.fileId?.filename) {
@@ -1245,7 +1188,6 @@ function ShareWithMe() {
                                           data.ownerId?.newName +
                                           "-" +
                                           data.ownerId?._id +
-                                          "/" +
                                           (data?.fileId?.newPath ||
                                           data?.fileId?.newPath !== null
                                             ? removeFileNameOutOfPath(

@@ -234,51 +234,6 @@ export default function DialogPreviewFile(props) {
                     justifyContent: "center",
                     position: "relative",
                   }}
-                  /* controls={{
-                    width: "40px",
-                    height: "40px",
-                    margin: "8px",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    outline: "none",
-                    cursor: "pointer",
-                    transition: "transform 0.2s ease-in-out",
-                  }} */
-                  /* playButtonStyle={{
-                    width: "40px",
-                    height: "40px",
-                    margin: "8px",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    outline: "none",
-                    cursor: "pointer",
-                    transition: "transform 0.2s ease-in-out",
-                  }} */
-                  /* volumeButtonStyle={{
-                    width: "40px",
-                    height: "40px",
-                    margin: "8px",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    outline: "none",
-                    cursor: "pointer",
-                    transition: "transform 0.2s ease-in-out",
-                  }} */
-                  /* progressStyle={{
-                    width: "100%",
-                    height: "4px",
-                    backgroundColor: "#fff",
-                    borderRadius: "4px",
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                  }} */
-                  /* progressBarStyle={{
-                    width: "0%",
-                    height: "4px",
-                    backgroundColor: "#ff3e00",
-                    borderRadius: "4px",
-                  }} */
                 />
               </div>
             ) : type == "video" ? (

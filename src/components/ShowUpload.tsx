@@ -97,7 +97,6 @@ export default function ShowUpload(props) {
   const [uploadingId, setUploadingId] = useState(0);
   const [canClose, setCanClose] = useState(false);
 
-  const [uploadId, setUploadId] = useState("second");
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
   const [isHideFolder, setIsHideFolder] = useState<any>(false);
@@ -115,8 +114,6 @@ export default function ShowUpload(props) {
   const user = trackingFolderData?.createdBy?._id
     ? trackingFolderData?.createdBy
     : userAuth;
-
-  const chunkSize = 50 * 1024 * 1024;
 
   // const settingKeys = {};
 
@@ -261,7 +258,7 @@ export default function ShowUpload(props) {
       filePath = "/" + path;
     }
 
-    // const url =f
+    // const url =
     BUNNY_URL + user?.newName + "-" + user?._id + filePath + "/" + newName;
     const pathBunny = user?.newName + "-" + user?._id + filePath;
 
@@ -298,129 +295,6 @@ export default function ShowUpload(props) {
       formData.append("file", newFile);
 
       const encryptedData = encryptData(headers);
-
-      const response = await axios.post(LOAD_UPLOAD_URL, formData, {
-        headers: {
-          encryptedHeaders: encryptedData,
-        },
-        cancelToken,
-        onUploadProgress: (progressEvent: any) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total,
-          );
-          setFileProgress((prev) => ({
-            ...prev,
-            [index]: percentCompleted,
-          }));
-          const speed = convertBytetoMBandGB(
-            progressEvent.loaded / ((Date.now() - startTime) / 1000),
-          );
-          const endTime = Date.now();
-          const duration = calculateTime(endTime - startTime);
-          setFileSpeeds((prev) => {
-            const arr: any[] = [...prev];
-            arr[index] = speed;
-            return arr;
-          });
-          setFileTimes((prev) => {
-            const arr: any[] = [...prev];
-            arr[index] = duration;
-            return arr;
-          });
-        },
-      });
-
-      if (response.data) {
-        handleUploadSuccess(index);
-      }
-      setIsSuccess((prev) => ({
-        ...prev,
-        [index]: true,
-      }));
-      setIsHide((prev) => ({
-        ...prev,
-        [index]: false,
-      }));
-    } catch (error) {
-      if (axios.isCancel(error)) {
-        successMessage("Upload cancelled", 2000);
-      } else {
-        errorMessage("Upload failed", 3000);
-      }
-    } finally {
-      setSuccessfulFiles([]);
-    }
-  };
-
-  const handleUploadDemo = async (index, id, file, newName, path) => {
-    const startTime: any = new Date();
-    setIsHide((prev) => ({
-      ...prev,
-      [index]: true,
-    }));
-
-    let filePath = "";
-    if (path === "main") {
-      filePath = "";
-    } else {
-      filePath = "/" + path;
-    }
-
-    // const url =f
-    BUNNY_URL + user?.newName + "-" + user?._id + filePath + "/" + newName;
-    const pathBunny = user?.newName + "-" + user?._id + filePath;
-
-    setFileId((prev) => ({
-      ...prev,
-      [index]: id,
-    }));
-
-    try {
-      const headers = {
-        createdBy: user?._id,
-        REGION: "sg",
-        BASE_HOSTNAME: "storage.bunnycdn.com",
-        STORAGE_ZONE_NAME: STORAGE_ZONE,
-        ACCESS_KEY: ACCESS_KEY,
-        PATH: pathBunny,
-        FILENAME: newName,
-        PATH_FOR_THUMBNAIL: user?.newName + "-" + user?._id,
-      };
-
-      const source = CancelToken.source();
-      const cancelToken = source.token;
-      setCancelToken((prev) => ({
-        ...prev,
-        [index]: source,
-      }));
-
-      const blob = new Blob([file], {
-        type: file.type,
-      });
-      const newFile = new File([blob], file.name, { type: file.type });
-
-      const formData = new FormData();
-      formData.append("file", newFile);
-
-      const encryptedData = encryptData(headers);
-
-      const initialResponse = await axios.post(
-        `${ENV_KEYS.VITE_APP_LOAD_URL}initiate-multipart-upload`,
-        {},
-        {
-          headers: {
-            encryptedHeaders: encryptedData,
-          },
-        },
-      );
-
-      if (initialResponse.statusText !== "ok") {
-        throw new Error(
-          `Error initiating multipart upload: ${await initialResponse.statusText}`,
-        );
-      }
-
-      const responseData = await initialResponse.data;
 
       const response = await axios.post(LOAD_UPLOAD_URL, formData, {
         headers: {
@@ -805,63 +679,6 @@ export default function ShowUpload(props) {
     }
   };
 
-  const uploadPart = async (partNumber: number, blob: Blob) => {
-    const formData = new FormData();
-    formData.append("partNumber", partNumber.toString());
-    formData.append("uploadId", uploadId!);
-    const _encryptHeader = null;
-    const presignedResponse = await fetch(
-      `${ENV_KEYS.VITE_APP_LOAD_URL}`,
-      {
-        method: "POST",
-        headers: {
-          encryptedheaders: _encryptHeader!,
-        },
-        body: formData,
-      },
-    );
-
-    if (!presignedResponse.ok) {
-      throw new Error(
-        `Error generating presigned URL for part ${partNumber}: ${await presignedResponse.text()}`,
-      );
-    }
-
-    const { url } = await presignedResponse.json();
-
-    return new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", url, true);
-      xhr.setRequestHeader("Content-Type", file!.type);
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round(
-            (partNumber * 100) / Math.ceil(file!.size / chunkSize),
-          );
-          setProgress(percentComplete);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setParts((prev) => [
-            ...prev,
-            { ETag: xhr.getResponseHeader("ETag"), PartNumber: partNumber },
-          ]);
-          resolve();
-        } else {
-          reject(`Error uploading part ${partNumber}: ${xhr.statusText}`);
-        }
-      };
-
-      xhr.onerror = () =>
-        reject(`Error uploading part ${partNumber}: ${xhr.statusText}`);
-
-      xhr.send(blob);
-    });
-  };
-
   const mobileScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   function LinearProgressWithLabel(props) {
@@ -909,29 +726,6 @@ export default function ShowUpload(props) {
   }
 
   const { isDragActive } = useDropzone();
-
-  React.useEffect(() => {
-    const uploadEachPart = async () => {
-      if (uploadId) {
-        const numParts = Math.ceil(file.size / chunkSize);
-
-        for (let partNumber = 1; partNumber <= numParts; partNumber++) {
-          const start = (partNumber - 1) * chunkSize;
-          const end = Math.min(start + chunkSize, file.size);
-          const blob = file.slice(start, end);
-
-          try {
-            await uploadPart(partNumber, blob);
-          } catch (error) {
-            console.error(`Error uploading part ${partNumber}:`, error);
-            setRetryParts((prev) => [...prev, { partNumber, start, end }]);
-          }
-        }
-
-        setUploadFinished(true);
-      }
-    };
-  }, [uploadId]);
 
   return (
     <React.Fragment>

@@ -536,10 +536,10 @@ const DialogCreateShare = (props) => {
                   mb: 1,
                 }}
               >
-                <ActionShareStatus
-                  isglobals={accessStatusShare}
-                  _handleIsGlobal={handleIsGlobal}
-                />
+              <ActionShareStatus
+                isglobals={accessStatusShare}
+                _handleIsGlobal={handleIsGlobal}
+              />
 
                 <Typography
                   component="p"

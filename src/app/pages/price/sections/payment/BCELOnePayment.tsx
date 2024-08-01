@@ -27,10 +27,11 @@ const BCELOnePayment: React.FC<any> = (props) => {
         console.log("test");
       },
       onData: ({data}) => {
-        
+        // console.log("test der => ",data);
         if(data && data?.data?.subscribeBcelOneSubscriptionQr?.message === "SUCCESS")
         {
           dispatch(setPaymentStatus("Subscription is succeeded"));
+          dispatch(setRecentPayment(data?.data?.subscribeBcelOneSubscriptionQr));
         }
         else
         {
