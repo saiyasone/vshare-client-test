@@ -29,8 +29,8 @@ const initialState = {
   activePackageType: PACKAGE_TYPE.annual,
   packageData: null,
   activePackageData: {
-    packageId: "",
     description: "",
+    packageId: "",
   },
   addressData: {},
   isPaymentLoading: false,
