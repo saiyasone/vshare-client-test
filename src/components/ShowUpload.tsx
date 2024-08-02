@@ -493,6 +493,7 @@ export default function ShowUpload(props) {
 
                   const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
                   const headers = {
+                    createdBy: user?._id,
                     REGION: "sg",
                     BASE_HOSTNAME: "storage.bunnycdn.com",
                     STORAGE_ZONE_NAME: STORAGE_ZONE,
