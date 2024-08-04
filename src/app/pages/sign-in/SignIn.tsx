@@ -377,17 +377,11 @@ function SignIn() {
           </MUI.LeftBoxRow2>
         </MUI.LeftBox>
         <MUI.RightBox>
-          <Typography sx={{ fontSize: "3.5rem", fontWeight: 700 }}>
-            Hello, Friends!
-          </Typography>
+          <Typography variant="h2">Hello, Friends!</Typography>
           <MUI.BoxShowDetail>
-            <Typography sx={{ fontSize: "1.5rem", fontWeight: 500 }}>
-              Enter your personal details
-            </Typography>
+            <Typography variant="h4">Enter your personal details</Typography>
             <br />
-            <Typography sx={{ fontSize: "1.5rem", fontWeight: 500 }}>
-              and Start journey with us
-            </Typography>
+            <Typography variant="h4">and Start journey with us</Typography>
           </MUI.BoxShowDetail>
           <NavLink
             to={`${ENV_KEYS.VITE_APP_URL_REDIRECT_CLIENT_PAGE}auth/sign-up`}

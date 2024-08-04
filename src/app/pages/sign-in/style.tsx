@@ -213,6 +213,15 @@ export const RightBox = styled(Box)({
     justifyContent: "start",
     paddingTop: "15rem",
   },
+
+  h2: {
+    fontSize: "3.5rem",
+    fontWeight: 700,
+
+    [theme.breakpoints.down(980)]: {
+      fontSize: "2.8rem",
+    },
+  },
 });
 
 export const BoxShowDetail = styled(Box)({
@@ -221,6 +230,11 @@ export const BoxShowDetail = styled(Box)({
   h4: {
     fontSize: "1.5rem",
     lineHeight: "2",
+    fontWeight: 500,
+
+    [theme.breakpoints.down(980)]: {
+      fontSize: "1rem",
+    },
   },
 });
 
