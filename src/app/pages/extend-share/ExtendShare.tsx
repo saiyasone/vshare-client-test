@@ -939,7 +939,6 @@ function ExtendShare() {
       variables: {
         where: {
           path,
-          // createdBy: user?._id,
           createdBy: user?._id,
         },
       },
@@ -1126,6 +1125,7 @@ function ExtendShare() {
                 path={breadCrumbData}
                 folderId={parentFolder?._id}
                 handleNavigate={handleFolderNavigate}
+                isShare={true}
               />
               {fetchSubFoldersAndFiles.isDataFound !== null &&
                 fetchSubFoldersAndFiles.isDataFound && (
