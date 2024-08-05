@@ -1188,13 +1188,12 @@ function ShareWithMe() {
                                           data.ownerId?.newName +
                                           "-" +
                                           data.ownerId?._id +
-                                          (data?.fileId?.newPath ||
-                                          data?.fileId?.newPath !== null
+                                          "/" +
+                                          (data?.fileId?.newPath
                                             ? removeFileNameOutOfPath(
                                                 data?.fileId?.newPath,
                                               )
                                             : "") +
-                                          "/" +
                                           data?.fileId?.newFilename
                                         }
                                         user={user}

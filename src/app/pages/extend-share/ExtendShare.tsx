@@ -1125,6 +1125,7 @@ function ExtendShare() {
                 path={breadCrumbData}
                 folderId={parentFolder?._id}
                 handleNavigate={handleFolderNavigate}
+                isShare={true}
               />
               {fetchSubFoldersAndFiles.isDataFound !== null &&
                 fetchSubFoldersAndFiles.isDataFound && (

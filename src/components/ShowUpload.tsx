@@ -50,6 +50,9 @@ import { getFileNameExtension } from "utils/file.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import { limitContent } from "utils/string.util";
 import { encryptData } from "utils/secure.util";
+import { endTransaction, getTag } from "hooks/uploads/useClientUpload";
+import { getTarget } from "hooks/uploads/useClientUpload";
+import { startTransaction } from "hooks/uploads/useClientUpload";
 
 export default function ShowUpload(props) {
   const {
@@ -276,7 +279,6 @@ export default function ShowUpload(props) {
         ACCESS_KEY: ACCESS_KEY,
         PATH: pathBunny,
         FILENAME: newName,
-        PATH_FOR_THUMBNAIL: user?.newName + "-" + user?._id,
       };
 
       const source = CancelToken.source();
@@ -349,78 +351,323 @@ export default function ShowUpload(props) {
     }
   };
 
+  const handleUploadPresign = async (index, id, file, newName, path) => {
+    const startTime: any = new Date();
+    setIsHide((prev) => ({
+      ...prev,
+      [index]: true,
+    }));
+
+    let filePath = "";
+    if (path === "main") {
+      filePath = "";
+    } else {
+      filePath = "/" + path;
+    }
+
+    const pathBunny = user?.newName + "-" + user?._id + filePath;
+
+    setFileId((prev) => ({
+      ...prev,
+      [index]: id,
+    }));
+
+    try {
+      const headers = {
+        createdBy: user?._id,
+        REGION: "sg",
+        BASE_HOSTNAME: "storage.bunnycdn.com",
+        STORAGE_ZONE_NAME: STORAGE_ZONE,
+        ACCESS_KEY: ACCESS_KEY,
+        PATH: pathBunny,
+        FILENAME: newName,
+      };
+
+      const source = CancelToken.source();
+      const cancelToken = source.token;
+      setCancelToken((prev) => ({
+        ...prev,
+        [index]: source,
+      }));
+
+      const blob = new Blob([file], {
+        type: file.type,
+      });
+      const newFile = new File([blob], file.name, { type: file.type });
+
+      const formData = new FormData();
+      formData.append("file", newFile);
+
+      const encryptedData = encryptData(headers);
+
+      await axios.post(LOAD_UPLOAD_URL, formData, {
+        headers: {
+          encryptedHeaders: encryptedData,
+        },
+        cancelToken,
+        onUploadProgress: (progressEvent: any) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
+          setFileProgress((prev) => ({
+            ...prev,
+            [index]: percentCompleted,
+          }));
+          const speed = convertBytetoMBandGB(
+            progressEvent.loaded / ((Date.now() - startTime) / 1000),
+          );
+          const endTime = Date.now();
+          const duration = calculateTime(endTime - startTime);
+          setFileSpeeds((prev) => {
+            const arr: any[] = [...prev];
+            arr[index] = speed;
+            return arr;
+          });
+          setFileTimes((prev) => {
+            const arr: any[] = [...prev];
+            arr[index] = duration;
+            return arr;
+          });
+        },
+      });
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        successMessage("Upload cancelled", 2000);
+      } else {
+        errorMessage("Upload failed", 3000);
+      }
+    } finally {
+      setSuccessfulFiles([]);
+    }
+  };
+
+  // // upload files
+  // const handleUploadToInternalServer = async (fileData) => {
+  //   setHideSelectMore(1);
+  //   setCanClose(true);
+  //   const filesArray: any[] = Array.from(fileData);
+  //   if (fileData.length > 0) {
+  //     try {
+  //       const uploadPromises = filesArray.map(async (file, index) => {
+  //         const randomName = Math.floor(1111111111 + Math.random() * 999999);
+  //         let path = "";
+  //         let newFilePath = "";
+  //         if (folderId > 0) {
+  //           const queryfolderPath = await queryPath({
+  //             variables: {
+  //               where: {
+  //                 _id: folderId,
+  //                 createdBy: user?._id,
+  //               },
+  //             },
+  //           });
+  //           const newPath = queryfolderPath?.data?.folders?.data[0]?.newPath;
+  //           if (newPath) {
+  //             path = newPath;
+  //             newFilePath =
+  //               newPath + "/" + randomName + getFileNameExtension(file.name);
+  //           }
+  //         }
+  //         const uploading = await uploadFiles({
+  //           variables: {
+  //             data: {
+  //               destination: "",
+  //               newFilename: randomName + getFileNameExtension(file.name),
+  //               filename: file.name,
+  //               fileType: file.type,
+  //               size: file.size.toString(),
+  //               checkFile: folderId > 0 ? "sub" : "main",
+  //               ...(folderId > 0 ? { folder_id: folderId } : {}),
+  //               ...(folderId > 0 ? { newPath: newFilePath } : {}),
+  //               country: country,
+  //               device: result.os.name || "" + result.os.version || "",
+  //               totalUploadFile: filesArray.length,
+  //             },
+  //           },
+  //         });
+
+  //         if (uploading?.data?.createFiles?._id) {
+  //           const fileId = uploading?.data?.createFiles?._id;
+  //           await handleActionFile(fileId);
+  //           await handleUploadPresign(
+  //             index,
+  //             fileId,
+  //             file,
+  //             randomName + getFileNameExtension(file.name),
+  //             folderId > 0 ? path : "main",
+  //           );
+  //           // await handleUploadToExternalServer(
+  //           //   index,
+  //           //   fileId,
+  //           //   file,
+  //           //   randomName + getFileNameExtension(file.name),
+  //           //   folderId > 0 ? path : "main",
+  //           // );
+  //         }
+  //       });
+  //       await Promise.all(uploadPromises);
+  //       await eventUploadTrigger?.trigger();
+  //       setCanClose(false);
+  //       setHideSelectMore(2);
+  //     } catch (error: any) {
+  //       console.error(error);
+  //       setCanClose(false);
+  //       setHideSelectMore(0);
+  //       const message = cutSpaceError(error.message);
+  //       if (message) {
+  //         errorMessage("Your space isn't enough", 3000);
+  //       } else {
+  //         handleErrorFiles(error);
+  //       }
+  //     }
+  //   }
+  // };
+
   // upload files
   const handleUploadToInternalServer = async (fileData) => {
-    setHideSelectMore(1);
-    setCanClose(true);
-    const filesArray: any[] = Array.from(fileData);
-    if (fileData.length > 0) {
-      try {
-        const uploadPromises = filesArray.map(async (file, index) => {
-          const randomName = Math.floor(1111111111 + Math.random() * 999999);
-          let path = "";
-          let newFilePath = "";
-          if (folderId > 0) {
-            const queryfolderPath = await queryPath({
-              variables: {
-                where: {
-                  _id: folderId,
-                  createdBy: user?._id,
-                },
-              },
-            });
-            const newPath = queryfolderPath?.data?.folders?.data[0]?.newPath;
-            if (newPath) {
-              path = newPath;
-              newFilePath =
-                newPath + "/" + randomName + getFileNameExtension(file.name);
-            }
-          }
-          const uploading = await uploadFiles({
-            variables: {
-              data: {
-                destination: "",
-                newFilename: randomName + getFileNameExtension(file.name),
-                filename: file.name,
-                fileType: file.type,
-                size: file.size.toString(),
-                checkFile: folderId > 0 ? "sub" : "main",
-                ...(folderId > 0 ? { folder_id: folderId } : {}),
-                ...(folderId > 0 ? { newPath: newFilePath } : {}),
-                country: country,
-                device: result.os.name || "" + result.os.version || "",
-                totalUploadFile: filesArray.length,
-              },
-            },
-          });
+    try {
+      // setHideSelectMore(1);
+      // setCanClose(true);
 
-          if (uploading?.data?.createFiles?._id) {
-            const fileId = uploading?.data?.createFiles?._id;
-            await handleActionFile(fileId);
-            await handleUploadToExternalServer(
-              index,
-              fileId,
-              file,
-              randomName + getFileNameExtension(file.name),
-              folderId > 0 ? path : "main",
-            );
-          }
-        });
-        await Promise.all(uploadPromises);
-        await eventUploadTrigger?.trigger();
-        setCanClose(false);
-        setHideSelectMore(2);
-      } catch (error: any) {
-        console.error(error);
-        setCanClose(false);
-        setHideSelectMore(0);
-        const message = cutSpaceError(error.message);
-        if (message) {
-          errorMessage("Your space isn't enough", 3000);
-        } else {
-          handleErrorFiles(error);
-        }
+      console.log(`TEST`, 1);
+      const filesArray: any[] = Array.from(fileData);
+      const tagList: Array<any> = [];
+      console.log(`TEST`, 2);
+
+      console.log(`-->`, filesArray);
+      // # loop get all tag
+      for (let i = 0; i < filesArray.length; i++) {
+        const model = files[i];
+
+        console.log(`==>`, 1);
+        // # set createdBy
+        model.createdBy = "";
+        model.createdBy = user._id;
+        const randomName = Math.floor(1111111111 + Math.random() * 999999);
+        model.newName = String(randomName + getFileNameExtension(model.name));
+
+        console.log(`==>`, 2);
+        // # set file name
+        model.path = "";
+        model.path = String(randomName + getFileNameExtension(model.name));
+
+        console.log(`==>`, 3);
+        const round = await getTag(files[i]);
+        tagList.push(round);
       }
+
+      console.log(`TEST`, 3);
+
+      // # send all tag to target
+      const sendTag = await getTarget(tagList);
+      const targetList = sendTag;
+
+      console.log(`TEST`, 4);
+
+      // # when i got all target i wll loop send all my target with transaction
+      const myPart: Array<any> = [];
+      for (const target of targetList) {
+        const task = await startTransaction(
+          target,
+          // (uploadId, partNumber, percentage) => {
+          //   setProgressBar((prev: any) => {
+          //     const updatedProgress = { ...prev };
+          //     if (!updatedProgress[uploadId]) {
+          //       updatedProgress[uploadId] = {};
+          //     }
+
+          //     updatedProgress[uploadId][partNumber] = percentage;
+          //     updatedProgress[uploadId].total =
+          //       updatedProgress[uploadId][partNumber];
+
+          //     return updatedProgress;
+          //   });
+          // }
+        );
+        myPart.push(task.data);
+      }
+      console.log(`TEST`, 5);
+
+      // # complete all transaction
+      await endTransaction(myPart, tagList);
+
+      // if (fileData.length > 0) {
+      //   try {
+      //     const uploadPromises = filesArray.map(async (file, index) => {
+      //       const randomName = Math.floor(1111111111 + Math.random() * 999999);
+      //       let path = "";
+      //       let newFilePath = "";
+      //       if (folderId > 0) {
+      //         const queryfolderPath = await queryPath({
+      //           variables: {
+      //             where: {
+      //               _id: folderId,
+      //               createdBy: user?._id,
+      //             },
+      //           },
+      //         });
+      //         const newPath = queryfolderPath?.data?.folders?.data[0]?.newPath;
+      //         if (newPath) {
+      //           path = newPath;
+      //           newFilePath =
+      //             newPath + "/" + randomName + getFileNameExtension(file.name);
+      //         }
+      //       }
+      //       const uploading = await uploadFiles({
+      //         variables: {
+      //           data: {
+      //             destination: "",
+      //             newFilename: randomName + getFileNameExtension(file.name),
+      //             filename: file.name,
+      //             fileType: file.type,
+      //             size: file.size.toString(),
+      //             checkFile: folderId > 0 ? "sub" : "main",
+      //             ...(folderId > 0 ? { folder_id: folderId } : {}),
+      //             ...(folderId > 0 ? { newPath: newFilePath } : {}),
+      //             country: country,
+      //             device: result.os.name || "" + result.os.version || "",
+      //             totalUploadFile: filesArray.length,
+      //           },
+      //         },
+      //       });
+
+      //       if (uploading?.data?.createFiles?._id) {
+      //         // const fileId = uploading?.data?.createFiles?._id;
+      //         // await handleActionFile(fileId);
+      //         // await handleUploadPresign(
+      //         //   index,
+      //         //   fileId,
+      //         //   file,
+      //         //   randomName + getFileNameExtension(file.name),
+      //         //   folderId > 0 ? path : "main",
+      //         // );
+      //         // await handleUploadToExternalServer(
+      //         //   index,
+      //         //   fileId,
+      //         //   file,
+      //         //   randomName + getFileNameExtension(file.name),
+      //         //   folderId > 0 ? path : "main",
+      //         // );
+      //       }
+      //     });
+      //     await Promise.all(uploadPromises);
+      //     await eventUploadTrigger?.trigger();
+      //     setCanClose(false);
+      //     setHideSelectMore(2);
+      //   } catch (error: any) {
+      //     console.error(error);
+      //     setCanClose(false);
+      //     setHideSelectMore(0);
+      //     const message = cutSpaceError(error.message);
+      //     if (message) {
+      //       errorMessage("Your space isn't enough", 3000);
+      //     } else {
+      //       handleErrorFiles(error);
+      //     }
+      //   }
+      // }
+    } catch (error) {
+      console.log(`ERRRR`, error.message);
     }
   };
 
@@ -569,7 +816,7 @@ export default function ShowUpload(props) {
                         progressArray.reduce((acc, p) => acc + p, 0) /
                           progressArray.length,
                       );
-
+                      console.log({ folderKey });
                       setFolderProgressMap((prev) => ({
                         ...prev,
                         [folderKey]: totalProgress,
