@@ -49,32 +49,23 @@ export function getTag(file: any): Promise<any> {
   // eslint-disable-next-line no-async-promise-executor
   return new Promise<any>(async (resolve, reject) => {
     try {
-      console.log({ file });
       const url = `${baseURL}initiate-multipart-upload`;
 
-      const uploadIdList: any = [];
+      // const uploadIdList: any = [];
       const fileName = file.newName;
       const headers = {
         encryptedheaders: encryptHeader(fileName, file.createdBy, file?.path),
       };
       const options = {
+        headers,
         method: `POST`,
         url: url,
-        headers: headers,
       };
-      const run = await axios(options);
 
-      uploadIdList.push({
-        file,
-        name: file.name,
-        newName: fileName,
-        uploadId: run.data.uploadId,
-        size: file.size,
-        path: file.path,
-      });
-      console.log(`complete get tag`);
+      const run = await axios<{ uploadId?: string }>(options);
+      const uploadId = await run.data?.uploadId;
 
-      resolve(uploadIdList);
+      resolve(uploadId);
     } catch (error: any) {
       console.log(`error complete get tag`, error.message);
       reject(error.message);
@@ -90,21 +81,26 @@ export function getTarget(uploads: Array<any>): Promise<any> {
       const targetList: any = [];
 
       for (let i = 0; i < uploads.length; i++) {
-        const numParts = Math.ceil(uploads[i].size / chunkSize);
+        const file = uploads[i].file;
+        const numParts = Math.ceil(file.size / chunkSize);
 
         for (let partNumber = 1; partNumber <= numParts; partNumber++) {
           const start = (partNumber - 1) * chunkSize;
-          const end = Math.min(start + chunkSize, uploads[i].size);
-          const blob = uploads[i].file.slice(start, end);
+          const end = Math.min(start + chunkSize, file.size);
+          const blob = file.slice(start, end);
 
           try {
             const formData = new FormData();
             formData.append("partNumber", partNumber.toString());
             formData.append("uploadId", uploads[i].uploadId);
 
-            const fileName = uploads[i].name;
+            const fileName = file.newName;
             const headers = {
-              encryptedheaders: encryptHeader(fileName, "633"),
+              encryptedheaders: encryptHeader(
+                fileName,
+                file.createdBy,
+                file.path,
+              ),
             };
             const options = {
               method: `POST`,
@@ -116,13 +112,14 @@ export function getTarget(uploads: Array<any>): Promise<any> {
             const target = await run.data.url;
 
             const model: any = {
+              file,
+              target,
               uploadId: uploads[i].uploadId,
-              target: target,
               partNumber: partNumber,
-              blob: blob,
+              blob,
               fileType: uploads[i].file.type,
               uuid: uuid.v4(),
-              size: uploads[i].size,
+              size: file.size,
             };
             targetList.push(model);
           } catch (error: any) {
@@ -131,8 +128,6 @@ export function getTarget(uploads: Array<any>): Promise<any> {
         }
       }
 
-      // console.log(`targetList`, targetList);
-      console.log(`===== complete get target =====`);
       resolve(targetList);
     } catch (error: any) {
       console.log(`error complete get target`, error.message);
@@ -199,10 +194,12 @@ export function endTransaction(
     try {
       const url = `${baseURL}complete-multipart-upload`;
       for (let i = 0; i < uploads.length; i++) {
-        const fileName = uploads?.[i]?.name;
+        const file = uploads[i].file;
+        const fileName = file.newName;
         const headers = {
-          encryptedheaders: encryptHeader(fileName, "633"),
+          encryptedheaders: encryptHeader(fileName, file.createdBy, file?.path),
         };
+
         const formData = new FormData();
         formData.append("parts", JSON.stringify([parts[i]]));
         formData.append("uploadId", uploads[i]?.uploadId);

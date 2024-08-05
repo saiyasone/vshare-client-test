@@ -111,6 +111,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [refreshToken] = useMutation(MUTATION_REFRESH_TOKEN);
   const [openWarning, setOpenWarning] = React.useState(false);
   const [isLoading, setIsLoading] = useState<boolean | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
   const manageGraphqlError = useManageGraphqlError();
 
   const [getUsers] = useLazyQuery(QUERY_USER, {
@@ -452,6 +453,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (username, password) => {
+    setAuthLoading(!authLoading);
     try {
       const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
       const signInUser = await userLogin({
@@ -490,18 +492,20 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         checkAccessToken(checkRole);
         localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA_KEY, userDataEncrypt);
 
+        successMessage("Login Success!!", 3000);
         dispatch({
           type: SIGN_IN,
           payload: {
             user,
           },
         });
-        successMessage("Login Success!!", 3000);
+        setAuthLoading(false);
         navigate("/dashboard");
       } else {
         return { authen, user, checkRole, refreshId: tokenData.refreshID };
       }
     } catch (error: any) {
+      setAuthLoading(false);
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
       if (cutErr === "USERNAME_OR_PASSWORD_INCORRECT") {
         errorMessage("Username or password incorrect!!", 3000);
@@ -571,6 +575,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (firstName, lastName, username, email, password) => {
+    setAuthLoading(true);
     const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
     try {
       const signUpUser = await register({
@@ -587,9 +592,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       if (signUpUser?.data?.signup?._id) {
         successMessage("Register successful!", 3000);
+        setAuthLoading(false);
         navigate("/auth/sign-in");
       }
     } catch (error: any) {
+      setAuthLoading(false);
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
       errorMessage(manageGraphqlError.handleErrorMessage(cutErr) || "", 3000);
     }
@@ -700,6 +707,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         ...state,
+        // authLoading,
         method: "jwt",
         generateNewToken,
         logIn,
