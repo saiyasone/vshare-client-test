@@ -139,7 +139,7 @@ export const QUERY_FOLDER_SHARE_PUBLIC = gql`
 `;
 
 export const QUERY_FILE_SHARE_PUBLIC = gql`
-  query FilePublic($id: ID!) {
+  query FilePublic($id: [ID!]!) {
     filePublic(ID: $id) {
       data {
         _id

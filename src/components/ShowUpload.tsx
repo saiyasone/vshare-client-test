@@ -105,6 +105,7 @@ export default function ShowUpload(props) {
 
   // presign
   const [progressBar, setProgressBar] = useState<any>({});
+  const [uploads, setUploads] = useState<any[]>([]);
 
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
@@ -279,10 +280,6 @@ export default function ShowUpload(props) {
     try {
       const headers = {
         createdBy: user?._id,
-        REGION: "sg",
-        BASE_HOSTNAME: "storage.bunnycdn.com",
-        STORAGE_ZONE_NAME: STORAGE_ZONE,
-        ACCESS_KEY: ACCESS_KEY,
         PATH: pathBunny,
         FILENAME: newName,
       };
@@ -446,13 +443,11 @@ export default function ShowUpload(props) {
         const filePath = "";
         const pathBunny = user?.newName + "-" + user?._id + filePath;
 
-        // # set createdBy
         model.createdBy = user._id;
         const randomName = Math.floor(111111111 + Math.random() * 999999999);
         const newName = String(randomName + getFileNameExtension(model.name));
         model.newName = newName;
 
-        // # set file name
         model.path = pathBunny;
 
         const uploading = await uploadFiles({
@@ -480,41 +475,59 @@ export default function ShowUpload(props) {
           throw new Error("Uploading failed");
         }
       }
-      console.log("===== complete get tag =====");
-
+      console.log({ tagList });
+      setUploads(tagList);
       // # send all tag to target
       const sendTag = await getTarget(tagList);
-      const targetList = await sendTag;
-      console.log(`===== complete get target =====`);
+      const targetList = sendTag;
+      console.log({ targetList });
 
-      // # when i got all target i wll loop send all my target with transaction
       const partsData: Array<any> = [];
-      for (const target of targetList) {
-        const task = await startTransaction(
-          target,
-          (uploadId, partNumber, percentage) => {
-            setProgressBar((prev: any) => {
-              const updatedProgress = { ...prev };
-              if (!updatedProgress[uploadId]) {
-                updatedProgress[uploadId] = {};
-              }
+      const myparts: Array<any> = [];
 
-              updatedProgress[uploadId][partNumber] = percentage;
-              updatedProgress[uploadId].total =
-                updatedProgress[uploadId][partNumber];
+      for (let i = 0; i < targetList.length; i++) {
+        const item: Array<any> = [];
 
-              return updatedProgress;
-            });
-          },
-        );
-        partsData.push(task.data);
+        console.log(`@@@@`, targetList);
+
+        for (let j = 0; j < targetList[i].length; j++) {
+          console.log(`@@@@-->`, targetList);
+
+          const run = await startTransaction(
+            targetList[i][j],
+            // (uploadId, partNumber, percentage) => {
+            //   setProgressBar((prev: any) => {
+            //     const updatedProgress = { ...prev };
+            //     if (!updatedProgress[uploadId]) {
+            //       updatedProgress[uploadId] = {};
+            //     }
+
+            //     updatedProgress[uploadId][partNumber] = percentage;
+            //     updatedProgress[uploadId].total =
+            //       updatedProgress[uploadId][partNumber];
+            //     console.log(updatedProgress[uploadId].total);
+            //     return updatedProgress;
+            //   });
+            // },
+          );
+          if (run.message == "success") {
+            item.push(run.data);
+          }
+        }
+
+        myparts.push(item);
       }
+
+      partsData.push(...myparts);
+      console.log({ partsData });
 
       // # complete all transaction
       await endTransaction(partsData, tagList);
+
       await eventUploadTrigger?.trigger();
       setCanClose(false);
       setHideSelectMore(2);
+
       // if (fileData.length > 0) {
       //   try {
       //     const uploadPromises = filesArray.map(async (file, index) => {
@@ -1271,6 +1284,14 @@ export default function ShowUpload(props) {
               {files?.map((val, index) => {
                 const progress = fileProgress[index] || 0;
                 const isFileSuccessful = isSuccessful(index);
+
+                const upload = uploads.find(
+                  (upload) => upload?.file?.name === val.name,
+                );
+                const progressTab = upload
+                  ? progressBar[upload.uploadId]?.total || 0
+                  : 0;
+
                 return (
                   <MUI.ShowFileUploadBox key={index}>
                     <MUI.ShowFileDetailBox>
@@ -1382,9 +1403,14 @@ export default function ShowUpload(props) {
                           marginTop: "0.5rem",
                         }}
                       >
-                        <LinearProgressWithLabel
+                        {/* <LinearProgressWithLabel
                           variant="determinate"
                           value={progress}
+                          sx={{ borderRadius: "5px", height: "5px" }}
+                        /> */}
+                        <LinearProgressWithLabel
+                          variant="determinate"
+                          value={progressTab}
                           sx={{ borderRadius: "5px", height: "5px" }}
                         />
                       </Box>
@@ -1419,6 +1445,7 @@ export default function ShowUpload(props) {
                   handleUploadToInternalServer(data);
                 } else if (data?.length > 0 && folderData?.length === 0) {
                   handleUploadToInternalServerV1(data);
+                  // handleUploadToInternalServer(data);
                 } else if (data?.length === 0 && folderData?.length > 0) {
                   handleUploadFolder();
                 }

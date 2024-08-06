@@ -616,7 +616,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             successMessage("Reset Password success.", 1000);
             setTimeout(() => {
               navigate("/auth/sign-in");
-            }, 1200);
+            }, 2000);
           }
         },
       });

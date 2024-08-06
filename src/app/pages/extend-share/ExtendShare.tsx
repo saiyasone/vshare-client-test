@@ -945,9 +945,10 @@ function ExtendShare() {
     });
 
     if (result) {
-      const [dataById] = result.data?.folders?.data || [];
-      const base64URL = Base64.encodeURI(dataById._id);
-      navigate(`/folder/share/${base64URL}`);
+      console.log(result)
+      // const [dataById] = result.data?.folders?.data || [];
+      // const base64URL = Base64.encodeURI(dataById._id);
+      // navigate(`/folder/share/${base64URL}`);
     }
   };
 

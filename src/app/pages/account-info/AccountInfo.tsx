@@ -339,6 +339,7 @@ function AccountInfo() {
       onCompleted: (data) => {
         if (data?.getUser?.data.length > 0) {
           setUserAccount(data?.getUser?.data[0]);
+          console.log(data?.getUser?.data[0]);
           setFileNewName(data?.getUser?.data[0]?.profile);
         }
       },

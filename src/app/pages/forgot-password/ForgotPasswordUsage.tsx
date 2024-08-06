@@ -2,7 +2,6 @@ import styled from "@emotion/styled";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import {
   Box,
-  Button,
   InputLabel,
   Link,
   Alert as MuiAlert,
@@ -18,6 +17,7 @@ import useAuth from "hooks/useAuth";
 import useManageSetting from "hooks/useManageSetting";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useLocation, useNavigate } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
 //components
 const LinkBack = styled(Link)({
   display: "flex",
@@ -33,6 +33,7 @@ const TextField = styled(MuiTextField)(spacing);
 
 function ForgotPasswordUsage() {
   const [captcha, setCaptcha] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -110,11 +111,14 @@ function ForgotPasswordUsage() {
           .required("Email is required"),
       })}
       onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
+        setIsLoading(true);
         try {
           if (!captcha) {
             await forgetPassowrd(values.email);
+            setIsLoading(false);
           }
         } catch (error: any) {
+          setIsLoading(false);
           const message = error.message || "Something went wrong";
           setStatus({ success: false });
           setErrors({ submit: message });
@@ -160,16 +164,17 @@ function ForgotPasswordUsage() {
               />
             </Box>
           )}
-          <Button
+          <LoadingButton
             type="submit"
             fullWidth
             variant="contained"
             color="primaryTheme"
             disabled={captcha}
             sx={{ borderRadius: "6px" }}
+            loading={isLoading}
           >
             Send Reset Link
-          </Button>
+          </LoadingButton>
           <LinkBack
             href={`${ENV_KEYS.VITE_APP_URL_REDIRECT_CLIENT_PAGE}auth/sign-in`}
             onClick={() => {

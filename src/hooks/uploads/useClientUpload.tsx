@@ -4,7 +4,7 @@ import CryptoJS from "crypto-js";
 import * as uuid from "uuid";
 
 const baseURL = ENV_KEYS.VITE_APP_LOAD_URL;
-const chunkSize = 10 * 1024 * 1024; // 10MB
+const chunkSize = 50 * 1024 * 1024; // 100MB
 
 export const encryptHeader = (
   newName?: string,
@@ -83,6 +83,7 @@ export function getTarget(uploads: Array<any>): Promise<any> {
       for (let i = 0; i < uploads.length; i++) {
         const file = uploads[i].file;
         const numParts = Math.ceil(file.size / chunkSize);
+        const item: any[] = [];
 
         for (let partNumber = 1; partNumber <= numParts; partNumber++) {
           const start = (partNumber - 1) * chunkSize;
@@ -121,11 +122,12 @@ export function getTarget(uploads: Array<any>): Promise<any> {
               uuid: uuid.v4(),
               size: file.size,
             };
-            targetList.push(model);
+            item.push(model);
           } catch (error: any) {
             console.error(`Error uploading part ${partNumber}:`, error);
           }
         }
+        targetList.push(item);
       }
 
       resolve(targetList);
@@ -138,48 +140,46 @@ export function getTarget(uploads: Array<any>): Promise<any> {
 
 export function startTransaction(
   target: any,
-  handleProgress?: (uploadId: any, partNumber: any, percentage: number) => void,
+  // handleProgress?: (uploadId: any, partNumber: any, percentage: number) => void,
 ): Promise<any> {
   // eslint-disable-next-line no-async-promise-executor
   return new Promise<any>(async (resolve, reject) => {
     try {
-      // let request = [];
-      // let parts = [];
-      let percentComplete = 0;
+      console.log(`my target`, target);
+      // let percentComplete = 0;
       const request = new XMLHttpRequest();
       request.open("PUT", target.target, true);
       request.setRequestHeader("Content-Type", target.fileType);
-      request.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          percentComplete = Math.round(
-            ((event.loaded + (target.partNumber - 1) * chunkSize) * 100) /
-              target.size,
-          );
-          // handleProgress(percentComplete);
-          handleProgress?.(target.uploadId, target.partNumber, percentComplete);
-        }
-      };
+      // request.upload.onprogress = (event) => {
+      //   if (event.lengthComputable) {
+      //     percentComplete = Math.round(
+      //       ((event.loaded + (target.partNumber - 1) * chunkSize) * 100) /
+      //         target.size,
+      //     );
+      //     console.log({ percentComplete });
+      //     handleProgress?.(target.uploadId, target.partNumber, percentComplete);
+      //   }
+      // };
       request.onreadystatechange = function () {
-        // console.log(`change`, request);
         if (request.readyState === 4 && request.status === 200) {
           const model = {
             ETag: request.getResponseHeader("ETag"),
             PartNumber: target.partNumber,
           };
 
+          const response = {
+            data: model,
+            message: "success",
+          };
+          resolve(response);
           if (request.getResponseHeader("ETag")) {
-            const response = {
-              data: model,
-              message: "success",
-            };
-            resolve(response);
+            //
           }
         }
       };
       request.send(target.blob);
     } catch (error: any) {
       console.log(`error start transaction`, error.message);
-
       reject(error.message);
     }
   });
@@ -199,9 +199,8 @@ export function endTransaction(
         const headers = {
           encryptedheaders: encryptHeader(fileName, file.createdBy, file?.path),
         };
-
         const formData = new FormData();
-        formData.append("parts", JSON.stringify([parts[i]]));
+        formData.append("parts", JSON.stringify(parts[i]));
         formData.append("uploadId", uploads[i]?.uploadId);
         const options = {
           method: `POST`,
