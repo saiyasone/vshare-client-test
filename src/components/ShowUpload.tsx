@@ -45,6 +45,7 @@ import {
   getTag,
   getTarget,
   startTransaction,
+  startTransactionV1,
 } from "hooks/uploads/useClientUpload";
 import useAuth from "hooks/useAuth";
 import { useContext, useState } from "react";
@@ -106,6 +107,8 @@ export default function ShowUpload(props) {
   // presign
   const [progressBar, setProgressBar] = useState<any>({});
   const [uploads, setUploads] = useState<any[]>([]);
+  const [presignSuccesFiles, setPresignSuccesFiles] = useState<any[]>([]);
+  const [requestMap, setRequestMap] = useState(new Map());
 
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
@@ -177,6 +180,10 @@ export default function ShowUpload(props) {
 
   const isSuccessful = (index) => {
     return successfulFiles.includes(index) || isSuccess[index];
+  };
+
+  const isPresignSuccessful = (data) => {
+    return presignSuccesFiles.includes(data);
   };
 
   const handleCancleUploadFile = async (index) => {
@@ -410,6 +417,7 @@ export default function ShowUpload(props) {
             );
           }
         });
+
         await Promise.all(uploadPromises);
         await eventUploadTrigger?.trigger();
         setCanClose(false);
@@ -438,17 +446,36 @@ export default function ShowUpload(props) {
 
       // # loop get all tag
       for (let i = 0; i < filesArray.length; i++) {
+        let path = "";
+        let newFilePath = "";
+
+        const randomName = Math.floor(111111111 + Math.random() * 999999999);
         const model = files[i];
 
-        const filePath = "";
-        const pathBunny = user?.newName + "-" + user?._id + filePath;
+        if (folderId > 0) {
+          const queryfolderPath = await queryPath({
+            variables: {
+              where: {
+                _id: folderId,
+                createdBy: user?._id,
+              },
+            },
+          });
+
+          const newPath = queryfolderPath?.data?.folders?.data[0]?.newPath;
+          if (newPath) {
+            path = newPath;
+            newFilePath =
+              newPath + "/" + randomName + getFileNameExtension(model.name);
+          }
+        }
+        const pathBunny = user?.newName + "-" + user?._id + "/" + path;
 
         model.createdBy = user._id;
-        const randomName = Math.floor(111111111 + Math.random() * 999999999);
         const newName = String(randomName + getFileNameExtension(model.name));
-        model.newName = newName;
-
+        model.newFilename = newName;
         model.path = pathBunny;
+        model.newPath = newFilePath;
 
         const uploading = await uploadFiles({
           variables: {
@@ -460,7 +487,7 @@ export default function ShowUpload(props) {
               size: model.size.toString(),
               checkFile: folderId > 0 ? "sub" : "main",
               ...(folderId > 0 ? { folder_id: folderId } : {}),
-              ...(folderId > 0 ? { newPath: "" } : {}),
+              ...(folderId > 0 ? { newPath: newFilePath } : {}),
               country: country,
               device: result.os.name || "" + result.os.version || "",
               totalUploadFile: filesArray.length,
@@ -468,50 +495,134 @@ export default function ShowUpload(props) {
           },
         });
 
-        if (uploading?.data?.createFiles?._id) {
+        const fileId = await uploading.data?.createFiles?._id;
+        if (fileId) {
+          await handleActionFile(fileId);
           const round = await getTag(model);
           tagList.push({ file: model, uploadId: round });
         } else {
           throw new Error("Uploading failed");
         }
       }
-      console.log({ tagList });
       setUploads(tagList);
+
       // # send all tag to target
       const sendTag = await getTarget(tagList);
       const targetList = sendTag;
-      console.log({ targetList });
 
       const partsData: Array<any> = [];
       const myparts: Array<any> = [];
 
       for (let i = 0; i < targetList.length; i++) {
+        const startDate: any = new Date();
         const item: Array<any> = [];
 
-        console.log(`@@@@`, targetList);
-
         for (let j = 0; j < targetList[i].length; j++) {
-          console.log(`@@@@-->`, targetList);
+          // const run = await startTransaction(
+          //   targetList[i][j],
+          //   startDate,
+          //   (uploadId, partNumber, percentage) => {
+          //     setPresignSuccesFiles((prev: any) => {
+          //       const succssFile = { ...prev };
+          //       if (!succssFile[uploadId]) {
+          //         succssFile[uploadId] = {};
+          //       }
+          //       succssFile[uploadId][partNumber] = false;
+          //       succssFile[uploadId].finished = percentage > 99 ? true : false;
+          //       return succssFile;
+          //     });
+          //     setProgressBar((prev: any) => {
+          //       const updatedProgress = { ...prev };
+          //       if (!updatedProgress[uploadId]) {
+          //         updatedProgress[uploadId] = {};
+          //       }
+          //       updatedProgress[uploadId][partNumber] = percentage;
+          //       updatedProgress[uploadId].total =
+          //         updatedProgress[uploadId][partNumber];
+          //       return updatedProgress;
+          //     });
+          //   },
+          //   (uploadId, partNumber, speed, duration) => {
+          //     setFileSpeeds((prev: any) => {
+          //       const updateSpeed = { ...prev };
+          //       if (!updateSpeed[uploadId]) {
+          //         updateSpeed[uploadId] = {};
+          //       }
+          //       updateSpeed[uploadId][partNumber] = speed;
+          //       updateSpeed[uploadId].total = updateSpeed[uploadId][partNumber];
+          //       return updateSpeed;
+          //     });
+          //     setFileTimes((prev: any) => {
+          //       const updatedTimes = { ...prev };
+          //       if (!updatedTimes[uploadId]) {
+          //         updatedTimes[uploadId] = {};
+          //       }
+          //       updatedTimes[uploadId][partNumber] = duration;
+          //       updatedTimes[uploadId].total =
+          //         updatedTimes[uploadId][partNumber];
+          //       return updatedTimes;
+          //     });
+          //   },
+          // );
+          // if (run.message == "success") {
+          //   item.push(run.data);
+          // }
 
-          const run = await startTransaction(
+          const { request, promise } = await startTransactionV1(
             targetList[i][j],
-            // (uploadId, partNumber, percentage) => {
-            //   setProgressBar((prev: any) => {
-            //     const updatedProgress = { ...prev };
-            //     if (!updatedProgress[uploadId]) {
-            //       updatedProgress[uploadId] = {};
-            //     }
-
-            //     updatedProgress[uploadId][partNumber] = percentage;
-            //     updatedProgress[uploadId].total =
-            //       updatedProgress[uploadId][partNumber];
-            //     console.log(updatedProgress[uploadId].total);
-            //     return updatedProgress;
-            //   });
-            // },
+            startDate,
+            (uploadId, partNumber, percentage) => {
+              setPresignSuccesFiles((prev: any) => {
+                const succssFile = { ...prev };
+                if (!succssFile[uploadId]) {
+                  succssFile[uploadId] = {};
+                }
+                succssFile[uploadId][partNumber] = false;
+                succssFile[uploadId].finished = percentage > 99 ? true : false;
+                return succssFile;
+              });
+              setProgressBar((prev: any) => {
+                const updatedProgress = { ...prev };
+                if (!updatedProgress[uploadId]) {
+                  updatedProgress[uploadId] = {};
+                }
+                updatedProgress[uploadId][partNumber] = percentage;
+                updatedProgress[uploadId].total =
+                  updatedProgress[uploadId][partNumber];
+                return updatedProgress;
+              });
+            },
+            (uploadId, partNumber, speed, duration) => {
+              setFileSpeeds((prev: any) => {
+                const updateSpeed = { ...prev };
+                if (!updateSpeed[uploadId]) {
+                  updateSpeed[uploadId] = {};
+                }
+                updateSpeed[uploadId][partNumber] = speed;
+                updateSpeed[uploadId].total = updateSpeed[uploadId][partNumber];
+                return updateSpeed;
+              });
+              setFileTimes((prev: any) => {
+                const updatedTimes = { ...prev };
+                if (!updatedTimes[uploadId]) {
+                  updatedTimes[uploadId] = {};
+                }
+                updatedTimes[uploadId][partNumber] = duration;
+                updatedTimes[uploadId].total =
+                  updatedTimes[uploadId][partNumber];
+                return updatedTimes;
+              });
+            },
           );
-          if (run.message == "success") {
+
+          const run = await promise;
+          if (run.message === "success") {
             item.push(run.data);
+
+            setRequestMap(
+              (prevMap) =>
+                new Map(prevMap.set(targetList[i][j].uploadId, request)),
+            );
           }
         }
 
@@ -519,92 +630,36 @@ export default function ShowUpload(props) {
       }
 
       partsData.push(...myparts);
-      console.log({ partsData });
 
       // # complete all transaction
+      console.log({ tagList, partsData });
       await endTransaction(partsData, tagList);
 
       await eventUploadTrigger?.trigger();
       setCanClose(false);
       setHideSelectMore(2);
-
-      // if (fileData.length > 0) {
-      //   try {
-      //     const uploadPromises = filesArray.map(async (file, index) => {
-      //       const randomName = Math.floor(1111111111 + Math.random() * 999999);
-      //       let path = "";
-      //       let newFilePath = "";
-      //       if (folderId > 0) {
-      //         const queryfolderPath = await queryPath({
-      //           variables: {
-      //             where: {
-      //               _id: folderId,
-      //               createdBy: user?._id,
-      //             },
-      //           },
-      //         });
-      //         const newPath = queryfolderPath?.data?.folders?.data[0]?.newPath;
-      //         if (newPath) {
-      //           path = newPath;
-      //           newFilePath =
-      //             newPath + "/" + randomName + getFileNameExtension(file.name);
-      //         }
-      //       }
-      //       const uploading = await uploadFiles({
-      //         variables: {
-      //           data: {
-      //             destination: "",
-      //             newFilename: randomName + getFileNameExtension(file.name),
-      //             filename: file.name,
-      //             fileType: file.type,
-      //             size: file.size.toString(),
-      //             checkFile: folderId > 0 ? "sub" : "main",
-      //             ...(folderId > 0 ? { folder_id: folderId } : {}),
-      //             ...(folderId > 0 ? { newPath: newFilePath } : {}),
-      //             country: country,
-      //             device: result.os.name || "" + result.os.version || "",
-      //             totalUploadFile: filesArray.length,
-      //           },
-      //         },
-      //       });
-
-      //       if (uploading?.data?.createFiles?._id) {
-      //         // const fileId = uploading?.data?.createFiles?._id;
-      //         // await handleActionFile(fileId);
-      //         // await handleUploadPresign(
-      //         //   index,
-      //         //   fileId,
-      //         //   file,
-      //         //   randomName + getFileNameExtension(file.name),
-      //         //   folderId > 0 ? path : "main",
-      //         // );
-      //         // await handleUploadToExternalServer(
-      //         //   index,
-      //         //   fileId,
-      //         //   file,
-      //         //   randomName + getFileNameExtension(file.name),
-      //         //   folderId > 0 ? path : "main",
-      //         // );
-      //       }
-      //     });
-      //     await Promise.all(uploadPromises);
-      //     await eventUploadTrigger?.trigger();
-      //     setCanClose(false);
-      //     setHideSelectMore(2);
-      //   } catch (error: any) {
-      //     console.error(error);
-      //     setCanClose(false);
-      //     setHideSelectMore(0);
-      //     const message = cutSpaceError(error.message);
-      //     if (message) {
-      //       errorMessage("Your space isn't enough", 3000);
-      //     } else {
-      //       handleErrorFiles(error);
-      //     }
-      //   }
-      // }
     } catch (error) {
-      console.log(`ERRRR`, error.message);
+      console.error(error);
+      setCanClose(false);
+      setHideSelectMore(0);
+      const message = cutSpaceError(error.message);
+      if (message) {
+        errorMessage("Your space isn't enough", 3000);
+      } else {
+        handleErrorFiles(error);
+      }
+    }
+  };
+
+  const handleCancelPresignUpload = (uploadId: string) => {
+    const request = requestMap.get(uploadId);
+    if (request) {
+      request.abort();
+      setRequestMap((prev: any) => {
+        const newMap = new Map(prev);
+        newPath.delete(uploadId);
+        return newMap;
+      });
     }
   };
 
@@ -821,6 +876,7 @@ export default function ShowUpload(props) {
 
   const handleCloseModal = () => {
     setHideSelectMore(0);
+    setUploads([]);
     onClose();
     onRemoveAll();
     handleUploadDone();
@@ -837,6 +893,7 @@ export default function ShowUpload(props) {
     setFolderSpeed({});
     setFolderStartTimeMap({});
     setFolderProgressMap({});
+    setProgressBar({});
   };
 
   const handleWarningMessage = () => {
@@ -1283,13 +1340,19 @@ export default function ShowUpload(props) {
 
               {files?.map((val, index) => {
                 const progress = fileProgress[index] || 0;
-                const isFileSuccessful = isSuccessful(index);
-
                 const upload = uploads.find(
                   (upload) => upload?.file?.name === val.name,
                 );
+
+                const isFilePresignedSuccess = upload
+                  ? presignSuccesFiles[upload.uploadId]?.finished || false
+                  : false;
                 const progressTab = upload
                   ? progressBar[upload.uploadId]?.total || 0
+                  : 0;
+                const timeTab = upload ? fileTimes[upload.uploadId]?.total : 0;
+                const speedTab = upload
+                  ? fileSpeeds[upload.uploadId]?.total
                   : 0;
 
                 return (
@@ -1327,11 +1390,13 @@ export default function ShowUpload(props) {
                               }}
                             >
                               Time:&nbsp;
-                              {fileTimes[index] ? fileTimes[index] : 0}
+                              {/* {fileTimes[index] ? fileTimes[index] : 0} */}
+                              {timeTab || 0}
                             </Typography>
                             <Typography variant="h6">
                               Speed:&nbsp;
-                              {fileSpeeds[index] ? fileSpeeds[index] : 0}
+                              {/* {fileSpeeds[index] ? fileSpeeds[index] : 0} */}
+                              {speedTab || 0}
                             </Typography>
                           </Box>
                         )}
@@ -1343,7 +1408,7 @@ export default function ShowUpload(props) {
                             color="error"
                             variant="outlined"
                           />
-                        ) : isFileSuccessful ? (
+                        ) : isFilePresignedSuccess ? (
                           <IconButton sx={{ background: "#EEFBF3" }}>
                             <DownloadDoneIcon sx={{ color: "#17766B" }} />
                           </IconButton>
@@ -1362,7 +1427,10 @@ export default function ShowUpload(props) {
                                 followCursor
                               >
                                 <IconButton
-                                  onClick={() => handleCancleUploadFile(index)}
+                                  // onClick={() => handleCancleUploadFile(index)}
+                                  onClick={() =>
+                                    handleCancelPresignUpload(upload?.uploadId)
+                                  }
                                 >
                                   <HighlightOffIcon
                                     sx={{
@@ -1403,11 +1471,6 @@ export default function ShowUpload(props) {
                           marginTop: "0.5rem",
                         }}
                       >
-                        {/* <LinearProgressWithLabel
-                          variant="determinate"
-                          value={progress}
-                          sx={{ borderRadius: "5px", height: "5px" }}
-                        /> */}
                         <LinearProgressWithLabel
                           variant="determinate"
                           value={progressTab}

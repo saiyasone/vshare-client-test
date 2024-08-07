@@ -81,7 +81,6 @@ export default function DialogPreviewFile(props) {
       }
     }
   }, [open, newFilename]);
-  const url = ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE;
   const newUrl = ENV_KEYS.VITE_APP_LOAD_URL + "preview?path=";
   const publicPath = props?.isPublicPath
     ? props?.isPublicPath + "/" + newFilename
@@ -180,7 +179,7 @@ export default function DialogPreviewFile(props) {
                 src={
                   "https://view.officeapps.live.com/op/embed.aspx?" +
                   "src=" +
-                  url +
+                  newUrl +
                   user?.newName +
                   "-" +
                   user?._id +
@@ -209,7 +208,7 @@ export default function DialogPreviewFile(props) {
                 </Typography>
                 <ReactAudioPlayer
                   src={
-                    url +
+                    newUrl +
                     user?.newName +
                     "-" +
                     user?._id +
@@ -240,7 +239,7 @@ export default function DialogPreviewFile(props) {
               <ReactPlayer
                 width={"100%"}
                 url={
-                  url +
+                  newUrl +
                   user?.newName +
                   "-" +
                   user?._id +
@@ -253,7 +252,7 @@ export default function DialogPreviewFile(props) {
             ) : type === "application" && getType === "pdf" ? (
               <iframe
                 src={
-                  url +
+                  newUrl +
                   user?.newName +
                   "-" +
                   user?._id +
@@ -266,7 +265,7 @@ export default function DialogPreviewFile(props) {
             ) : type === "text" && getType === "txt" ? (
               <iframe
                 src={
-                  url +
+                  newUrl +
                   user?.newName +
                   "-" +
                   user?._id +

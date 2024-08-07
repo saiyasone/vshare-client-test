@@ -458,10 +458,10 @@ const useManageFile = ({ user }) => {
         }
 
         return {
-          isFolder: false,
-          path: `${file.createdBy?.newName}-${file.createdBy?._id}/${real_path}/${file.newFilename}`,
-          _id: file.id,
+          // _id: file.id,
           createdBy: file.createdBy?._id,
+          path: `${file.createdBy?.newName}-${file.createdBy?._id}/${real_path}/${file.newFilename}`,
+          isFolder: false,
         };
       });
 

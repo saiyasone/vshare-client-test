@@ -47,6 +47,7 @@ function BaseSignin(props) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const mobileScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [verify2FA] = useMutation(MUTATION_VERIFY_2FA);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
@@ -108,9 +109,11 @@ function BaseSignin(props) {
           password: Yup.string().max(255).required("Password is required"),
         })}
         onSubmit={async (values, { setStatus }) => {
+          setIsLoading(true);
           try {
             if (!captchaKey) {
               const enabled2FA = await signIn(values.username, values.password);
+              setIsLoading(false);
               if (enabled2FA) {
                 setOpen(enabled2FA.authen);
                 setData(enabled2FA.user);
@@ -119,10 +122,9 @@ function BaseSignin(props) {
             }
           } catch (error: any) {
             setCaptchaKey(false);
+            setIsLoading(false);
             handleLoginFailure(error);
-            const _message = error.message || "Something went wrong";
             setStatus({ success: false });
-            /* setErrors({ submit: message }); */
           }
         }}
       >
@@ -226,6 +228,7 @@ function BaseSignin(props) {
                 my: touched.username && errors.username ? 0 : 2,
               }}
               disabled={captchaKey}
+              loading={isLoading}
             >
               Login
             </MUI.ButtonLogin>

@@ -585,7 +585,9 @@ function FileDrop() {
                   <Grid item sm={6} md={4} lg={4}>
                     <NormalButton
                       onClick={() => {
-                        setOpenDelete(true);
+                        if (multiId.length > 0) {
+                          setOpenDelete(true);
+                        }
                       }}
                       sx={{
                         padding: "0 10px",
@@ -598,9 +600,9 @@ function FileDrop() {
                             ? "rgba(255,255,255,0.4)"
                             : "rgba(0,0,0,0.4)",
                         borderRadius: "4px",
-                        ...(multiId?.length > 0
+                        ...(multiId?.length < 0
                           ? {
-                              cursor: "pointer",
+                              cursor: "",
                               opacity: 0.5,
                             }
                           : {

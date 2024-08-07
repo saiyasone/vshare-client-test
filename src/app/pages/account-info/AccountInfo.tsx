@@ -339,7 +339,6 @@ function AccountInfo() {
       onCompleted: (data) => {
         if (data?.getUser?.data.length > 0) {
           setUserAccount(data?.getUser?.data[0]);
-          console.log(data?.getUser?.data[0]);
           setFileNewName(data?.getUser?.data[0]?.profile);
         }
       },
@@ -404,10 +403,6 @@ function AccountInfo() {
     const pathBunny = user?.newName + "-" + user?._id + filePath;
     try {
       const headers = {
-        REGION: "sg",
-        BASE_HOSTNAME: "storage.bunnycdn.com",
-        STORAGE_ZONE_NAME: ENV_KEYS.VITE_APP_STORAGE_ZONE,
-        ACCESS_KEY: ENV_KEYS.VITE_APP_ACCESSKEY_BUNNY,
         PATH: pathBunny,
         FILENAME: newName,
         PATH_FOR_THUMBNAIL: user?.newName + "-" + user?._id,

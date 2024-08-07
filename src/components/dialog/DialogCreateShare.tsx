@@ -1,6 +1,7 @@
 import { useMutation } from "@apollo/client";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
+import { LoadingButton } from "@mui/lab";
 import {
   Avatar,
   Button,
@@ -536,10 +537,10 @@ const DialogCreateShare = (props) => {
                   mb: 1,
                 }}
               >
-              <ActionShareStatus
-                isglobals={accessStatusShare}
-                _handleIsGlobal={handleIsGlobal}
-              />
+                <ActionShareStatus
+                  isglobals={accessStatusShare}
+                  _handleIsGlobal={handleIsGlobal}
+                />
 
                 <Typography
                   component="p"
@@ -878,7 +879,7 @@ const DialogCreateShare = (props) => {
                 >
                   Cancel
                 </Button>
-                <Button
+                <LoadingButton
                   sx={{
                     borderRadius: "6px",
                     padding: "8px 25px",
@@ -889,7 +890,7 @@ const DialogCreateShare = (props) => {
                   color="primaryTheme"
                 >
                   Save change
-                </Button>
+                </LoadingButton>
               </ActionContainer>
             </DialogContent>
           </>
