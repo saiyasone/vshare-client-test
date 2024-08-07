@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ENV_KEYS } from "constants/env.constant";
-import CryptoJS from "crypto-js";
 import { calculateTime } from "utils/date.util";
+import { encryptData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import * as uuid from "uuid";
 
@@ -13,24 +13,14 @@ export const encryptHeader = (
   createdBy?: string,
   pathBunny?: string,
 ) => {
-  const auth = {
+  const auth: any = {
     createdBy,
     PATH: pathBunny,
     FILENAME: newFilename,
   };
 
   try {
-    const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
-    const key = CryptoJS.enc.Utf8.parse(secretKey);
-    const iv = CryptoJS.lib.WordArray.random(16);
-    const encrypted = CryptoJS.AES.encrypt(JSON.stringify(auth), key, {
-      iv: iv,
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7,
-    });
-    const cipherText = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
-    const ivText = iv.toString(CryptoJS.enc.Base64);
-    const encryptedData = cipherText + ":" + ivText;
+    const encryptedData = encryptData(auth);
     return encryptedData;
   } catch (error) {
     console.error("Error encrypting header:", error);

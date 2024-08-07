@@ -632,7 +632,6 @@ export default function ShowUpload(props) {
       partsData.push(...myparts);
 
       // # complete all transaction
-      console.log({ tagList, partsData });
       await endTransaction(partsData, tagList);
 
       await eventUploadTrigger?.trigger();
