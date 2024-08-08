@@ -940,15 +940,15 @@ function ExtendShare() {
         where: {
           path,
           createdBy: user?._id,
+          status: "active",
         },
       },
     });
 
     if (result) {
-      console.log(result);
-      // const [dataById] = result.data?.folders?.data || [];
-      // const base64URL = Base64.encodeURI(dataById._id);
-      // navigate(`/folder/share/${base64URL}`);
+      const [dataById] = result.data?.folders?.data || [];
+      const base64URL = Base64.encodeURI(dataById._id);
+      navigate(`/folder/share/${base64URL}`);
     }
   };
 
@@ -1322,9 +1322,9 @@ function ExtendShare() {
                                         "-" +
                                         data?.createdBy?._id +
                                         "/" +
-                                        (data.newPath
+                                        (data?.newPath
                                           ? removeFileNameOutOfPath(
-                                              data.newPath,
+                                              data?.newPath,
                                             )
                                           : "") +
                                         data?.newFilename
@@ -1334,14 +1334,14 @@ function ExtendShare() {
                                       handleSelect={handleMultipleSelectionFile}
                                       isCheckbox={true}
                                       fileType={getShortFileTypeFromFileType(
-                                        data.type,
+                                        data?.type,
                                       )}
                                       filePassword={data?.filePassword}
-                                      name={data.name}
+                                      name={data?.name}
                                       // key={index}
                                       menuItems={shareWithMeFileMenuItems.map(
                                         (menuItem, index) => {
-                                          if (data.permission) {
+                                          if (data?.permission) {
                                             return (
                                               <MenuDropdownItem
                                                 {...((menuItem.action ===

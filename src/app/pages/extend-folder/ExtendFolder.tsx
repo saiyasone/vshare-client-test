@@ -1107,6 +1107,7 @@ function ExtendFolder() {
         where: {
           path,
           createdBy: user?._id,
+          status: "active",
         },
       },
       onCompleted: (data: any) => {

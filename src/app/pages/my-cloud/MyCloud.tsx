@@ -661,46 +661,6 @@ export function MyCloud() {
         },
       },
     );
-
-    // await manageFile.handleDownloadFile(
-    //   {
-    //     id: data._id,
-    //     newPath: data.newPath,
-    //     newFilename: data.newFilename,
-    //     filename: data.filename,
-    //   },
-    //   {
-    //     onProcess: async (countPercentage) => {
-    //       setProgressing(countPercentage);
-    //     },
-    //     onSuccess: async () => {
-    //       successMessage("Download successful", 3000);
-    //       setGetValue((prev) => {
-    //         return {
-    //           ...prev,
-    //           totalDownload: parseInt(getValue?.totalDownload + 1),
-    //         };
-    //       });
-    //       if (toggle === "list") {
-    //         queryFile();
-    //       } else {
-    //         queryFileGrid();
-    //       }
-    //     },
-    //     onFailed: async (error) => {
-    //       errorMessage(error, 3000);
-    //     },
-    //     onClosure: () => {
-    //       setIsAutoClose(true);
-    //       setFileDetailsDialog(false);
-    //       setGetValue(null);
-    //       resetDataForEvent();
-    //       setShowProgressing(false);
-    //       setProcesing(false);
-    //       setProgressing(0);
-    //     },
-    //   },
-    // );
   };
 
   // download more folder
@@ -746,28 +706,6 @@ export function MyCloud() {
         onProcess: () => {},
       },
     );
-    // await manageFolder.handleDownloadFolder(
-    //   {
-    //     id: data._id,
-    //     folderName: data.folder_name,
-    //     newPath: data.newPath,
-    //   },
-    //   {
-    //     onFailed: async (error) => {
-    //       errorMessage(error, 3000);
-    //     },
-    //     onSuccess: async () => {
-    //       successMessage("Download successful", 3000);
-    //     },
-    //     onClosure: async () => {
-    //       setShowProgressing(false);
-    //       setShowProgressing(false);
-    //       resetDataForEvent();
-    //       setFileDetailsDialog(false);
-    //       setIsOpenMenu(false);
-    //     },
-    //   },
-    // );
   };
 
   const handleDeleteFile = async (data) => {
