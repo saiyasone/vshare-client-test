@@ -1,7 +1,7 @@
 import { useMutation } from "@apollo/client";
 import { DataGrid } from "@mui/x-data-grid";
 import { Base64 } from "js-base64";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { NavLink } from "react-router-dom";
 import * as Mui from "./styles/fileDrop.style";
@@ -15,8 +15,10 @@ import useAuth from "../../../hooks/useAuth";
 // material ui
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
+import DownloadSharpIcon from "@mui/icons-material/DownloadSharp";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
+import ReplyAllSharpIcon from "@mui/icons-material/ReplyAllSharp";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import {
   Box,
@@ -48,21 +50,26 @@ import useManageFileDrop from "hooks/file/useManageFileDrop";
 import useFilter from "hooks/useFilter";
 import moment from "moment";
 import { HiOutlineTrash } from "react-icons/hi";
+import QRCode from "react-qr-code";
 import { THEMES } from "theme/variant";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { generateRandomUniqueNumber } from "utils/number.util";
+import { handleDownloadQRCode, handleShareQR } from "utils/image.share.download";
 
 function FileDrop() {
   const theme: any = createTheme();
   const { user }: any = useAuth();
   const isMobile = useMediaQuery("(max-width:767px)");
   const link = ENV_KEYS.VITE_APP_FILE_DROP_LINK;
+  const qrCodeRef = useRef<SVGSVGElement | any>(null);
   const [value, setValue] = useState<any>(link);
+  const [isEmptyTitle, setIsEmptyTitle] = useState('');
   const [isCopy, setIsCopy] = useState<any>(false);
   const [isCopied, setIsCopied] = useState<any>({});
   const [selectDay, setSelectDay] = useState<any>(1);
   const [expiredDate, setExpiredDate] = useState<any>(null);
   const [isShow, setIsShow] = useState<any>(false);
+  const [showValid, setShowValid] = useState<boolean>(false);
   const [multiId, setMultiId] = useState<any>([]);
   const [openDelete, setOpenDelete] = useState<any>(false);
   const [showCreateform, setShowCreateForm] = useState<any>(false);
@@ -82,6 +89,10 @@ function FileDrop() {
 
   // checked file pagination
   const generateFileDropLink = async () => {
+    if(!headerData.title){
+      setIsEmptyTitle('Title is required');
+      return false;
+    }
     setIsCopy(false);
     const genLink = link + user?._id + "-" + generateRandomUniqueNumber();
     setValue(genLink);
@@ -116,6 +127,7 @@ function FileDrop() {
 
   const handleCopyLink = () => {
     setIsCopy(true);
+    setShowValid(true);
   };
 
   const handleCopy = (url, id) => {
@@ -150,6 +162,10 @@ function FileDrop() {
       ...prevHeaderData,
       title: event.target.value,
     }));
+
+    if(!headerData.title && !event.target.value){
+      setIsEmptyTitle('');
+    }
   };
 
   const handleDescriptionChange = (event) => {
@@ -208,6 +224,14 @@ function FileDrop() {
       errorMessage(cutErr, 3000);
     }
   };
+
+  useEffect(() => {
+    if (showValid) {
+      setTimeout(() => {
+        setShowValid(false);
+      }, 5000);
+    }
+  }, [showValid, headerData.title]);
 
   const columns: any = [
     {
@@ -349,13 +373,14 @@ function FileDrop() {
               </Typography>
             </Mui.ShowHeaderDetail>
             <div style={{ textAlign: "start", marginTop: "1rem" }}>
-              <InputLabel
-                sx={{
-                  color: "grey !important",
-                }}
-              >
-                Title
-              </InputLabel>
+              <Box>
+                <InputLabel
+                  sx={{
+                    color: "grey !important",
+                  }}
+                >
+                  <b style={{color:'red'}}>*</b> Title
+                </InputLabel>
               <TextField
                 sx={{
                   width: "100%",
@@ -370,6 +395,12 @@ function FileDrop() {
                 value={headerData.title}
                 onChange={handleTitleChange}
               />
+              <Typography component={'p'} style={{color:'red'}}>
+                {
+                  !headerData.title && isEmptyTitle
+                }
+              </Typography>
+            </Box>
               <InputLabel
                 sx={{
                   color: "grey !important",
@@ -396,57 +427,84 @@ function FileDrop() {
               />
             </div>
             <Mui.GenerateLinkArea>
-              <FormControl sx={{ width: "20%" }} size="small">
-                <InputLabel id="demo-simple-select-label">
-                  Expired date
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={selectDay}
-                  label="Expired date"
-                  onChange={handleExpiredDateChange}
+              <Grid container gap={6}>
+                <Grid item xs={12} md={6}>
+                  <FormControl sx={{ width: "100%" }} size="small">
+                    <InputLabel id="demo-simple-select-label">
+                      Expired date
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={selectDay}
+                      label="Expired date"
+                      onChange={handleExpiredDateChange}
+                      sx={{ textAlign: "start" }}
+                    >
+                      <MenuItem value={1}>1 day after created</MenuItem>
+                      <MenuItem value={2}>2 days after created</MenuItem>
+                      <MenuItem value={3}>3 days after created</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid
+                  item
+                  xs={12}
+                  md={4}
+                  sx={{
+                    display: "flex",
+                    justifyContent: { xs: "flex-end", md: "flex-start" },
+                  }}
                 >
-                  <MenuItem value={1}>1 day after created</MenuItem>
-                  <MenuItem value={2}>2 days after created</MenuItem>
-                  <MenuItem value={3}>3 days after created</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField
-                sx={{
-                  width: "75%",
-                  fontSize: "18px !important",
-                  color: "grey !important",
-                }}
-                size="small"
-                InputLabelProps={{
-                  shrink: false,
-                }}
-                disabled
-                value={value == link ? "Link to upload..." : value}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      {isCopy ? (
-                        <IconButton>
-                          <DownloadDoneIcon sx={{ color: "#17766B" }} />
-                        </IconButton>
-                      ) : (
-                        <CopyToClipboard text={value} onCopy={handleCopyLink}>
-                          <IconButton
-                            aria-label="copy"
-                            disabled={value == link ? true : false}
-                          >
-                            <ContentCopyIcon sx={{ fontSize: "1rem" }} />
-                          </IconButton>
-                        </CopyToClipboard>
-                      )}
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                  <Button
+                    variant="contained"
+                    onClick={generateFileDropLink}
+                    sx={{ width: { xs: "100%", md: "auto" } }}
+                  >
+                    Generate link now
+                  </Button>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    sx={{
+                      width: "100%",
+                      fontSize: "18px !important",
+                      color: "grey !important",
+                    }}
+                    size="small"
+                    InputLabelProps={{
+                      shrink: false,
+                    }}
+                    disabled
+                    value={value == link ? "Link to upload..." : value}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          {isCopy && showValid ? (
+                            <IconButton>
+                              <DownloadDoneIcon sx={{ color: "#17766B" }} />
+                            </IconButton>
+                          ) : (
+                            <CopyToClipboard
+                              text={value}
+                              onCopy={handleCopyLink}
+                            >
+                              <IconButton
+                                aria-label="copy"
+                                disabled={value == link ? true : false}
+                              >
+                                <ContentCopyIcon sx={{ fontSize: "1rem" }} />
+                              </IconButton>
+                            </CopyToClipboard>
+                          )}
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              </Grid>
             </Mui.GenerateLinkArea>
-            <Box
+            {/* <Box
               sx={{
                 display: "flex",
                 alignItems: "start",
@@ -468,14 +526,90 @@ function FileDrop() {
                   </span>
                 </Typography>
               )}
-              <Button
-                variant="contained"
-                onClick={generateFileDropLink}
-                sx={{ mt: 4 }}
-              >
-                Generate link now
-              </Button>
-            </Box>
+            </Box> */}
+            {isShow && (
+              <Grid container sx={{ mt: 10 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: { xs: "center", md: "flex-start" },
+                  }}
+                >
+                  {/* <div ref={qrRef}> */}
+                    {/* <QRCode
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        border: "1px solid gray",
+                        padding: "7px",
+                        borderRadius: "7px",
+                      }}
+                      value={value}
+                      ref={qrCodeRef}
+                      viewBox={`0 0 256 256`}
+                    /> */}
+                  {/* </div> */}
+                  <div ref={qrCodeRef} style={{ display: 'inline-block', padding: '7px', border: '1px solid gray', borderRadius: '7px' }}>
+                    <QRCode
+                      style={{ width: "100px", height: "100px" }}
+                      value={value}
+                      viewBox={`0 0 256 256`}
+                    />
+                  </div>
+                </Box>
+                <Box sx={{ mt: { xs: 7, md: 2 }, ml: { xs: 0, md: 10 } }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "start",
+                      justifyContent: "start",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Typography sx={{ fontSize: "0.8rem", color: "#4B465C" }}>
+                      This link:{" "}
+                      <span style={{ color: "#17766B" }}>{value}</span> will be
+                      expired on: &nbsp;
+                      <span style={{ color: "#17766B" }}>
+                        {expiredDate
+                          ? expiredDate
+                          : moment(calculateExpirationDate(1)).format(
+                              "YYYY-MM-DD h:mm:ss",
+                            )}
+                        .
+                      </span>
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: { xs: "center", md: "flex-start" },
+                      mt: 7,
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      onClick={(e)=>handleDownloadQRCode(e, qrCodeRef, headerData)}
+                      sx={{ width: "130px" }}
+                    >
+                      <DownloadSharpIcon sx={{ mr: 3 }} />
+                      Download
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={(e)=>handleShareQR(e, qrCodeRef, headerData)}
+                      sx={{ ml: 5, width: "130px" }}
+                    >
+                      Share
+                      <ReplyAllSharpIcon
+                        sx={{ ml: 3, transform: "rotate(180deg) scale(1,-1)" }}
+                      />
+                    </Button>
+                  </Box>
+                </Box>
+              </Grid>
+            )}
           </Mui.FiledropContainer>
         </Mui.PaperGlobal>
       )}

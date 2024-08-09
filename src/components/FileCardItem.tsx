@@ -231,6 +231,7 @@ const FileCardItem: React.FC<any> = ({
     user,
     isPublic: props?.isPublic ? true : false,
   });
+
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const itemRef = useRef(null);
