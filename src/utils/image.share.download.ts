@@ -1,5 +1,5 @@
 import html2canvas from "html2canvas";
-import { errorMessage, successMessage } from "./alert.util";
+import { errorMessage } from "./alert.util";
 
 export const handleShareQR = async (event: React.MouseEvent<HTMLButtonElement>, qrCodeRef: React.RefObject<HTMLElement>, text: {title: string, description: string}) => {
     event.preventDefault();
