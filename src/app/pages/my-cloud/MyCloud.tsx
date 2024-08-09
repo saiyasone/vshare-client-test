@@ -943,9 +943,21 @@ export function MyCloud() {
   ) => {
     try {
       if (activePrivateFileDrop) {
-        const fileDropLink = await updateFileDrop({
+        // console.log('124564654');
+        // const fileDropLink = await updateFileDrop({
+        //   variables: {
+        //     id: activePrivateFileDrop._id,
+        //     input: convertObjectEmptyStringToNull({
+        //       url: link,
+        //       expiredAt: date,
+        //       title: values?.title,
+        //       description: values?.description || null,
+        //       folderId: folderDropId,
+        //     }),
+        //   },
+        // });
+        const fileDropLink = await createFileDropLink({
           variables: {
-            id: activePrivateFileDrop._id,
             input: convertObjectEmptyStringToNull({
               url: link,
               expiredAt: date,
