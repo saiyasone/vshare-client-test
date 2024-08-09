@@ -975,6 +975,7 @@ export function MyCloud() {
         }
       }
     } catch (error) {
+      console.log(error);
       errorMessage("Something went wrong!", 3000);
     }
   };
