@@ -1920,8 +1920,8 @@ export default function ShowUpload(props) {
                   handleUploadToInternalServer(data);
                 } else if (data?.length > 0 && folderData?.length === 0) {
                   // handleUploadToInternalServer(data);
-                  // handleUploadToInternalServerV1(data);
-                  handleUploadToInternalServerV2(data);
+                  handleUploadToInternalServerV1(data);
+                  // handleUploadToInternalServerV2(data);
                 } else if (data?.length === 0 && folderData?.length > 0) {
                   handleUploadFolder();
                 }

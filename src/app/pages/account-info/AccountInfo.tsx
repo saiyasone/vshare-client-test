@@ -732,7 +732,6 @@ function AccountInfo() {
                           <>
                             {userAccount?.profile ? (
                               <>
-                              {JSON.stringify(userAccount?.profile)}
                                 <img
                                   src={
                                     isProfileImageFound
