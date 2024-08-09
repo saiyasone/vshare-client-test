@@ -123,7 +123,8 @@ export default function ShowUpload(props: Props) {
   const [fileStates, setFileStates] = useState<Record<number, any>>({});
   const [startUpload, setStartUpload] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
-  const chunkSize = 10 * 1024 * 1024; // 100 mb
+  const chunkSize = 10 * 1024 * 1024; // 50 mb
+  const largeChunkSize = 50 * 1024 * 1024;
 
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
@@ -703,7 +704,7 @@ export default function ShowUpload(props: Props) {
           dataFile.newPath = newFilePath;
 
           // const initiatedUpload = await initiateUpload(index, dataFile);
-          // return initiatedUpload || {};1
+          // return initiatedUpload || {};
 
           const uploading = await uploadFiles({
             variables: {
@@ -744,6 +745,8 @@ export default function ShowUpload(props: Props) {
       setStartUpload(true);
     } catch (error) {
       console.log({ error });
+      setHideSelectMore(0);
+      setCanClose(false);
       errorMessage(error, 3000);
     }
   };
@@ -801,6 +804,7 @@ export default function ShowUpload(props: Props) {
           progress: 0,
           startTime: Date.now(),
           timeElapsed: "",
+          duration: "",
         },
       };
     } catch (error: any) {
@@ -855,6 +859,8 @@ export default function ShowUpload(props: Props) {
       PATH: file.path,
       FILENAME: file.newFilename,
     };
+
+    console.log({ uploadParts: headers });
     const _encryptHeader = await encryptData(headers);
     const presignedResponse = await fetch(
       `${ENV_KEYS.VITE_APP_LOAD_URL}generate-presigned-url`,
@@ -883,10 +889,16 @@ export default function ShowUpload(props: Props) {
 
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
+          const endDurationTime = Date.now();
+          const duration = calculateTime(
+            endDurationTime - fileStates[fileIndex].startTime,
+          );
+
           setFileStates((prev) => ({
             ...prev,
             [fileIndex]: {
               ...prev[fileIndex],
+              duration,
               parts: [
                 ...prev[fileIndex].parts,
                 { ETag: xhr.getResponseHeader("ETag"), PartNumber: partNumber },
@@ -912,14 +924,13 @@ export default function ShowUpload(props: Props) {
             const endTime = Date.now();
             const timeTaken =
               (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
+
             setFileStates((prev) => ({
               ...prev,
               [fileIndex]: {
                 ...prev[fileIndex],
                 uploadFinished: true,
-                timeElapsed: `Upload completed in ${(timeTaken / 60).toFixed(
-                  2,
-                )} minutes`,
+                timeElapsed: `${(timeTaken / 60).toFixed(2)} minutes`,
               },
             }));
           }
@@ -958,6 +969,7 @@ export default function ShowUpload(props: Props) {
       PATH: file.path,
     };
 
+    console.log({ completeUpload: headers });
     const _encryptHeader = encryptData(headers);
 
     try {
@@ -1039,6 +1051,7 @@ export default function ShowUpload(props: Props) {
     const startUploads = async () => {
       for (const fileIndex of Object.keys(fileStates)) {
         if (!fileStates[parseInt(fileIndex)]?.uploadFinished) {
+          console.log("first");
           uploadFileParts(
             parseInt(fileIndex),
             fileStates[parseInt(fileIndex)]?.file,
@@ -1052,9 +1065,17 @@ export default function ShowUpload(props: Props) {
   }, [startUpload]);
 
   React.useEffect(() => {
+    console.log({ fileStates });
+    // console.log({ fileStates: Object.values(fileStates).length, files: files.length });
     const completeFunction = async () => {
       if (Object.values(fileStates).length === files.length) {
         Object.values(fileStates).map(async (fileState, fileIndex) => {
+          console.log({
+            progress: fileState?.progress,
+            retryPart: fileState?.retryParts?.length,
+            parts: fileState?.parts?.length,
+            uploadComplete,
+          });
           if (
             fileState?.progress >= 100 &&
             fileState?.retryParts?.length <= 0 &&
@@ -1829,7 +1850,7 @@ export default function ShowUpload(props: Props) {
                               Time:&nbsp;
                               {/* {fileTimes[index] ? fileTimes[index] : 0} */}
                               {/* {timeTab || 0} */}
-                              {fileStates[index]?.timeElapsed || 0}
+                              {fileStates[index]?.duration || 0}
                             </Typography>
                             <Typography variant="h6">
                               Speed:&nbsp;
