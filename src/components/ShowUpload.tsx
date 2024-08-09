@@ -58,7 +58,18 @@ import { encryptData } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import { limitContent } from "utils/string.util";
 
-export default function ShowUpload(props) {
+type Props = {
+  open?: boolean;
+  data?: any;
+  onSelectMore?: () => void;
+  onDeleteData?: (index?: number, type?: string) => void;
+  onClose?: () => void;
+  onRemoveAll?: () => void;
+  folderData: any[];
+  parentComponent?: string;
+};
+
+export default function ShowUpload(props: Props) {
   const {
     open,
     data,
@@ -110,9 +121,9 @@ export default function ShowUpload(props) {
 
   // presign v2
   const [fileStates, setFileStates] = useState<Record<number, any>>({});
-  const [startUplload, setStartUpload] = useState(false);
+  const [startUpload, setStartUpload] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
-  const chunkSize = 10 * 1024 * 1024;
+  const chunkSize = 10 * 1024 * 1024; // 100 mb
 
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
@@ -179,40 +190,36 @@ export default function ShowUpload(props) {
   };
 
   const handleUploadCancel = (index, type) => {
-    onDeleteData(index, type);
+    onDeleteData?.(index, type);
   };
 
   const isSuccessful = (index) => {
     return successfulFiles.includes(index) || isSuccess[index];
   };
 
-  const isPresignSuccessful = (data) => {
-    return presignSuccesFiles.includes(data);
-  };
+  // const handleCancleUploadFile = async (index) => {
+  //   const id = fileId[index];
+  //   await deleteFile({
+  //     variables: {
+  //       id: id,
+  //     },
+  //     onCompleted: () => {
+  //       setCancelStatus((prev) => ({
+  //         ...prev,
+  //         [index]: true,
+  //       }));
+  //     },
+  //   });
 
-  const handleCancleUploadFile = async (index) => {
-    const id = fileId[index];
-    await deleteFile({
-      variables: {
-        id: id,
-      },
-      onCompleted: () => {
-        setCancelStatus((prev) => ({
-          ...prev,
-          [index]: true,
-        }));
-      },
-    });
-
-    if (cancelToken[index]) {
-      cancelToken[index].cancel();
-      setCancelToken((prev) => {
-        const newState = { ...prev };
-        delete newState[index];
-        return newState;
-      });
-    }
-  };
+  //   if (cancelToken[index]) {
+  //     cancelToken[index].cancel();
+  //     setCancelToken((prev) => {
+  //       const newState = { ...prev };
+  //       delete newState[index];
+  //       return newState;
+  //     });
+  //   }
+  // };
 
   const handleCancelUploadFolder = async (folderKey) => {
     try {
@@ -255,7 +262,7 @@ export default function ShowUpload(props) {
   };
 
   const handleUploadDone = () => {
-    onRemoveAll();
+    onRemoveAll?.();
     setIsHide(false);
   };
 
@@ -695,6 +702,9 @@ export default function ShowUpload(props) {
           dataFile.path = pathBunny;
           dataFile.newPath = newFilePath;
 
+          // const initiatedUpload = await initiateUpload(index, dataFile);
+          // return initiatedUpload || {};1
+
           const uploading = await uploadFiles({
             variables: {
               data: {
@@ -726,17 +736,14 @@ export default function ShowUpload(props) {
       );
 
       const newFileStates = fileStateEntries.reduce(
-        (acc, entry) => ({
-          ...acc,
-          entry,
-        }),
+        (acc, fileState) => ({ ...acc, ...fileState }),
         {},
       );
 
-      console.log({ newFileStates });
-      // setFileStates(newFileStates);
-      // setStartUpload(true);
+      setFileStates(newFileStates);
+      setStartUpload(true);
     } catch (error) {
+      console.log({ error });
       errorMessage(error, 3000);
     }
   };
@@ -745,12 +752,26 @@ export default function ShowUpload(props) {
     try {
       const headers = {
         createdBy: file.createdBy,
-        newFilename: file.newFilename,
+        FILENAME: file.newFilename,
         PATH: file.path,
       };
 
-      const _encryptHeader = encryptData(headers);
-      // await encryptHeader(file.newFilename);
+      const _encryptHeader = await encryptData(headers);
+
+      // ========= axios =========
+      // const initiateResponse = await axios.post(
+      //   `${ENV_KEYS.VITE_APP_LOAD_URL}initiate-multipart-upload`,
+      //   {},
+      //   {
+      //     headers: {
+      //       encryptedheaders: _encryptHeader!,
+      //     },
+      //   },
+      // );
+
+      // const data = await initiateResponse.data;
+      // const uploadId = data.uploadId;
+
       const initiateResponse = await fetch(
         `${ENV_KEYS.VITE_APP_LOAD_URL}initiate-multipart-upload`,
         {
@@ -784,7 +805,6 @@ export default function ShowUpload(props) {
       };
     } catch (error: any) {
       console.error("Error initiating upload:", error);
-      alert(`Error initiating upload: ${error.message}`);
     }
   };
 
@@ -856,7 +876,7 @@ export default function ShowUpload(props) {
     const { url } = await presignedResponse.json();
 
     return new Promise<void>((resolve, reject) => {
-      console.log({ partNumber });
+      // console.log({ partNumber });
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", url, true);
       xhr.setRequestHeader("Content-Type", blob.type);
@@ -873,8 +893,9 @@ export default function ShowUpload(props) {
               ],
             },
           }));
-          console.log({ partNumber });
+          // console.log({ partNumber });
           const percentComplete = Math.round((partNumber * 100) / numParts);
+          // console.log({ percentComplete });
           setFileStates((prev) => ({
             ...prev,
             [fileIndex]: { ...prev[fileIndex], progress: percentComplete },
@@ -888,7 +909,6 @@ export default function ShowUpload(props) {
           // allParts.push({ ETag: xhr.getResponseHeader('ETag'), PartNumber: partNumber })
 
           if (percentComplete >= 100) {
-            console.log({ fileStates });
             const endTime = Date.now();
             const timeTaken =
               (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
@@ -933,10 +953,11 @@ export default function ShowUpload(props) {
     formData.append("uploadId", uploadId);
 
     const headers = {
-      PATH: files,
+      createdBy: file.createdBy,
       FILENAME: file.newFilename,
-      createdBy: user?._id,
+      PATH: file.path,
     };
+
     const _encryptHeader = encryptData(headers);
 
     try {
@@ -966,11 +987,13 @@ export default function ShowUpload(props) {
           ...prev[fileIndex],
           parts: [],
           uploadFinished: false,
-          timeElapsed: `Upload completed in ${(timeTaken / 60).toFixed(
-            2,
-          )} minutes`,
+          timeElapsed: `${(timeTaken / 60).toFixed(2)}`,
         },
       }));
+
+      await eventUploadTrigger?.trigger();
+      setCanClose(false);
+      setHideSelectMore(2);
     } catch (error: any) {
       console.error("Error completing multipart upload:", error);
       // alert(`Error completing multipart upload: ${error.message}`);
@@ -980,11 +1003,10 @@ export default function ShowUpload(props) {
   const retryFailedParts = async () => {
     if (!navigator.onLine) return;
     console.log("retry when failed to upload files");
-    console.log({ fileStates });
 
     const promises = Object.keys(fileStates).map(async (fileIndex) => {
       const { retryParts, file } = fileStates[parseInt(fileIndex)];
-      console.log("start====1", fileIndex);
+
       setFileStates((prev) => ({
         ...prev,
         [fileIndex]: { ...prev[parseInt(fileIndex)], retryParts: [] },
@@ -994,7 +1016,6 @@ export default function ShowUpload(props) {
         const blob = file.slice(start, end);
         try {
           await uploadPart(parseInt(fileIndex), partNumber, blob);
-          console.log("start====2", fileIndex);
         } catch (error) {
           console.error(`Error retrying part ${partNumber}: `, error);
           setFileStates((prev) => ({
@@ -1025,10 +1046,10 @@ export default function ShowUpload(props) {
         }
       }
     };
-    if (startUploads) {
+    if (startUpload) {
       startUploads();
     }
-  }, [startUplload]);
+  }, [startUpload]);
 
   React.useEffect(() => {
     const completeFunction = async () => {
@@ -1040,7 +1061,7 @@ export default function ShowUpload(props) {
             fileState?.parts?.length > 0 &&
             uploadComplete
           ) {
-            console.log("start complete:: ", fileIndex, { fileState });
+            // console.log("start complete:: ", fileIndex, { fileState });
             await tryCompleteMultipartUpload(
               fileIndex,
               [...(fileState?.parts || [])],
@@ -1085,7 +1106,7 @@ export default function ShowUpload(props) {
     setCanClose(true);
     let successFolderCount = 0;
     try {
-      const foldersArray = Array.from(folderData);
+      const foldersArray = Array.from(folderData || []);
       const totalFolders = foldersArray.length;
       for (const key in foldersArray) {
         const files: any = foldersArray[key];
@@ -1265,6 +1286,9 @@ export default function ShowUpload(props) {
         }
       }
     } catch (error: any) {
+      setHideSelectMore(2);
+      setCanClose(false);
+
       const cutError = error.message.replace(/(ApolloError: )?Error: /, "");
       if (cutError == "LOGIN_IS_REQUIRED") {
         errorMessage("Your token is expired!!", 3000);
@@ -1289,15 +1313,15 @@ export default function ShowUpload(props) {
   const handleCloseModal = () => {
     setHideSelectMore(0);
     setUploads([]);
-    onClose();
-    onRemoveAll();
+    onClose?.();
+    onRemoveAll?.();
     handleUploadDone();
     setFileProgress({});
     setIsSuccess(false);
     setIsHide(false);
     setIsFolderSuccess(false);
-    setFolderProgressMap({});
     setFileSpeeds([]);
+    setFileStates({});
     setFileTimes([]);
     setCancelStatus(false);
     setCancelFolderStatus(false);
@@ -1313,7 +1337,7 @@ export default function ShowUpload(props) {
   };
 
   const handleSelectMore = () => {
-    onSelectMore();
+    onSelectMore?.();
   };
 
   const handleActionFile = async (id) => {
@@ -1385,7 +1409,7 @@ export default function ShowUpload(props) {
     <React.Fragment>
       <Dialog
         onClose={canClose ? () => {} : handleCloseModal}
-        open={open}
+        open={open || false}
         fullWidth
         maxWidth="sm"
       >
@@ -1752,6 +1776,7 @@ export default function ShowUpload(props) {
 
               {files?.map((val, index) => {
                 const progress = fileProgress[index] || 0;
+                const progressV1 = fileStates[index]?.progress || 0;
                 const upload = uploads.find(
                   (upload) => upload?.file?.name === val.name,
                 );
@@ -1803,7 +1828,8 @@ export default function ShowUpload(props) {
                             >
                               Time:&nbsp;
                               {/* {fileTimes[index] ? fileTimes[index] : 0} */}
-                              {timeTab || 0}
+                              {/* {timeTab || 0} */}
+                              {fileStates[index]?.timeElapsed || 0}
                             </Typography>
                             <Typography variant="h6">
                               Speed:&nbsp;
@@ -1820,7 +1846,7 @@ export default function ShowUpload(props) {
                             color="error"
                             variant="outlined"
                           />
-                        ) : isFilePresignedSuccess ? (
+                        ) : fileStates[index]?.uploadFinished ? (
                           <IconButton sx={{ background: "#EEFBF3" }}>
                             <DownloadDoneIcon sx={{ color: "#17766B" }} />
                           </IconButton>
@@ -1885,7 +1911,7 @@ export default function ShowUpload(props) {
                       >
                         <LinearProgressWithLabel
                           variant="determinate"
-                          value={progressTab}
+                          value={progressV1}
                           sx={{ borderRadius: "5px", height: "5px" }}
                         />
                       </Box>
@@ -1920,8 +1946,8 @@ export default function ShowUpload(props) {
                   handleUploadToInternalServer(data);
                 } else if (data?.length > 0 && folderData?.length === 0) {
                   // handleUploadToInternalServer(data);
-                  handleUploadToInternalServerV1(data);
-                  // handleUploadToInternalServerV2(data);
+                  // handleUploadToInternalServerV1(data);
+                  handleUploadToInternalServerV2(data);
                 } else if (data?.length === 0 && folderData?.length > 0) {
                   handleUploadFolder();
                 }

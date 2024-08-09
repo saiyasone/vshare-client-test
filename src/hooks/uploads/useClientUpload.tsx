@@ -149,6 +149,7 @@ export function startTransaction(
             ((event.loaded + (target.partNumber - 1) * chunkSize) * 100) /
               target.size,
           );
+          console.log(percentComplete);
           handleProgress?.(target.uploadId, target.partNumber, percentComplete);
         }
       };
