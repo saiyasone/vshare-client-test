@@ -1,6 +1,5 @@
 import { useMutation } from "@apollo/client";
 import { DataGrid } from "@mui/x-data-grid";
-import { Base64 } from "js-base64";
 import { useEffect, useRef, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { NavLink } from "react-router-dom";
@@ -54,7 +53,11 @@ import QRCode from "react-qr-code";
 import { THEMES } from "theme/variant";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { generateRandomUniqueNumber } from "utils/number.util";
-import { handleDownloadQRCode, handleShareQR } from "utils/image.share.download";
+import {
+  handleDownloadQRCode,
+  handleShareQR,
+} from "utils/image.share.download";
+import { encryptDataLink } from "utils/secure.util";
 
 function FileDrop() {
   const theme: any = createTheme();
@@ -63,7 +66,7 @@ function FileDrop() {
   const link = ENV_KEYS.VITE_APP_FILE_DROP_LINK;
   const qrCodeRef = useRef<SVGSVGElement | any>(null);
   const [value, setValue] = useState<any>(link);
-  const [isEmptyTitle, setIsEmptyTitle] = useState('');
+  const [isEmptyTitle, setIsEmptyTitle] = useState("");
   const [isCopy, setIsCopy] = useState<any>(false);
   const [isCopied, setIsCopied] = useState<any>({});
   const [selectDay, setSelectDay] = useState<any>(1);
@@ -89,8 +92,8 @@ function FileDrop() {
 
   // checked file pagination
   const generateFileDropLink = async () => {
-    if(!headerData.title){
-      setIsEmptyTitle('Title is required');
+    if (!headerData.title) {
+      setIsEmptyTitle("Title is required");
       return false;
     }
     setIsCopy(false);
@@ -163,8 +166,8 @@ function FileDrop() {
       title: event.target.value,
     }));
 
-    if(!headerData.title && !event.target.value){
-      setIsEmptyTitle('');
+    if (!headerData.title && !event.target.value) {
+      setIsEmptyTitle("");
     }
   };
 
@@ -324,31 +327,35 @@ function FileDrop() {
       headerAlign: "center",
       align: "center",
       flex: 1,
-      renderCell: (params) => (
-        <strong>
-          <Tooltip title="Copy file drop link" placement="top">
-            {isCopied[params?.row?._id] ? (
-              <IconButton disabled>
-                <FileDownloadDoneIcon sx={{ color: "#17766B" }} />
-              </IconButton>
-            ) : (
+      renderCell: (params) => {
+        const url = String(params?.row?.url);
+
+        return (
+          <strong>
+            <Tooltip title="Copy file drop link" placement="top">
+              {isCopied[params?.row?._id] ? (
+                <IconButton disabled>
+                  <FileDownloadDoneIcon sx={{ color: "#17766B" }} />
+                </IconButton>
+              ) : (
+                <IconButton
+                  onClick={() => handleCopy(params?.row?.url, params?.row?._id)}
+                >
+                  <ContentCopyIcon sx={{ fontSize: "16px" }} />
+                </IconButton>
+              )}
+            </Tooltip>
+            <Tooltip title="View details" placement="top">
               <IconButton
-                onClick={() => handleCopy(params?.row?.url, params?.row?._id)}
+                component={NavLink}
+                to={`/file-drop-detail/${encryptDataLink(url)}`}
               >
-                <ContentCopyIcon sx={{ fontSize: "16px" }} />
+                <RemoveRedEyeIcon sx={{ fontSize: "18px" }} />
               </IconButton>
-            )}
-          </Tooltip>
-          <Tooltip title="View details" placement="top">
-            <IconButton
-              component={NavLink}
-              to={`/file-drop-detail/${Base64.encode(params?.row?.url)}`}
-            >
-              <RemoveRedEyeIcon sx={{ fontSize: "18px" }} />
-            </IconButton>
-          </Tooltip>
-        </strong>
-      ),
+            </Tooltip>
+          </strong>
+        );
+      },
     },
   ];
 
@@ -379,28 +386,26 @@ function FileDrop() {
                     color: "grey !important",
                   }}
                 >
-                  <b style={{color:'red'}}>*</b> Title
+                  <b style={{ color: "red" }}>*</b> Title
                 </InputLabel>
-              <TextField
-                sx={{
-                  width: "100%",
-                  fontSize: "18px !important",
-                  color: "grey !important",
-                }}
-                size="small"
-                InputLabelProps={{
-                  shrink: false,
-                }}
-                placeholder="Title...."
-                value={headerData.title}
-                onChange={handleTitleChange}
-              />
-              <Typography component={'p'} style={{color:'red'}}>
-                {
-                  !headerData.title && isEmptyTitle
-                }
-              </Typography>
-            </Box>
+                <TextField
+                  sx={{
+                    width: "100%",
+                    fontSize: "18px !important",
+                    color: "grey !important",
+                  }}
+                  size="small"
+                  InputLabelProps={{
+                    shrink: false,
+                  }}
+                  placeholder="Title...."
+                  value={headerData.title}
+                  onChange={handleTitleChange}
+                />
+                <Typography component={"p"} style={{ color: "red" }}>
+                  {!headerData.title && isEmptyTitle}
+                </Typography>
+              </Box>
               <InputLabel
                 sx={{
                   color: "grey !important",
@@ -537,7 +542,7 @@ function FileDrop() {
                   }}
                 >
                   {/* <div ref={qrRef}> */}
-                    {/* <QRCode
+                  {/* <QRCode
                       style={{
                         width: "100px",
                         height: "100px",
@@ -550,7 +555,15 @@ function FileDrop() {
                       viewBox={`0 0 256 256`}
                     /> */}
                   {/* </div> */}
-                  <div ref={qrCodeRef} style={{ display: 'inline-block', padding: '7px', border: '1px solid gray', borderRadius: '7px' }}>
+                  <div
+                    ref={qrCodeRef}
+                    style={{
+                      display: "inline-block",
+                      padding: "7px",
+                      border: "1px solid gray",
+                      borderRadius: "7px",
+                    }}
+                  >
                     <QRCode
                       style={{ width: "100px", height: "100px" }}
                       value={value}
@@ -590,7 +603,9 @@ function FileDrop() {
                   >
                     <Button
                       variant="contained"
-                      onClick={(e)=>handleDownloadQRCode(e, qrCodeRef, headerData)}
+                      onClick={(e) =>
+                        handleDownloadQRCode(e, qrCodeRef, headerData)
+                      }
                       sx={{ width: "130px" }}
                     >
                       <DownloadSharpIcon sx={{ mr: 3 }} />
@@ -598,7 +613,7 @@ function FileDrop() {
                     </Button>
                     <Button
                       variant="contained"
-                      onClick={(e)=>handleShareQR(e, qrCodeRef, headerData)}
+                      onClick={(e) => handleShareQR(e, qrCodeRef, headerData)}
                       sx={{ ml: 5, width: "130px" }}
                     >
                       Share

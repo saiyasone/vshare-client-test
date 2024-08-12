@@ -44,7 +44,7 @@ import {
   endTransaction,
   getTag,
   getTarget,
-  startTransaction,
+  // startTransaction,
   startTransactionV1,
 } from "hooks/uploads/useClientUpload";
 import useAuth from "hooks/useAuth";
@@ -123,7 +123,7 @@ export default function ShowUpload(props: Props) {
   const [fileStates, setFileStates] = useState<Record<number, any>>({});
   const [startUpload, setStartUpload] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
-  const chunkSize = 10 * 1024 * 1024; // 50 mb
+  const chunkSize = 50 * 1024 * 1024; // 50 mb
   const largeChunkSize = 50 * 1024 * 1024;
 
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
@@ -198,29 +198,29 @@ export default function ShowUpload(props: Props) {
     return successfulFiles.includes(index) || isSuccess[index];
   };
 
-  // const handleCancleUploadFile = async (index) => {
-  //   const id = fileId[index];
-  //   await deleteFile({
-  //     variables: {
-  //       id: id,
-  //     },
-  //     onCompleted: () => {
-  //       setCancelStatus((prev) => ({
-  //         ...prev,
-  //         [index]: true,
-  //       }));
-  //     },
-  //   });
+  const handleCancleUploadFile = async (index) => {
+    const id = fileId[index];
+    await deleteFile({
+      variables: {
+        id: id,
+      },
+      onCompleted: () => {
+        setCancelStatus((prev) => ({
+          ...prev,
+          [index]: true,
+        }));
+      },
+    });
 
-  //   if (cancelToken[index]) {
-  //     cancelToken[index].cancel();
-  //     setCancelToken((prev) => {
-  //       const newState = { ...prev };
-  //       delete newState[index];
-  //       return newState;
-  //     });
-  //   }
-  // };
+    if (cancelToken[index]) {
+      cancelToken[index].cancel();
+      setCancelToken((prev) => {
+        const newState = { ...prev };
+        delete newState[index];
+        return newState;
+      });
+    }
+  };
 
   const handleCancelUploadFolder = async (folderKey) => {
     try {
@@ -329,6 +329,7 @@ export default function ShowUpload(props: Props) {
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total,
           );
+
           setFileProgress((prev) => ({
             ...prev,
             [index]: percentCompleted,
@@ -805,6 +806,8 @@ export default function ShowUpload(props: Props) {
           startTime: Date.now(),
           timeElapsed: "",
           duration: "",
+          isHide: true,
+          uploadSpeed: "",
         },
       };
     } catch (error: any) {
@@ -860,7 +863,6 @@ export default function ShowUpload(props: Props) {
       FILENAME: file.newFilename,
     };
 
-    console.log({ uploadParts: headers });
     const _encryptHeader = await encryptData(headers);
     const presignedResponse = await fetch(
       `${ENV_KEYS.VITE_APP_LOAD_URL}generate-presigned-url`,
@@ -888,6 +890,10 @@ export default function ShowUpload(props: Props) {
       xhr.setRequestHeader("Content-Type", blob.type);
 
       xhr.onload = () => {
+        const endTime = Date.now(); // End time for this part
+        const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000; // Time taken in seconds
+        const uploadSpeed = convertBytetoMBandGB(blob.size / timeTaken); // Speed in bytes per second
+
         if (xhr.status >= 200 && xhr.status < 300) {
           const endDurationTime = Date.now();
           const duration = calculateTime(
@@ -899,26 +905,19 @@ export default function ShowUpload(props: Props) {
             [fileIndex]: {
               ...prev[fileIndex],
               duration,
+              uploadSpeed,
               parts: [
                 ...prev[fileIndex].parts,
                 { ETag: xhr.getResponseHeader("ETag"), PartNumber: partNumber },
               ],
             },
           }));
-          // console.log({ partNumber });
+
           const percentComplete = Math.round((partNumber * 100) / numParts);
-          // console.log({ percentComplete });
           setFileStates((prev) => ({
             ...prev,
             [fileIndex]: { ...prev[fileIndex], progress: percentComplete },
           }));
-
-          // let allParts: any = [];
-          // allParts = [
-          //   ...allParts,
-          //   { ETag: xhr.getResponseHeader("ETag"), PartNumber: partNumber },
-          // ];
-          // allParts.push({ ETag: xhr.getResponseHeader('ETag'), PartNumber: partNumber })
 
           if (percentComplete >= 100) {
             const endTime = Date.now();
@@ -929,7 +928,6 @@ export default function ShowUpload(props: Props) {
               ...prev,
               [fileIndex]: {
                 ...prev[fileIndex],
-                uploadFinished: true,
                 timeElapsed: `${(timeTaken / 60).toFixed(2)} minutes`,
               },
             }));
@@ -969,7 +967,6 @@ export default function ShowUpload(props: Props) {
       PATH: file.path,
     };
 
-    console.log({ completeUpload: headers });
     const _encryptHeader = encryptData(headers);
 
     try {
@@ -998,7 +995,7 @@ export default function ShowUpload(props: Props) {
         [fileIndex]: {
           ...prev[fileIndex],
           parts: [],
-          uploadFinished: false,
+          uploadFinished: true,
           timeElapsed: `${(timeTaken / 60).toFixed(2)}`,
         },
       }));
@@ -1014,7 +1011,6 @@ export default function ShowUpload(props: Props) {
 
   const retryFailedParts = async () => {
     if (!navigator.onLine) return;
-    console.log("retry when failed to upload files");
 
     const promises = Object.keys(fileStates).map(async (fileIndex) => {
       const { retryParts, file } = fileStates[parseInt(fileIndex)];
@@ -1051,7 +1047,6 @@ export default function ShowUpload(props: Props) {
     const startUploads = async () => {
       for (const fileIndex of Object.keys(fileStates)) {
         if (!fileStates[parseInt(fileIndex)]?.uploadFinished) {
-          console.log("first");
           uploadFileParts(
             parseInt(fileIndex),
             fileStates[parseInt(fileIndex)]?.file,
@@ -1065,17 +1060,9 @@ export default function ShowUpload(props: Props) {
   }, [startUpload]);
 
   React.useEffect(() => {
-    console.log({ fileStates });
-    // console.log({ fileStates: Object.values(fileStates).length, files: files.length });
     const completeFunction = async () => {
       if (Object.values(fileStates).length === files.length) {
         Object.values(fileStates).map(async (fileState, fileIndex) => {
-          console.log({
-            progress: fileState?.progress,
-            retryPart: fileState?.retryParts?.length,
-            parts: fileState?.parts?.length,
-            uploadComplete,
-          });
           if (
             fileState?.progress >= 100 &&
             fileState?.retryParts?.length <= 0 &&
@@ -1361,7 +1348,7 @@ export default function ShowUpload(props: Props) {
     onSelectMore?.();
   };
 
-  const handleActionFile = async (id) => {
+  const handleActionFile = async (id: string) => {
     try {
       await actionFile({
         variables: {
@@ -1796,22 +1783,25 @@ export default function ShowUpload(props: Props) {
               })}
 
               {files?.map((val, index) => {
-                const progress = fileProgress[index] || 0;
                 const progressV1 = fileStates[index]?.progress || 0;
-                const upload = uploads.find(
-                  (upload) => upload?.file?.name === val.name,
-                );
+                const isHideV1 = fileStates[index]?.isHide;
+                const speedV1 = fileStates[index]?.uploadSpeed || 0;
 
-                const isFilePresignedSuccess = upload
-                  ? presignSuccesFiles[upload.uploadId]?.finished || false
-                  : false;
-                const progressTab = upload
-                  ? progressBar[upload.uploadId]?.total || 0
-                  : 0;
-                const timeTab = upload ? fileTimes[upload.uploadId]?.total : 0;
-                const speedTab = upload
-                  ? fileSpeeds[upload.uploadId]?.total
-                  : 0;
+                // const progress = fileProgress[index] || 0;
+                // const upload = uploads.find(
+                //   (upload) => upload?.file?.name === val.name,
+                // );
+
+                // const isFilePresignedSuccess = upload
+                //   ? presignSuccesFiles[upload.uploadId]?.finished || false
+                //   : false;
+                // const progressTab = upload
+                //   ? progressBar[upload.uploadId]?.total || 0
+                //   : 0;
+                // const timeTab = upload ? fileTimes[upload.uploadId]?.total : 0;
+                // const speedTab = upload
+                //   ? fileSpeeds[upload.uploadId]?.total
+                //   : 0;
 
                 return (
                   <MUI.ShowFileUploadBox key={index}>
@@ -1853,9 +1843,8 @@ export default function ShowUpload(props: Props) {
                               {fileStates[index]?.duration || 0}
                             </Typography>
                             <Typography variant="h6">
-                              Speed:&nbsp;
+                              Speed:&nbsp; {speedV1}
                               {/* {fileSpeeds[index] ? fileSpeeds[index] : 0} */}
-                              {speedTab || 0}
                             </Typography>
                           </Box>
                         )}
@@ -1879,17 +1868,14 @@ export default function ShowUpload(props: Props) {
                               justifyContent: "space-around",
                             }}
                           >
-                            {isHide[index] && progress < 100 && (
+                            {isHideV1 && progressV1 < 100 && (
                               <Tooltip
                                 title="Cancel upload"
                                 placement="top"
                                 followCursor
                               >
                                 <IconButton
-                                  // onClick={() => handleCancleUploadFile(index)}
-                                  onClick={() =>
-                                    handleCancelPresignUpload(upload?.uploadId)
-                                  }
+                                  onClick={() => handleCancleUploadFile(index)}
                                 >
                                   <HighlightOffIcon
                                     sx={{
@@ -1900,7 +1886,25 @@ export default function ShowUpload(props: Props) {
                                 </IconButton>
                               </Tooltip>
                             )}
-                            {!isHide[index] && (
+                            {/* {isHide[index] && progress < 100 && (
+                              <Tooltip
+                                title="Cancel upload"
+                                placement="top"
+                                followCursor
+                              >
+                                <IconButton
+                                  onClick={() => handleCancleUploadFile(index)}
+                                >
+                                  <HighlightOffIcon
+                                    sx={{
+                                      color: "#555555",
+                                      cursor: "pointer",
+                                    }}
+                                  />
+                                </IconButton>
+                              </Tooltip>
+                            )} */}
+                            {!isHideV1 && (
                               <Tooltip
                                 title="Delete File"
                                 placement="top"
@@ -1917,6 +1921,23 @@ export default function ShowUpload(props: Props) {
                                 </IconButton>
                               </Tooltip>
                             )}
+                            {/* {!isHide[index] && (
+                              <Tooltip
+                                title="Delete File"
+                                placement="top"
+                                followCursor
+                              >
+                                <IconButton
+                                  onClick={() =>
+                                    handleUploadCancel(index, "file")
+                                  }
+                                >
+                                  <DeleteForeverIcon
+                                    sx={{ color: "#D93025" }}
+                                  />
+                                </IconButton>
+                              </Tooltip>
+                            )} */}
                           </Box>
                         )}
                       </MUI.ShowActionButtonBox>

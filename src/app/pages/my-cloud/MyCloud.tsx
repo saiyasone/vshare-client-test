@@ -11,7 +11,6 @@ import Box from "@mui/material/Box";
 import { green } from "@mui/material/colors";
 import {
   MUTATION_ACTION_FILE,
-  MUTATION_UPDATE_FILE_PUBLIC,
   QUERY_FILE,
   QUERY_FILE_CATEGORY,
 } from "api/graphql/file.graphql";
@@ -102,7 +101,6 @@ export function MyCloud() {
   const [createFileDropLink] = useMutation(
     MUTATION_CREATE_FILE_DROP_URL_PRIVATE,
   );
-  const [updateFileDrop] = useMutation(MUTATION_UPDATE_FILE_PUBLIC);
 
   const [fileAction] = useMutation(MUTATION_ACTION_FILE);
   const [deleteFolder] = useMutation(MUTATION_UPDATE_FOLDER);
@@ -881,19 +879,6 @@ export function MyCloud() {
   ) => {
     try {
       if (activePrivateFileDrop) {
-        // console.log('124564654');
-        // const fileDropLink = await updateFileDrop({
-        //   variables: {
-        //     id: activePrivateFileDrop._id,
-        //     input: convertObjectEmptyStringToNull({
-        //       url: link,
-        //       expiredAt: date,
-        //       title: values?.title,
-        //       description: values?.description || null,
-        //       folderId: folderDropId,
-        //     }),
-        //   },
-        // });
         const fileDropLink = await createFileDropLink({
           variables: {
             input: convertObjectEmptyStringToNull({

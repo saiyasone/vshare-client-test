@@ -55,6 +55,7 @@ import {
 import { convertBytetoMBandGB } from "utils/storage.util";
 import FileDropDataGrid from "./FileDropDataGrid";
 import useFetchFile from "./hooks/useFetchFile";
+import { decryptDataLink } from "utils/secure.util";
 
 const ITEM_PER_PAGE = 10;
 
@@ -133,7 +134,7 @@ function FileDropDetail() {
 
   const fetchFiles: any = useFetchFile({
     filter: {
-      url: Base64.decode(url as string),
+      url: decryptDataLink(url as string),
     },
   });
 
@@ -246,7 +247,6 @@ function FileDropDetail() {
   const menuOnClick = async (action) => {
     setIsAutoClose(true);
     const checkPassword = isCheckPassword();
-    console.log(dataForEvent.data);
     switch (action) {
       case "download":
         setEventClick("download");
