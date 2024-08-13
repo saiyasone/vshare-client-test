@@ -37,7 +37,10 @@ function BaseSignUp(props) {
   };
 
   function handleData(data) {
-    if (data) setCaptcha(false);
+    if (data) {
+      window.__reCaptcha = data;
+      setCaptcha(false);
+    }
   }
 
   useEffect(() => {

@@ -443,6 +443,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             username: username ?? "",
             password: password ?? "",
             ip: responseIp.data ?? "",
+            captcha: window.__reCaptcha
           },
         },
       });
@@ -564,6 +565,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             password: password,
             email: email,
             ip: responseIp.data,
+            captcha: window.__reCaptcha,
           },
         },
       });
@@ -638,9 +640,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleForgetPassword = async (email) => {
     try {
+
       await userForgotPasword({
         variables: {
           email: email,
+          captcha: window.__reCaptcha
         },
         onCompleted: (data) => {
           if (data?.forgotPassword?.token) {
