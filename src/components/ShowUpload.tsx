@@ -40,13 +40,6 @@ import {
 import { ENV_KEYS } from "constants/env.constant";
 import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 import { FolderContext } from "contexts/FolderProvider";
-import {
-  endTransaction,
-  getTag,
-  getTarget,
-  // startTransaction,
-  startTransactionV1,
-} from "hooks/uploads/useClientUpload";
 import useAuth from "hooks/useAuth";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -112,12 +105,6 @@ export default function ShowUpload(props: Props) {
   const [cancelToken, setCancelToken] = useState({});
   const [uploadingId, setUploadingId] = useState(0);
   const [canClose, setCanClose] = useState(false);
-
-  // presign
-  const [progressBar, setProgressBar] = useState<any>({});
-  const [uploads, setUploads] = useState<any[]>([]);
-  const [presignSuccesFiles, setPresignSuccesFiles] = useState<any[]>([]);
-  const [requestMap, setRequestMap] = useState(new Map());
 
   // presign v2
   const [fileStates, setFileStates] = useState<Record<number, any>>({});
@@ -200,6 +187,7 @@ export default function ShowUpload(props: Props) {
 
   const handleCancleUploadFile = async (index) => {
     const id = fileId[index];
+    console.log(id);
     await deleteFile({
       variables: {
         id: id,
@@ -449,220 +437,6 @@ export default function ShowUpload(props: Props) {
     }
   };
 
-  const handleUploadToInternalServerV1 = async (fileData) => {
-    setHideSelectMore(1);
-    setCanClose(true);
-
-    try {
-      const filesArray: any[] = fileData;
-      const tagList: any[] = [];
-
-      // # loop get all tag
-      for (let i = 0; i < filesArray.length; i++) {
-        let path = "";
-        let newFilePath = "";
-
-        const randomName = Math.floor(111111111 + Math.random() * 999999999);
-        const model = files[i];
-
-        if (folderId > 0) {
-          const queryfolderPath = await queryPath({
-            variables: {
-              where: {
-                _id: folderId,
-                createdBy: user?._id,
-              },
-            },
-          });
-
-          const newPath = queryfolderPath?.data?.folders?.data[0]?.newPath;
-          if (newPath) {
-            path = newPath;
-            newFilePath =
-              newPath + "/" + randomName + getFileNameExtension(model.name);
-          }
-        }
-        const pathBunny = user?.newName + "-" + user?._id + "/" + path;
-
-        model.createdBy = user._id;
-        const newName = String(randomName + getFileNameExtension(model.name));
-        model.newFilename = newName;
-        model.path = pathBunny;
-        model.newPath = newFilePath;
-
-        const uploading = await uploadFiles({
-          variables: {
-            data: {
-              destination: "",
-              newFilename: randomName + getFileNameExtension(model.name),
-              filename: model.name,
-              fileType: model.type,
-              size: model.size.toString(),
-              checkFile: folderId > 0 ? "sub" : "main",
-              ...(folderId > 0 ? { folder_id: folderId } : {}),
-              ...(folderId > 0 ? { newPath: newFilePath } : {}),
-              country: country,
-              device: result.os.name || "" + result.os.version || "",
-              totalUploadFile: filesArray.length,
-            },
-          },
-        });
-
-        const fileId = await uploading.data?.createFiles?._id;
-        if (fileId) {
-          await handleActionFile(fileId);
-          const round = await getTag(model);
-          tagList.push({ file: model, uploadId: round });
-        } else {
-          throw new Error("Uploading failed");
-        }
-      }
-      setUploads(tagList);
-
-      // # send all tag to target
-      const sendTag = await getTarget(tagList);
-      const targetList = sendTag;
-
-      const partsData: Array<any> = [];
-      const myparts: Array<any> = [];
-
-      for (let i = 0; i < targetList.length; i++) {
-        const startDate: any = new Date();
-        const item: Array<any> = [];
-
-        for (let j = 0; j < targetList[i].length; j++) {
-          // const run = await startTransaction(
-          //   targetList[i][j],
-          //   startDate,
-          //   (uploadId, partNumber, percentage) => {
-          //     setPresignSuccesFiles((prev: any) => {
-          //       const succssFile = { ...prev };
-          //       if (!succssFile[uploadId]) {
-          //         succssFile[uploadId] = {};
-          //       }
-          //       succssFile[uploadId][partNumber] = false;
-          //       succssFile[uploadId].finished = percentage > 99 ? true : false;
-          //       return succssFile;
-          //     });
-          //     setProgressBar((prev: any) => {
-          //       const updatedProgress = { ...prev };
-          //       if (!updatedProgress[uploadId]) {
-          //         updatedProgress[uploadId] = {};
-          //       }
-          //       updatedProgress[uploadId][partNumber] = percentage;
-          //       updatedProgress[uploadId].total =
-          //         updatedProgress[uploadId][partNumber];
-          //       return updatedProgress;
-          //     });
-          //   },
-          //   (uploadId, partNumber, speed, duration) => {
-          //     setFileSpeeds((prev: any) => {
-          //       const updateSpeed = { ...prev };
-          //       if (!updateSpeed[uploadId]) {
-          //         updateSpeed[uploadId] = {};
-          //       }
-          //       updateSpeed[uploadId][partNumber] = speed;
-          //       updateSpeed[uploadId].total = updateSpeed[uploadId][partNumber];
-          //       return updateSpeed;
-          //     });
-          //     setFileTimes((prev: any) => {
-          //       const updatedTimes = { ...prev };
-          //       if (!updatedTimes[uploadId]) {
-          //         updatedTimes[uploadId] = {};
-          //       }
-          //       updatedTimes[uploadId][partNumber] = duration;
-          //       updatedTimes[uploadId].total =
-          //         updatedTimes[uploadId][partNumber];
-          //       return updatedTimes;
-          //     });
-          //   },
-          // );
-          // if (run.message == "success") {
-          //   item.push(run.data);
-          // }
-
-          const { request, promise } = await startTransactionV1(
-            targetList[i][j],
-            startDate,
-            (uploadId, partNumber, percentage) => {
-              setPresignSuccesFiles((prev: any) => {
-                const succssFile = { ...prev };
-                if (!succssFile[uploadId]) {
-                  succssFile[uploadId] = {};
-                }
-                succssFile[uploadId][partNumber] = false;
-                succssFile[uploadId].finished = percentage > 99 ? true : false;
-                return succssFile;
-              });
-              setProgressBar((prev: any) => {
-                const updatedProgress = { ...prev };
-                if (!updatedProgress[uploadId]) {
-                  updatedProgress[uploadId] = {};
-                }
-                updatedProgress[uploadId][partNumber] = percentage;
-                updatedProgress[uploadId].total =
-                  updatedProgress[uploadId][partNumber];
-                return updatedProgress;
-              });
-            },
-            (uploadId, partNumber, speed, duration) => {
-              setFileSpeeds((prev: any) => {
-                const updateSpeed = { ...prev };
-                if (!updateSpeed[uploadId]) {
-                  updateSpeed[uploadId] = {};
-                }
-                updateSpeed[uploadId][partNumber] = speed;
-                updateSpeed[uploadId].total = updateSpeed[uploadId][partNumber];
-                return updateSpeed;
-              });
-              setFileTimes((prev: any) => {
-                const updatedTimes = { ...prev };
-                if (!updatedTimes[uploadId]) {
-                  updatedTimes[uploadId] = {};
-                }
-                updatedTimes[uploadId][partNumber] = duration;
-                updatedTimes[uploadId].total =
-                  updatedTimes[uploadId][partNumber];
-                return updatedTimes;
-              });
-            },
-          );
-
-          const run = await promise;
-          if (run.message === "success") {
-            item.push(run.data);
-
-            setRequestMap(
-              (prevMap) =>
-                new Map(prevMap.set(targetList[i][j].uploadId, request)),
-            );
-          }
-        }
-
-        myparts.push(item);
-      }
-
-      partsData.push(...myparts);
-
-      // # complete all transaction
-      await endTransaction(partsData, tagList);
-
-      await eventUploadTrigger?.trigger();
-      setCanClose(false);
-      setHideSelectMore(2);
-    } catch (error) {
-      console.error(error);
-      setCanClose(false);
-      setHideSelectMore(0);
-      const message = cutSpaceError(error.message);
-      if (message) {
-        errorMessage("Your space isn't enough", 3000);
-      } else {
-        handleErrorFiles(error);
-      }
-    }
-  };
-
   const handleUploadToInternalServerV2 = async (fileData: Array<any>) => {
     setHideSelectMore(1);
     setCanClose(true);
@@ -727,6 +501,10 @@ export default function ShowUpload(props: Props) {
 
           const fileId = await uploading.data?.createFiles?._id;
           if (fileId) {
+            setFileId((prev) => ({
+              ...prev,
+              [index]: fileId,
+            }));
             await handleActionFile(fileId);
             const initiatedUpload = await initiateUpload(index, dataFile);
 
@@ -853,101 +631,126 @@ export default function ShowUpload(props: Props) {
   ) => {
     const { uploadId, file } = fileStates[fileIndex];
     const numParts = Math.ceil(file.size / chunkSize);
-    const formData = new FormData();
-    formData.append("partNumber", partNumber.toString());
-    formData.append("uploadId", uploadId);
 
-    const headers = {
-      createdBy: user?._id,
-      PATH: file.path,
-      FILENAME: file.newFilename,
-    };
+    try {
+      const formData = new FormData();
+      formData.append("partNumber", partNumber.toString());
+      formData.append("uploadId", uploadId);
 
-    const _encryptHeader = await encryptData(headers);
-    const presignedResponse = await fetch(
-      `${ENV_KEYS.VITE_APP_LOAD_URL}generate-presigned-url`,
-      {
-        method: "POST",
-        headers: {
-          encryptedheaders: _encryptHeader!,
+      const headers = {
+        createdBy: user?._id,
+        PATH: file.path,
+        FILENAME: file.newFilename,
+      };
+
+      const _encryptHeader = await encryptData(headers);
+      const presignedResponse = await axios.post<{ url: string }>(
+        `${ENV_KEYS.VITE_APP_LOAD_URL}generate-presigned-url`,
+        formData,
+        {
+          headers: {
+            encryptedheaders: _encryptHeader!,
+          },
         },
-        body: formData,
-      },
-    );
-
-    if (!presignedResponse.ok) {
-      throw new Error(
-        `Error generating presigned URL for part ${partNumber}: ${await presignedResponse.text()}`,
       );
-    }
 
-    const { url } = await presignedResponse.json();
+      // const presignedResponse = await fetch(
+      //   `${ENV_KEYS.VITE_APP_LOAD_URL}generate-presigned-url`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       encryptedheaders: _encryptHeader!,
+      //     },
+      //     body: formData,
+      //   },
+      // );
 
-    return new Promise<void>((resolve, reject) => {
-      // console.log({ partNumber });
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", url, true);
-      xhr.setRequestHeader("Content-Type", blob.type);
+      // if (!presignedResponse.ok) {
+      //   throw new Error(
+      //     `Error generating presigned URL for part ${partNumber}: ${await presignedResponse.text()}`,
+      //   );
+      // }
 
-      xhr.onload = () => {
-        const endTime = Date.now(); // End time for this part
-        const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000; // Time taken in seconds
-        const uploadSpeed = convertBytetoMBandGB(blob.size / timeTaken); // Speed in bytes per second
+      // const { url } = await presignedResponse.json();
 
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const endDurationTime = Date.now();
-          const duration = calculateTime(
-            endDurationTime - fileStates[fileIndex].startTime,
-          );
+      const { url } = await presignedResponse.data;
 
-          setFileStates((prev) => ({
-            ...prev,
-            [fileIndex]: {
-              ...prev[fileIndex],
-              duration,
-              uploadSpeed,
-              parts: [
-                ...prev[fileIndex].parts,
-                { ETag: xhr.getResponseHeader("ETag"), PartNumber: partNumber },
-              ],
-            },
-          }));
+      return new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", url, true);
+        xhr.setRequestHeader("Content-Type", blob.type);
 
-          const percentComplete = Math.round((partNumber * 100) / numParts);
-          setFileStates((prev) => ({
-            ...prev,
-            [fileIndex]: { ...prev[fileIndex], progress: percentComplete },
-          }));
+        xhr.onload = () => {
+          const endTime = Date.now();
+          const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000;
+          const uploadSpeed = convertBytetoMBandGB(blob.size / timeTaken);
 
-          if (percentComplete >= 100) {
-            const endTime = Date.now();
-            const timeTaken =
-              (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const endDurationTime = Date.now();
+            const duration = calculateTime(
+              endDurationTime - fileStates[fileIndex].startTime,
+            );
 
             setFileStates((prev) => ({
               ...prev,
               [fileIndex]: {
                 ...prev[fileIndex],
-                timeElapsed: `${(timeTaken / 60).toFixed(2)} minutes`,
+                duration,
+                uploadSpeed,
+                parts: [
+                  ...prev[fileIndex].parts,
+                  {
+                    ETag: xhr.getResponseHeader("ETag"),
+                    PartNumber: partNumber,
+                  },
+                ],
               },
             }));
+
+            const percentComplete = Math.round((partNumber * 100) / numParts);
+            setFileStates((prev) => ({
+              ...prev,
+              [fileIndex]: { ...prev[fileIndex], progress: percentComplete },
+            }));
+
+            if (percentComplete >= 100) {
+              const endTime = Date.now();
+              const timeTaken =
+                (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
+
+              setFileStates((prev) => ({
+                ...prev,
+                [fileIndex]: {
+                  ...prev[fileIndex],
+                  timeElapsed: `${(timeTaken / 60).toFixed(2)} minutes`,
+                },
+              }));
+            }
+            setUploadComplete(true);
+            resolve();
+          } else {
+            reject(
+              new Error(
+                `Error uploading part ${partNumber}: ${xhr.statusText}`,
+              ),
+            );
           }
-          setUploadComplete(true);
-          resolve();
-        } else {
+        };
+
+        xhr.onerror = () =>
           reject(
             new Error(`Error uploading part ${partNumber}: ${xhr.statusText}`),
           );
-        }
-      };
 
-      xhr.onerror = () =>
-        reject(
-          new Error(`Error uploading part ${partNumber}: ${xhr.statusText}`),
-        );
-
-      xhr.send(blob);
-    });
+        xhr.send(blob);
+      });
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        successMessage("Upload cancelled", 2000);
+      } else {
+        errorMessage("Upload failed", 3000);
+      }
+    }
   };
 
   const tryCompleteMultipartUpload = async (
@@ -957,6 +760,14 @@ export default function ShowUpload(props: Props) {
     file: File | any,
   ) => {
     setUploadComplete(false);
+
+    const source = CancelToken.source();
+    const cancelToken = source.token;
+    setCancelToken((prev) => ({
+      ...prev,
+      [fileIndex]: source,
+    }));
+
     const formData = new FormData();
     formData.append("parts", JSON.stringify(parts));
     formData.append("uploadId", uploadId);
@@ -970,23 +781,26 @@ export default function ShowUpload(props: Props) {
     const _encryptHeader = encryptData(headers);
 
     try {
-      const completeResponse = await fetch(
+      // const completeResponse = await fetch(
+      //   `${ENV_KEYS.VITE_APP_LOAD_URL}complete-multipart-upload`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       encryptedheaders: _encryptHeader!,
+      //     },
+      //     body: formData,
+      //   },
+      // );
+      await axios.post(
         `${ENV_KEYS.VITE_APP_LOAD_URL}complete-multipart-upload`,
+        formData,
         {
-          method: "POST",
           headers: {
             encryptedheaders: _encryptHeader!,
           },
-          body: formData,
+          cancelToken,
         },
       );
-
-      if (!completeResponse.ok) {
-        const errorText = await completeResponse.text();
-        throw new Error(`Error completing multipart upload: ${errorText}`);
-      }
-
-      // setFileStates((prev) => ({ ...prev, [fileIndex]: { ...prev[fileIndex], parts: [], uploadFinished: false } }));
 
       const endTime = Date.now();
       const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
@@ -1096,18 +910,6 @@ export default function ShowUpload(props: Props) {
       );
     };
   }, [fileStates]);
-
-  const handleCancelPresignUpload = (uploadId: string) => {
-    const request = requestMap.get(uploadId);
-    if (request) {
-      request.abort();
-      setRequestMap((prev: any) => {
-        const newMap = new Map(prev);
-        newPath.delete(uploadId);
-        return newMap;
-      });
-    }
-  };
 
   const handleUploadFolder = async () => {
     setHideFolderSelectMore(1);
@@ -1320,7 +1122,6 @@ export default function ShowUpload(props: Props) {
 
   const handleCloseModal = () => {
     setHideSelectMore(0);
-    setUploads([]);
     onClose?.();
     onRemoveAll?.();
     handleUploadDone();
@@ -1337,7 +1138,6 @@ export default function ShowUpload(props: Props) {
     setFolderSpeed({});
     setFolderStartTimeMap({});
     setFolderProgressMap({});
-    setProgressBar({});
   };
 
   const handleWarningMessage = () => {

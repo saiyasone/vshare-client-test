@@ -543,8 +543,7 @@ function RecentFile() {
   };
 
   const handleDownloadFile = async () => {
-    setShowProgressing(true);
-    setProcesing(true);
+    
 
     const newFileData = [
       {
@@ -576,9 +575,7 @@ function RecentFile() {
         onFailed: (error) => {
           errorMessage(error, 3000);
         },
-        onProcess: (percentage) => {
-          setProgressing(percentage);
-        },
+        
         onClosure: () => {
           setIsAutoClose(false);
           setFileDetailsDialog(false);

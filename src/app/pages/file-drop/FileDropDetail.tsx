@@ -140,6 +140,7 @@ function FileDropDetail() {
 
   function handleMultipleFile(selected) {
     const valueOption = fetchFiles.data?.find((el) => el?._id === selected);
+
     dispatch(
       checkboxAction.setFileAndFolderData({
         data: {
@@ -150,10 +151,11 @@ function FileDropDetail() {
           checkType: "file",
           fileType: valueOption?.fileType,
           dataPassword: valueOption?.filePassword,
+          isPublic: valueOption?.isPublic,
           size: valueOption?.size,
           createdBy: {
-            _id: user?._id,
-            newName: user?.newName,
+            _id: valueOption?.createdBy?._id,
+            newName: valueOption?.createdBy?.newName,
           },
         },
       }),
@@ -407,23 +409,28 @@ function FileDropDetail() {
   };
 
   const handleDownloadFile = async () => {
-    setShowProgressing(true);
-    setProcesing(true);
+    // setShowProgressing(true);
+    // setProcesing(true);
 
     const multipleData = [
       {
         id: dataForEvent.data._id,
-        newPath: dataForEvent?.data?.newPath || "public",
+        newPath: dataForEvent?.data?.newPath,
         newFilename: dataForEvent.data.newFilename || "",
+        isPublic: dataForEvent.data?.isPublic,
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
+        },
       },
     ];
 
     await manageFile.handleSingleFileDropDownload(
       { multipleData },
       {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
-        },
+        // onProcess: async (countPercentage) => {
+        //   setProgressing(countPercentage);
+        // },
         onSuccess: async () => {
           successMessage("Download successful", 3000);
           setDataForEvent((state) => ({
@@ -669,7 +676,9 @@ function FileDropDetail() {
                               }}
                               id={data?._id}
                               imagePath={
-                                data?.newPath ? privatePath : publicPath
+                                data?.isPublic === "private"
+                                  ? privatePath
+                                  : publicPath
                               }
                               isPublic={
                                 data?.createdBy?._id === "0" ? true : false

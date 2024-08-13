@@ -20,19 +20,49 @@ export const QUERY_FILE_DROP_PUBLIC = gql`
       total
       data {
         _id
+        isPublic
         filename
         newFilename
+        filePassword
+        passwordUrlAll
+        fileType
         size
+        totalDownload
+        totalDownloadFaild
         status
         checkFile
+        path
         newPath
-        url
+        detail
         urlAll
+        url
         ip
+        favorite
         dropUrl
+        dropLink
         dropStatus
+        dropExpiredAt
+        source
+        actionStatus
+        expired
+        createdAt
         updatedAt
+        actionDate
+        createdBy {
+          _id
+          newName
+          lastName
+          email
+          firstName
+        }
+        getLinkBy
+        isDeleted
+        uploadStatus
+        downloadStatus
+        shortUrl
+        longUrl
       }
+      total
     }
   }
 `;

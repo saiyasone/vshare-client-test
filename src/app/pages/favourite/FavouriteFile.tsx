@@ -636,10 +636,6 @@ function FavouriteFile() {
   };
 
   const handleDownloadFiles = async () => {
-    // manageFile.handleDemo();
-    setShowProgressing(true);
-    setProcesing(true);
-
     const newFileData = [
       {
         id: dataForEvent.data?._id,
@@ -676,9 +672,6 @@ function FavouriteFile() {
         },
         onFailed: (error) => {
           errorMessage(error, 3000);
-        },
-        onProcess: (percentage) => {
-          setProgressing(percentage);
         },
         onClosure: () => {
           setIsAutoClose(false);

@@ -609,8 +609,6 @@ export function MyCloud() {
 
   const handleDownloadFile = async (inputData) => {
     const data = inputData || getValue;
-    setShowProgressing(true);
-    setProcesing(true);
 
     const newFileData = [
       {
@@ -645,9 +643,7 @@ export function MyCloud() {
         onFailed: (error) => {
           errorMessage(error, 3000);
         },
-        onProcess: (percentage) => {
-          setProgressing(percentage);
-        },
+
         onClosure: () => {
           setIsAutoClose(true);
           setFileDetailsDialog(false);
@@ -669,9 +665,6 @@ export function MyCloud() {
   };
 
   const handleDownloadFolder = async (data) => {
-    setShowProgressing(true);
-    setProcesing(true);
-
     const multipleData = [
       {
         id: data?._id,
@@ -701,7 +694,6 @@ export function MyCloud() {
           setFileDetailsDialog(false);
           setIsOpenMenu(false);
         },
-        onProcess: () => {},
       },
     );
   };
