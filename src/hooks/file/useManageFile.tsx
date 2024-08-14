@@ -386,7 +386,7 @@ const useManageFile = ({ user }) => {
     try {
       const newModelData = multipleData.map((file) => {
         let real_path = "";
-        if (file.isPublic === "private") {
+        if (file.createdBy?._id !== "0") {
           real_path = removeFileNameOutOfPath(file?.newPath);
           real_path = `${file.createdBy?.newName}-${file.createdBy?._id}/${real_path}${file.newFilename}`;
         } else {
@@ -468,8 +468,7 @@ const useManageFile = ({ user }) => {
     try {
       const newModelData = multipleData.map((file) => {
         let real_path = "";
-        console.log(file?.isPublic);
-        if (file.isPublic === "private") {
+        if (file.createdBy?._id !== "0") {
           real_path = removeFileNameOutOfPath(file?.newPath);
           real_path = `${file.createdBy?.newName}-${file.createdBy?._id}/${real_path}${file.newFilename}`;
         } else {
@@ -489,8 +488,6 @@ const useManageFile = ({ user }) => {
         lists: newModelData,
         createdBy: multipleData?.[0]?.createdBy?._id,
       };
-
-      console.log({ headers });
 
       const encryptedData = dataEncrypted({ headers });
       const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;

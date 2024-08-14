@@ -109,8 +109,9 @@ export default function ShowUpload(props: Props) {
   // presign v2
   const [fileStates, setFileStates] = useState<Record<number, any>>({});
   const [startUpload, setStartUpload] = useState(false);
+  const [presignUploadSuccess, setPresignUploadSuccess] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
-  const chunkSize = 50 * 1024 * 1024; // 250 mb
+  const chunkSize = 100 * 1024 * 1024; // 250 mb
 
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
@@ -639,6 +640,7 @@ export default function ShowUpload(props: Props) {
       );
 
       const { url } = await presignedResponse.data;
+      setPresignUploadSuccess(true);
 
       return new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -774,6 +776,7 @@ export default function ShowUpload(props: Props) {
       await eventUploadTrigger?.trigger();
       setCanClose(false);
       setHideSelectMore(2);
+      // mvc
     } catch (error: any) {
       setCanClose(false);
       setHideSelectMore(2);
@@ -1042,6 +1045,8 @@ export default function ShowUpload(props: Props) {
     setFolderSpeed({});
     setFolderStartTimeMap({});
     setFolderProgressMap({});
+    setPresignUploadSuccess(false);
+    setCanClose(false);
   };
 
   const handleWarningMessage = () => {
@@ -1194,8 +1199,14 @@ export default function ShowUpload(props: Props) {
 
   React.useEffect(() => {
     const newFileStates = Object.values(fileStates);
-    // const allCan
-  }, [fileStates]);
+    const cancelState = newFileStates.map((file) => file?.cancel);
+    const cancellAll = cancelState.filter(Boolean).length;
+
+    if (cancellAll === data?.length && presignUploadSuccess) {
+      setCanClose(false);
+      setHideSelectMore(2);
+    }
+  }, [fileStates, data, presignUploadSuccess]);
 
   React.useEffect(() => {
     window.addEventListener("online", retryFailedParts);

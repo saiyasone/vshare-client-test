@@ -664,6 +664,12 @@ function FileDropDetail() {
                               data?.newPath || "";
                           const publicPath = "public/" + data.newFilename;
 
+                          // console.log(
+                          //   data?.createdBy?._id === "0"
+                          //     ? privatePath
+                          //     : publicPath,
+                          // );
+
                           return (
                             <FileCardItem
                               cardProps={{
@@ -675,8 +681,16 @@ function FileDropDetail() {
                                 },
                               }}
                               id={data?._id}
+                              // imagePath={
+                              //   data?.isPublic === "private"
+                              //     ? privatePath
+                              //     : publicPath
+                              // }
+                              // isPublic={
+                              //   data?.isPublic === "public" ? true : false
+                              // }
                               imagePath={
-                                data?.isPublic === "private"
+                                data?.createdBy?._id !== "0"
                                   ? privatePath
                                   : publicPath
                               }
@@ -787,7 +801,7 @@ function FileDropDetail() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            dataForEvent?.data?.newPath
+            dataForEvent?.data?.createdBy !== "0"
               ? user?.newName +
                 "-" +
                 user?._id +
@@ -828,7 +842,9 @@ function FileDropDetail() {
       {showPreview && (
         <DialogPreviewFile
           open={showPreview}
-          isPublicPath={"public"}
+          isPublicPath={
+            dataForEvent.data?.createdBy?._id === "0" ? true : false
+          }
           handleClose={() => {
             resetDataForEvent();
             setShowPreview(false);
