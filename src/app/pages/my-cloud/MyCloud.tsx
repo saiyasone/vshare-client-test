@@ -11,7 +11,7 @@ import Box from "@mui/material/Box";
 import { green } from "@mui/material/colors";
 import {
   MUTATION_ACTION_FILE,
-  MUTATION_UPDATE_FILE_PUBLIC,
+  // MUTATION_UPDATE_FILE_PUBLIC,
   QUERY_FILE,
   QUERY_FILE_CATEGORY,
 } from "api/graphql/file.graphql";
@@ -102,7 +102,7 @@ export function MyCloud() {
   const [createFileDropLink] = useMutation(
     MUTATION_CREATE_FILE_DROP_URL_PRIVATE,
   );
-  const [updateFileDrop] = useMutation(MUTATION_UPDATE_FILE_PUBLIC);
+  // const [updateFileDrop] = useMutation(MUTATION_UPDATE_FILE_PUBLIC);
 
   const [fileAction] = useMutation(MUTATION_ACTION_FILE);
   const [deleteFolder] = useMutation(MUTATION_UPDATE_FOLDER);
@@ -128,6 +128,7 @@ export function MyCloud() {
   const isMobile = useMediaQuery("(max-width:600px)");
   const [userPackage, setUserPackage] = useState<any>(null);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+
   // slice in redux
   const dispatch = useDispatch();
   const dataSelector = useSelector(
@@ -902,6 +903,9 @@ export function MyCloud() {
               title: values?.title,
               description: values?.description || null,
               folderId: folderDropId,
+              allowDownload: values.allowDownload,
+              allowMultiples: values.allowMultiples,
+              allowUpload: values.allowUpload,
             }),
           },
         });
@@ -917,6 +921,9 @@ export function MyCloud() {
               title: values?.title,
               description: values?.description || null,
               folderId: folderDropId,
+              allowDownload: values.allowDownload,
+              allowMultiples: values.allowMultiples,
+              allowUpload: values.allowUpload,
             }),
           },
         });

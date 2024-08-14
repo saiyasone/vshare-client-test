@@ -1,10 +1,9 @@
 import { useMutation } from "@apollo/client";
 import { DataGrid } from "@mui/x-data-grid";
-import { Base64 } from "js-base64";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
-import { NavLink } from "react-router-dom";
 import * as Mui from "./styles/fileDrop.style";
+import { BiEdit } from "react-icons/bi";
 
 // components
 import { AiOutlinePlus } from "react-icons/ai";
@@ -17,7 +16,6 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
 import DownloadSharpIcon from "@mui/icons-material/DownloadSharp";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
-import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import ReplyAllSharpIcon from "@mui/icons-material/ReplyAllSharp";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import {
@@ -25,13 +23,19 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
+  Divider,
+  FormControlLabel,
+  FormGroup,
   Grid,
   IconButton,
   InputAdornment,
+  Switch,
   TextField,
   Typography,
   createTheme,
+  styled,
   useMediaQuery,
 } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
@@ -42,6 +46,7 @@ import Tooltip from "@mui/material/Tooltip";
 import {
   MUTATION_CREATE_FILE_DROP_URL_PRIVATE,
   MUTATION_DELETE_FILE_DROP_URL,
+  MUTATION_UPDATE_FILE_DROP_URL,
 } from "api/graphql/fileDrop.graphql";
 import SelectV1 from "components/SelectV1";
 import DialogDeleteV1 from "components/dialog/DialogDeleteV1";
@@ -55,10 +60,41 @@ import { THEMES } from "theme/variant";
 import { errorMessage, successMessage } from "utils/alert.util";
 import { generateRandomUniqueNumber } from "utils/number.util";
 import { handleDownloadQRCode, handleShareQR } from "utils/image.share.download";
+import { decryptId } from "utils/secure.util";
+import { DatePicker } from "@mui/x-date-pickers";
+import DialogEditExpiryLinkFileDrop from "components/dialog/DialogEditExpiryLinkFileDrop";
+import useManageGraphqlError from "hooks/useManageGraphqlError";
+import { convertObjectEmptyStringToNull } from "utils/object.util";
+
+const DatePickerV1Container = styled(Box)({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  height: "100%",
+  minHeight: "100%",
+  position: 'relative'
+});
+
+const DatePickerV1Lable = styled(Box)(({ theme }) => ({
+  fontWeight: theme.typography.fontWeightMedium,
+  textAlign: 'start',
+  color: "grey !important",
+  position: 'absolute',
+  top:'-1rem',
+  left: '2px'
+}));
+
+const DatePickerV1Content = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+  width: "100%",
+  position: 'relative'
+}));
 
 function FileDrop() {
   const theme: any = createTheme();
   const { user }: any = useAuth();
+  const manageGraphqlError = useManageGraphqlError();
+  const [updateFileDrop] = useMutation(MUTATION_UPDATE_FILE_DROP_URL);
   const isMobile = useMediaQuery("(max-width:767px)");
   const link = ENV_KEYS.VITE_APP_FILE_DROP_LINK;
   const qrCodeRef = useRef<SVGSVGElement | any>(null);
@@ -73,15 +109,26 @@ function FileDrop() {
   const [multiId, setMultiId] = useState<any>([]);
   const [openDelete, setOpenDelete] = useState<any>(false);
   const [showCreateform, setShowCreateForm] = useState<any>(false);
-
+  const [packageType, setPackageType] = useState("Free");
+  const [selectDate, setSelectDate] = useState<moment.Moment | null>(null);
+  const [openEditExpiry, setOpenEditExpiry] = useState(false);
+  
   const [createFileDropLink] = useMutation(
     MUTATION_CREATE_FILE_DROP_URL_PRIVATE,
   );
   const [deleteFiledropLink] = useMutation(MUTATION_DELETE_FILE_DROP_URL);
+  const [dataForEvents, setDataForEvents] = useState<any>({
+    action: null,
+    type: null,
+    data: {},
+  });
 
   const [headerData, setHeaderData] = useState<any>({
     title: "",
     description: "",
+    allowDownload: false,
+    allowMultiples: false,
+    allowUpload: true,
   });
 
   const filter = useFilter();
@@ -101,6 +148,9 @@ function FileDrop() {
         variables: {
           input: {
             url: genLink,
+            allowDownload: headerData.allowDownload || false,
+            allowMultiples: headerData.allowMultiples || false,
+            allowUpload: headerData.allowUpload || false,
             title: headerData?.title,
             description: headerData?.description,
             expiredAt:
@@ -117,7 +167,7 @@ function FileDrop() {
         setExpiredDate(null);
         manageFileDrop.customeFileDrop();
         setIsShow(true);
-        setHeaderData({ title: "", description: "" });
+        setHeaderData({ title: "", description: "",allowDownload: false, allowMultiples: false, allowUpload: true});
         successMessage("Your new link is created!!", 3000);
       }
     } catch (error: any) {
@@ -157,6 +207,19 @@ function FileDrop() {
     setExpiredDate(moment(expirationDateTime).format("YYYY-MM-DD h:mm:ss"));
   };
 
+  const handleDateChange = (date: moment.Moment | null) => {
+    if (date) {
+      const currentDate = moment().startOf('day').utc();
+      const totalDays = date.startOf('day').utc().diff(currentDate, 'days');
+      setSelectDate(currentDate);
+
+      if(totalDays > 0){
+        const expirationDateTime = calculateExpirationDate(totalDays);
+        setExpiredDate(moment(expirationDateTime).format("YYYY-MM-DD h:mm:ss"));
+      }
+    }
+  };
+
   const handleTitleChange = (event) => {
     setHeaderData((prevHeaderData) => ({
       ...prevHeaderData,
@@ -173,6 +236,28 @@ function FileDrop() {
       ...prevHeaderData,
       description: event.target.value,
     }));
+  };
+
+  const handleAllowDownloadChange = (event) => {
+    setHeaderData((prevHeaderData) => ({
+      ...prevHeaderData,
+      allowDownload: event.target.checked,
+    }));
+
+  };
+  const handleAllowMultiplesChange = (event) => {
+    setHeaderData((prevHeaderData) => ({
+      ...prevHeaderData,
+      allowMultiples: event.target.checked,
+    }));
+
+  };
+  const handleAllowUploadChange = (event) => {
+    setHeaderData((prevHeaderData) => ({
+      ...prevHeaderData,
+      allowUpload: event.target.checked,
+    }));
+
   };
 
   const handleDeleteClose = () => {
@@ -224,6 +309,46 @@ function FileDrop() {
       errorMessage(cutErr, 3000);
     }
   };
+  const menuOnClick = async (action) => {
+    switch (action) {
+      case "edit_expiry":
+        setOpenEditExpiry(true);
+        break;
+      default:
+        return;
+    }
+  };
+
+  const handlePermissionChange = async(_id: string, state: boolean, permission: string) => {
+    try 
+    {
+      const fileDropLink = await updateFileDrop({
+        variables: {
+          id: _id,
+          input: convertObjectEmptyStringToNull({
+           ...(permission === 'upload' && {
+            allowUpload: state
+           }),
+           ...(permission === 'multiples' && {
+            allowMultiples: state
+           })
+          }),
+        },
+      });
+      if (fileDropLink?.data?.updateFileDropUrl) {
+        successMessage("Updated file-drop link successfully!", 2000);
+        manageFileDrop.customeFileDrop();
+      }
+    } 
+    catch (error) 
+    {
+      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
+      errorMessage(
+        manageGraphqlError.handleErrorMessage(cutErr) as string,
+        3000,
+      );
+    }
+  }
 
   useEffect(() => {
     if (showValid) {
@@ -231,7 +356,14 @@ function FileDrop() {
         setShowValid(false);
       }, 5000);
     }
-  }, [showValid, headerData.title]);
+  }, [showValid, headerData.title,]);
+
+  React.useEffect(() => {
+    if ( dataForEvents.action && (dataForEvents.data || dataForEvents.action === "edit_expiry") ) 
+    {
+      menuOnClick(dataForEvents.action);
+    }
+  }, [dataForEvents.action]);
 
   const columns: any = [
     {
@@ -306,7 +438,7 @@ function FileDrop() {
     {
       field: "expiredAt",
       headerName: "Expired date",
-      flex: 1,
+      // flex: 1,
       renderCell: (params) => {
         return (
           <div>
@@ -325,7 +457,7 @@ function FileDrop() {
       align: "center",
       flex: 1,
       renderCell: (params) => (
-        <strong>
+        <Box sx={{display:'flex', flexDirection:'row', alignItems:'center', flexWrap:'nowrap', gap:2, minWidth:'auto'}}>
           <Tooltip title="Copy file drop link" placement="top">
             {isCopied[params?.row?._id] ? (
               <IconButton disabled>
@@ -339,18 +471,87 @@ function FileDrop() {
               </IconButton>
             )}
           </Tooltip>
-          <Tooltip title="View details" placement="top">
+          {/* <Tooltip title="View details" placement="top">
             <IconButton
               component={NavLink}
               to={`/file-drop-detail/${Base64.encode(params?.row?.url)}`}
             >
               <RemoveRedEyeIcon sx={{ fontSize: "18px" }} />
             </IconButton>
-          </Tooltip>
-        </strong>
+          </Tooltip> */}
+          <Tooltip
+              title="Edit the expiry date-time"
+              placement="top"
+            >
+              <NormalButton
+                sx={{
+                  cursor: params?.row?.allowUpload
+                    ? "pointer"
+                    : "not-allowed",
+                  opacity: params?.row?.allowUpload ? 1 : 0.5,
+                }}
+                onClick={() => {
+                  {
+                    if (params?.row?._id) {
+                      setDataForEvents({
+                        action: "edit_expiry",
+                        data: params.row,
+                      });
+                    }
+                  }
+                }}
+              >
+                <BiEdit
+                  size="16px"
+                  color={theme.name === THEMES.DARK ? "white" : "grey"}
+                />
+              </NormalButton>
+            </Tooltip>
+        </Box>
       ),
     },
+    {
+      field: 'Permission',
+      headerName: "Permission",
+      headerAlign:'center',
+      align: 'left',
+      renderCell: (params) => {
+        const rowId = params?.row?._id;
+        const isUpload = params?.row?.allowUpload;
+        const isMultiples = params?.row?.allowMultiples;
+
+        return(
+           <FormGroup>
+              <FormControlLabel control={<Switch checked={isUpload} onChange={(e)=>{
+                handlePermissionChange(rowId,e.target.checked,'upload');
+              }} size="small" />} label={`Upload`} />
+              <Divider/>
+              <FormControlLabel control={<Switch checked={isMultiples} onChange={(e)=>{
+                handlePermissionChange(rowId, e.target.checked,'multiples');
+              }} size="small" />} label="Multiples" />
+           </FormGroup>
+        )
+      }
+    },
   ];
+
+  useEffect(()=>{
+    const data: any = localStorage[ENV_KEYS.VITE_APP_USER_DATA_KEY] ? localStorage.getItem(ENV_KEYS.VITE_APP_USER_DATA_KEY) : null;
+
+    if(data){
+      const plainData = decryptId(data,ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY);
+
+      if(plainData){
+        const jsonPlain = JSON.parse(plainData);
+        if(jsonPlain && jsonPlain?.packageId && jsonPlain?.packageId?.category){
+          const category = jsonPlain?.packageId?.category;
+          if(category){
+            setPackageType(category);
+          }
+        }
+      }
+    }
+  },[packageType])
 
   return (
     <Typography
@@ -428,8 +629,10 @@ function FileDrop() {
             </div>
             <Mui.GenerateLinkArea>
               <Grid container gap={6}>
-                <Grid item xs={12} md={6}>
-                  <FormControl sx={{ width: "100%" }} size="small">
+                <Grid item xs={12} md={4}>
+                  {
+                    packageType ? (packageType.toLowerCase().indexOf('free')=== 0 || packageType?.toLowerCase().indexOf('anonymous') === 0) ?
+                    <FormControl sx={{ width: "100%" }} size="small">
                     <InputLabel id="demo-simple-select-label">
                       Expired date
                     </InputLabel>
@@ -446,23 +649,59 @@ function FileDrop() {
                       <MenuItem value={3}>3 days after created</MenuItem>
                     </Select>
                   </FormControl>
+                  :
+                  <DatePickerV1Container>
+                    <DatePickerV1Lable>Expired date</DatePickerV1Lable>
+                      <DatePickerV1Content sx={{
+                        "& .MuiTextField-root": {
+                          width: "100% !important",
+                        },
+                        "& .MuiInputBase-root": {},
+                        "input::placeholder": {
+                          opacity: "1 !important",
+                          color: "#9F9F9F",
+                        },
+                      }}>
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          name="demo-simple-select"
+                          value={selectDate}
+                          sx={{
+                            '.MuiInputBase-root': {
+                              height: '35px',
+                            },
+                          }}
+                          onChange={(date) => handleDateChange(date)}
+                        />
+                    </DatePickerV1Content>
+                  </DatePickerV1Container>
+                  :
+                  null
+                  }
                 </Grid>
                 <Grid
                   item
                   xs={12}
-                  md={4}
+                  md={7}
                   sx={{
                     display: "flex",
-                    justifyContent: { xs: "flex-end", md: "flex-start" },
+                    justifyContent: { xs: "flex-end", md: "center", rowGap: 10 },
                   }}
                 >
-                  <Button
-                    variant="contained"
-                    onClick={generateFileDropLink}
-                    sx={{ width: { xs: "100%", md: "auto" } }}
-                  >
-                    Generate link now
-                  </Button>
+                    <FormControl sx={{display:'flex', flexDirection:'row'}}>
+                      <FormControlLabel control={<Checkbox id="allow-download" name="allow-download" checked={headerData.allowDownload} onChange={handleAllowDownloadChange} />} label="Allow Download" />
+                      <FormControlLabel control={<Checkbox id="allow-upload" name="allow-upload" checked={headerData.allowUpload} onChange={handleAllowUploadChange} />} label="Allow Upload" />
+                      <FormControlLabel control={<Checkbox id="allow-multiple" name="allow-multiple" checked={headerData.allowMultiples} onChange={handleAllowMultiplesChange} />} label="Allow Multiples" />
+                    </FormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                <Button
+                      variant="contained"
+                      onClick={generateFileDropLink}
+                      sx={{ width: { xs: "100%" }, }}
+                    >
+                      Generate link now
+                    </Button>
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
@@ -550,7 +789,7 @@ function FileDrop() {
                       viewBox={`0 0 256 256`}
                     /> */}
                   {/* </div> */}
-                  <div ref={qrCodeRef} style={{ display: 'inline-block', padding: '7px', border: '1px solid gray', borderRadius: '7px' }}>
+                  <div ref={qrCodeRef} style={{ display: 'flex', justifyContent:'center', alignItems:'center', padding: '7px', border: '1px solid gray', borderRadius: '7px' }}>
                     <QRCode
                       style={{ width: "100px", height: "100px" }}
                       value={value}
@@ -819,9 +1058,9 @@ function FileDrop() {
                 borderRadius: 0,
                 height: "100% !important",
                 "& .MuiDataGrid-columnSeparator": { display: "none" },
-                "& .MuiDataGrid-virtualScroller": {
-                  overflowX: "hidden",
-                },
+                // "& .MuiDataGrid-virtualScroller": {
+                //   overflowX: "hidden",
+                // },
                 "& .MuiDataGrid-cell:focus": {
                   outline: "none",
                 },
@@ -887,6 +1126,18 @@ function FileDrop() {
           multiId.length > 1 ? handleMultipleDelete : handleSingleDelete
         }
       />
+      {
+        openEditExpiry &&
+        <DialogEditExpiryLinkFileDrop  
+          isOpen={openEditExpiry}
+          onClose={()=>{
+            setOpenEditExpiry(false);
+            setDataForEvents('');
+            manageFileDrop.customeFileDrop();
+          }} 
+          data={dataForEvents?.data}
+        />
+      }
     </Typography>
   );
 }
