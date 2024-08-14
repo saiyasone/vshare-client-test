@@ -641,6 +641,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleForgetPassword = async (email) => {
     try {
 
+      /* reset captcha */
+      grecaptcha.reset();
+
       await userForgotPasword({
         variables: {
           email: email,
