@@ -461,9 +461,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       const signInUser = await userLogin({
         variables: {
           where: {
-            username: username || "",
-            password: password || "",
-            ip: responseIp.data || "",
+            username: username ?? "",
+            password: password ?? "",
+            ip: responseIp.data ?? "",
+            // captcha: window.__reCaptcha!,
           },
         },
       });
