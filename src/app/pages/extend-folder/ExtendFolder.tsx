@@ -861,38 +861,6 @@ function ExtendFolder() {
         },
       },
     );
-
-    // await manageFile.handleDownloadFile(
-    //   {
-    //     id: dataForEvent.data._id,
-    //     newPath: dataForEvent.data.newPath,
-    //     newFilename: dataForEvent.data.newName,
-    //     filename: dataForEvent.data.name,
-    //   },
-    //   {
-    //     onProcess: async (countPercentage) => {
-    //       setProgressing(countPercentage);
-    //     },
-    //     onSuccess: async () => {
-    //       setDataForEvent((state) => ({
-    //         ...state,
-    //         action: null,
-    //         data: {
-    //           ...state.data,
-    //           totalDownload: dataForEvent.data.totalDownload + 1,
-    //         },
-    //       }));
-    //       customGetSubFoldersAndFiles();
-    //     },
-    //     onFailed: async (error) => {
-    //       errorMessage(error, 2000);
-    //     },
-    //     onClosure: () => {
-    //       setShowProgressing(false);
-    //       setProcesing(false);
-    //     },
-    //   },
-    // );
   };
 
   const handleDeleteFilesAndFolders = async () => {
@@ -1164,8 +1132,6 @@ function ExtendFolder() {
           " will be deleted?"
         }
       />
-
-       
 
       <MUI.ExtendContainer>
         <MUI.TitleAndSwitch className="title-n-switch" sx={{ my: 2 }}>
@@ -1651,8 +1617,6 @@ function ExtendFolder() {
         }
       />
 
-     
-
       <DialogCreateFileDrop
         isOpen={openFileDrop}
         onClose={handleCloseFileDrop}
@@ -1761,8 +1725,6 @@ function ExtendFolder() {
           " will be deleted?"
         }
       />
-
-       
     </Fragment>
   );
 }

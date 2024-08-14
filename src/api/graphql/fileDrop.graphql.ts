@@ -68,7 +68,7 @@ export const QUERY_FILE_DROP_PUBLIC = gql`
 `;
 
 export const QUERY_FILE_DROP_URL_PRIVATE = gql`
-  query Data(
+  query GetPrivateFileDropUrl(
     $skip: Int
     $limit: Int
     $orderBy: OrderByInput

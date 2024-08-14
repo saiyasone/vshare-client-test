@@ -34,7 +34,10 @@ import * as Yup from "yup";
 import ReplyAllSharpIcon from "@mui/icons-material/ReplyAllSharp";
 import DownloadSharpIcon from "@mui/icons-material/DownloadSharp";
 import QRCode from "react-qr-code";
-import { handleDownloadQRCode, handleShareQR } from "utils/image.share.download";
+import {
+  handleDownloadQRCode,
+  handleShareQR,
+} from "utils/image.share.download";
 
 const DialogPreviewFileV1Boby = muiStyled("div")(({ theme }) => ({
   width: "100%",
@@ -60,13 +63,16 @@ const DialogCreateFileDrop = (props) => {
   const link = ENV_KEYS.VITE_APP_FILE_DROP_LINK || "";
   const qrCodeRef = useRef<SVGSVGElement | any>(null);
   const [value, setValue] = useState(link);
-  const [isCopy, setIsCopy] = useState(false); 
+  const [isCopy, setIsCopy] = useState(false);
   const [showValid, setShowValid] = useState<boolean>(false);
   const [isShow, setIsShow] = useState(false);
   const [selectDay, setSelectDay] = useState(1);
   const [expiredDate, setExpiredDate] = useState<any>(null);
   const [latestUrl, setLatestUrl] = useState("");
-  const [activePrivateFileDrop, setActivePrivateFileDrop] = useState<any>({title: '', description: ''});
+  const [activePrivateFileDrop, setActivePrivateFileDrop] = useState<any>({
+    title: "",
+    description: "",
+  });
   const mMobileScreen = useMediaQuery("(max-width:320px)");
   const [queryFileDropLinks] = useLazyQuery(QUERY_FILE_DROP_URL_PRIVATE, {
     fetchPolicy: "no-cache",
@@ -287,28 +293,28 @@ const DialogCreateFileDrop = (props) => {
                 <Mui.GenerateLinkArea>
                   <Grid container gap={6}>
                     <Grid item xs={12} md={6}>
-                    <FormControl sx={{ width: "100%" }} size="small">
-                    <InputLabel id="demo-simple-select-label">
-                        Expired date
-                      </InputLabel>
-                      <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={selectDay}
-                        label="Expired date"
-                        onChange={handleExpiredDateChange}
-                      >
-                        <MenuItem value={1}>
-                          1 {mMobileScreen ? "d" : "day"}
-                        </MenuItem>
-                        <MenuItem value={2}>
-                          2 {mMobileScreen ? "d" : "day"}
-                        </MenuItem>
-                        <MenuItem value={3}>
-                          3 {mMobileScreen ? "d" : "day"}
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
+                      <FormControl sx={{ width: "100%" }} size="small">
+                        <InputLabel id="demo-simple-select-label">
+                          Expired date
+                        </InputLabel>
+                        <Select
+                          labelId="demo-simple-select-label"
+                          id="demo-simple-select"
+                          value={selectDay}
+                          label="Expired date"
+                          onChange={handleExpiredDateChange}
+                        >
+                          <MenuItem value={1}>
+                            1 {mMobileScreen ? "d" : "day"}
+                          </MenuItem>
+                          <MenuItem value={2}>
+                            2 {mMobileScreen ? "d" : "day"}
+                          </MenuItem>
+                          <MenuItem value={3}>
+                            3 {mMobileScreen ? "d" : "day"}
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
                     </Grid>
                     <Grid
                       item
@@ -317,12 +323,12 @@ const DialogCreateFileDrop = (props) => {
                       sx={{
                         display: "flex",
                         justifyContent: { xs: "flex-end", md: "flex-start" },
-                        ml: 'auto'
+                        ml: "auto",
                       }}
                     >
                       <Button variant="contained" type="submit" fullWidth>
                         Generate link now
-                      </Button> 
+                      </Button>
                     </Grid>
                   </Grid>
                 </Mui.GenerateLinkArea>
@@ -334,120 +340,155 @@ const DialogCreateFileDrop = (props) => {
                     flexDirection: "column",
                   }}
                 >
-                 
-              {isShow && (
-              <Grid container sx={{ mt: 10 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: { xs: "center", md: "flex-start" },
-                  }}
-                >
-                  <div ref={qrCodeRef} style={{ display: 'flex', padding: '7px', border: '1px solid gray', borderRadius: '7px' }}>
-                    <QRCode
-                      style={{ width: "100px", height: "100px" }}
-                      value={value}
-                      viewBox={`0 0 256 256`}
-                    />
-                  </div>
-                  
-                  <Box sx={{ mt: { xs: 7, md: 2 }, ml: { xs: 0, md: 10 } }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "start",
-                      justifyContent: "start",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Typography sx={{ fontSize: "0.8rem", color: "#4B465C" }}>
-                      This link:{" "}
-                      <span style={{ color: "#17766B" }}>{value}</span> will be
-                      expired on: &nbsp;
-                      <span style={{ color: "#17766B" }}>
-                        {expiredDate
-                          ? expiredDate
-                          : moment(calculateExpirationDate(1)).format(
-                              "YYYY-MM-DD h:mm:ss",
-                            )}
-                        .
-                      </span>
-                    </Typography>
-                    <TextField
-                    sx={{
-                      width: "100%",
-                      fontSize: "18px !important",
-                      color: "grey !important",
-                      marginTop: 4,
-                    }}
-                    size="small"
-                    InputLabelProps={{
-                      shrink: false,
-                    }}
-                    disabled
-                    value={value !== link ? value : latestUrl || ""}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          {isCopy && showValid  ? (
-                            <IconButton>
-                              <DownloadDoneIcon sx={{ color: "#17766B" }} />
-                            </IconButton>
-                          ) : (
-                            <CopyToClipboard
-                              text={value !== link ? value : latestUrl || ""}
-                              onCopy={handleCopyLink}
+                  {isShow && (
+                    <Grid container sx={{ mt: 10 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: { xs: "center", md: "flex-start" },
+                        }}
+                      >
+                        <div
+                          ref={qrCodeRef}
+                          style={{
+                            display: "flex",
+                            padding: "7px",
+                            border: "1px solid gray",
+                            borderRadius: "7px",
+                          }}
+                        >
+                          <QRCode
+                            style={{ width: "100px", height: "100px" }}
+                            value={value}
+                            viewBox={`0 0 256 256`}
+                          />
+                        </div>
+
+                        <Box
+                          sx={{ mt: { xs: 7, md: 2 }, ml: { xs: 0, md: 10 } }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "start",
+                              justifyContent: "start",
+                              flexDirection: "column",
+                            }}
+                          >
+                            <Typography
+                              sx={{ fontSize: "0.8rem", color: "#4B465C" }}
                             >
-                              <IconButton
-                                aria-label="copy"
-                                disabled={
-                                  latestUrl
-                                    ? false
-                                    : value == link
-                                    ? true
-                                    : false
-                                }
-                              >
-                                <ContentCopyIcon sx={{ fontSize: "1rem" }} />
-                              </IconButton>
-                            </CopyToClipboard>
-                          )}
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                  </Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: { xs: "center", md: "space-between" },
-                      mt: 7,
-                    }}
-                  >
-                    <Button
-                      variant="contained"
-                      onClick={(e)=>handleDownloadQRCode(e, qrCodeRef, {title: values.title, description: values.description})}
-                      sx={{ width: "130px" }}
-                    >
-                      <DownloadSharpIcon sx={{ mr: 3 }} />
-                      Download
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={(e)=>handleShareQR(e, qrCodeRef, {title: values.title, description: values.description})}
-                      sx={{ ml: 5, width: "130px" }}
-                    >
-                      Share
-                      <ReplyAllSharpIcon
-                        sx={{ ml: 3, transform: "rotate(180deg) scale(1,-1)" }}
-                      />
-                    </Button>
-                  </Box>
-                </Box>
-                </Box>
-              </Grid>
-            )}
+                              This link:{" "}
+                              <span style={{ color: "#17766B" }}>{value}</span>{" "}
+                              will be expired on: &nbsp;
+                              <span style={{ color: "#17766B" }}>
+                                {expiredDate
+                                  ? expiredDate
+                                  : moment(calculateExpirationDate(1)).format(
+                                      "YYYY-MM-DD h:mm:ss",
+                                    )}
+                                .
+                              </span>
+                            </Typography>
+                            <TextField
+                              sx={{
+                                width: "100%",
+                                fontSize: "18px !important",
+                                color: "grey !important",
+                                marginTop: 4,
+                              }}
+                              size="small"
+                              InputLabelProps={{
+                                shrink: false,
+                              }}
+                              disabled
+                              value={value !== link ? value : latestUrl || ""}
+                              InputProps={{
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    {isCopy && showValid ? (
+                                      <IconButton>
+                                        <DownloadDoneIcon
+                                          sx={{ color: "#17766B" }}
+                                        />
+                                      </IconButton>
+                                    ) : (
+                                      <CopyToClipboard
+                                        text={
+                                          value !== link
+                                            ? value
+                                            : latestUrl || ""
+                                        }
+                                        onCopy={handleCopyLink}
+                                      >
+                                        <IconButton
+                                          aria-label="copy"
+                                          disabled={
+                                            latestUrl
+                                              ? false
+                                              : value == link
+                                              ? true
+                                              : false
+                                          }
+                                        >
+                                          <ContentCopyIcon
+                                            sx={{ fontSize: "1rem" }}
+                                          />
+                                        </IconButton>
+                                      </CopyToClipboard>
+                                    )}
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                          </Box>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: {
+                                xs: "center",
+                                md: "space-between",
+                              },
+                              mt: 7,
+                            }}
+                          >
+                            <Button
+                              variant="contained"
+                              onClick={(e) =>
+                                handleDownloadQRCode(e, qrCodeRef, {
+                                  title: values.title,
+                                  description: values.description,
+                                })
+                              }
+                              sx={{ width: "130px" }}
+                            >
+                              <DownloadSharpIcon sx={{ mr: 3 }} />
+                              Download
+                            </Button>
+                            <Button
+                              variant="contained"
+                              onClick={(e) =>
+                                handleShareQR(e, qrCodeRef, {
+                                  title: values.title,
+                                  description: values.description,
+                                })
+                              }
+                              sx={{ ml: 5, width: "130px" }}
+                            >
+                              Share
+                              <ReplyAllSharpIcon
+                                sx={{
+                                  ml: 3,
+                                  transform: "rotate(180deg) scale(1,-1)",
+                                }}
+                              />
+                            </Button>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  )}
                 </Box>
               </Form>
             )}
