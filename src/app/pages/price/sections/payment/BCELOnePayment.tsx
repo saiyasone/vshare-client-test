@@ -5,7 +5,6 @@ import { SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION } from "api/graphql/payment.graphql"
 import { useRef } from "react";
 import QRCode from "react-qr-code";
 import { setActiveStep, setPaymentStatus, setRecentPayment } from "stores/features/paymentSlice";
-import NormalButton from "../../../../../components/NormalButton";
 import { useDispatch } from "react-redux";
 
 const BCELOnePaymentContainer = styled("div")({
