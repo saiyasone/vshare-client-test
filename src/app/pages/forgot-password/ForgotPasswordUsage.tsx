@@ -50,7 +50,10 @@ function ForgotPasswordUsage() {
   };
 
   function handleData(data) {
-    if (data) setCaptcha(false);
+    if (data) {
+      window.__reCaptcha = data;
+      setCaptcha(false);
+    }
   }
 
   function handleClearDateForgetPassword() {
