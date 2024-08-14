@@ -17,6 +17,7 @@ import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
 import DownloadSharpIcon from "@mui/icons-material/DownloadSharp";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import ReplyAllSharpIcon from "@mui/icons-material/ReplyAllSharp";
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import {
   Box,
@@ -65,6 +66,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 import DialogEditExpiryLinkFileDrop from "components/dialog/DialogEditExpiryLinkFileDrop";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import { convertObjectEmptyStringToNull } from "utils/object.util";
+import { NavLink } from "react-router-dom";
+import { Base64 } from "js-base64";
 
 const DatePickerV1Container = styled(Box)({
   width: "100%",
@@ -471,24 +474,22 @@ function FileDrop() {
               </IconButton>
             )}
           </Tooltip>
-          {/* <Tooltip title="View details" placement="top">
+          <Tooltip title="View details" placement="top">
             <IconButton
               component={NavLink}
               to={`/file-drop-detail/${Base64.encode(params?.row?.url)}`}
             >
               <RemoveRedEyeIcon sx={{ fontSize: "18px" }} />
             </IconButton>
-          </Tooltip> */}
+          </Tooltip>
           <Tooltip
               title="Edit the expiry date-time"
               placement="top"
             >
               <NormalButton
                 sx={{
-                  cursor: params?.row?.allowUpload
-                    ? "pointer"
-                    : "not-allowed",
-                  opacity: params?.row?.allowUpload ? 1 : 0.5,
+                  cursor: "pointer",
+                  opacity:  1,
                 }}
                 onClick={() => {
                   {
