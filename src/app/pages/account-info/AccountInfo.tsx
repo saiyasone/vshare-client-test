@@ -1,6 +1,5 @@
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
-import CryptoJS from "crypto-js";
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import * as MUI from "./styles/accountInfo.styles";
@@ -66,6 +65,7 @@ import useAuth from "../../../hooks/useAuth";
 import ChangeUserPasswordSection from "./ChangeUserPasswordSection";
 import LoginDevice from "./LoginDevice";
 import TwoFactor from "./TwoFactor";
+import { encryptData } from "utils/secure.util";
 const columns: any = [
   {
     field: "id",
@@ -249,7 +249,6 @@ function AccountInfo() {
   const [isProfileImageFound, setIsProfileImageFound] = useState<any>(true);
   const LOAD_UPLOAD_URL = ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL;
   const LOAD_DELETE_URL = ENV_KEYS.VITE_APP_LOAD_DELETE_URL;
-  const SECRET_KEY = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
 
   const settingKey = {
     _2Factor: "TFAITCG",
@@ -401,23 +400,15 @@ function AccountInfo() {
     }
 
     const pathBunny = user?.newName + "-" + user?._id + filePath;
+
     try {
       const headers = {
         PATH: pathBunny,
         FILENAME: newName,
-        PATH_FOR_THUMBNAIL: user?.newName + "-" + user?._id,
+        createdBy: user?._id,
       };
 
-      const key = CryptoJS.enc.Utf8.parse(SECRET_KEY);
-      const iv = CryptoJS.lib.WordArray.random(16);
-      const encrypted = CryptoJS.AES.encrypt(JSON.stringify(headers), key, {
-        iv: iv,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7,
-      });
-      const cipherText = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
-      const ivText = iv.toString(CryptoJS.enc.Base64);
-      const encryptedData = cipherText + ":" + ivText;
+      const encryptedData = encryptData(headers);
 
       const source = axios.CancelToken.source();
       const cancelToken = source.token;
@@ -469,26 +460,12 @@ function AccountInfo() {
       //delete a file
       if (selectedFile instanceof File && userAccount?.profile) {
         const headers = {
-          REGION: "sg",
-          BASE_HOSTNAME: "storage.bunnycdn.com",
-          STORAGE_ZONE_NAME: ENV_KEYS.VITE_APP_STORAGE_ZONE,
-          ACCESS_KEY: ENV_KEYS.VITE_APP_ACCESSKEY_BUNNY,
           PATH: `${userAccount?.newName}-${userAccount?._id}/${ENV_KEYS.VITE_APP_ZONE_PROFILE}`,
           FILENAME: userAccount?.profile,
-          PATH_FOR_THUMBNAIL: `${userAccount?.newName}-${userAccount?._id}`,
+          createdBy: user?._id,
         };
 
-        const key = CryptoJS.enc.Utf8.parse(SECRET_KEY);
-        const iv = CryptoJS.lib.WordArray.random(16);
-        const encrypted = CryptoJS.AES.encrypt(JSON.stringify(headers), key, {
-          iv: iv,
-          mode: CryptoJS.mode.CBC,
-          padding: CryptoJS.pad.Pkcs7,
-        });
-        const cipherText = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
-        const ivText = iv.toString(CryptoJS.enc.Base64);
-        const encryptedData = cipherText + ":" + ivText;
-
+        const encryptedData = encryptData(headers);
         await axios.delete(LOAD_DELETE_URL, {
           headers: {
             "Content-Type": "multipart/form-data",

@@ -86,7 +86,11 @@ export const QUERY_FILE_DROP_URL_PRIVATE = gql`
         createdAt
         expiredAt
         status
+        isPublic
         title
+        allowDownload
+        allowMultiples
+        allowUpload
         description
         folderId {
           _id
@@ -115,6 +119,9 @@ export const QUERY_USER_BY_FILE_DROP_URL = gql`
           path
           newPath
         }
+        allowDownload
+        allowMultiples
+        allowUpload
         title
         description
         expiredAt
@@ -136,6 +143,9 @@ export const MUTATION_CREATE_FILE_DROP_URL_PRIVATE = gql`
   mutation CreatePrivateFileDropUrl($input: PrivateFileDropUrlInput) {
     createPrivateFileDropUrl(input: $input) {
       _id
+      allowDownload
+      allowMultiples
+      allowUpload
     }
   }
 `;

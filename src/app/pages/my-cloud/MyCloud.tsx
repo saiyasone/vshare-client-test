@@ -126,6 +126,7 @@ export function MyCloud() {
   const isMobile = useMediaQuery("(max-width:600px)");
   const [userPackage, setUserPackage] = useState<any>(null);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+
   // slice in redux
   const dispatch = useDispatch();
   const dataSelector = useSelector(
@@ -879,6 +880,9 @@ export function MyCloud() {
               title: values?.title,
               description: values?.description || null,
               folderId: folderDropId,
+              allowDownload: values.allowDownload,
+              allowMultiples: values.allowMultiples,
+              allowUpload: values.allowUpload,
             }),
           },
         });
@@ -894,6 +898,9 @@ export function MyCloud() {
               title: values?.title,
               description: values?.description || null,
               folderId: folderDropId,
+              allowDownload: values.allowDownload,
+              allowMultiples: values.allowMultiples,
+              allowUpload: values.allowUpload,
             }),
           },
         });

@@ -111,7 +111,7 @@ export default function ShowUpload(props: Props) {
   const [startUpload, setStartUpload] = useState(false);
   const [presignUploadSuccess, setPresignUploadSuccess] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
-  const chunkSize = 100 * 1024 * 1024; // 250 mb
+  const chunkSize = 50 * 1024 * 1024; // 250 mb
 
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
@@ -181,33 +181,33 @@ export default function ShowUpload(props: Props) {
     onDeleteData?.(index, type);
   };
 
-  const isSuccessful = (index) => {
-    return successfulFiles.includes(index) || isSuccess[index];
-  };
+  // const isSuccessful = (index) => {
+  //   return successfulFiles.includes(index) || isSuccess[index];
+  // };
 
-  const handleCancleUploadFile = async (index) => {
-    const id = fileId[index];
-    await deleteFile({
-      variables: {
-        id: id,
-      },
-      onCompleted: () => {
-        setCancelStatus((prev) => ({
-          ...prev,
-          [index]: true,
-        }));
-      },
-    });
+  // const handleCancleUploadFile = async (index) => {
+  //   const id = fileId[index];
+  //   await deleteFile({
+  //     variables: {
+  //       id: id,
+  //     },
+  //     onCompleted: () => {
+  //       setCancelStatus((prev) => ({
+  //         ...prev,
+  //         [index]: true,
+  //       }));
+  //     },
+  //   });
 
-    if (cancelToken[index]) {
-      cancelToken[index].cancel();
-      setCancelToken((prev) => {
-        const newState = { ...prev };
-        delete newState[index];
-        return newState;
-      });
-    }
-  };
+  //   if (cancelToken[index]) {
+  //     cancelToken[index].cancel();
+  //     setCancelToken((prev) => {
+  //       const newState = { ...prev };
+  //       delete newState[index];
+  //       return newState;
+  //     });
+  //   }
+  // };
 
   const handleCancelUploadFolder = async (folderKey) => {
     try {
