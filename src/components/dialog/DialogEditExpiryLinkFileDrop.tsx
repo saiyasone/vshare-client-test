@@ -1,4 +1,4 @@
-import { Box, styled, TextField, Typography } from "@mui/material";
+import { Box, Checkbox, FormControl, FormControlLabel, styled, TextField, Typography } from "@mui/material";
 import BaseDialogV1 from "components/BaseDialogV1";
 import { styled as muiStyled } from "@mui/system";
 import { Form, Formik } from "formik";
@@ -56,6 +56,19 @@ const DialogPreviewFileV1Boby = muiStyled("div")(({ theme }) => ({
     const {data} = props;
     const [title, settitle] = useState<string>(data?.title);
     const [description, setDescription] = useState<string>(data?.description);
+    const [permission, setPermission] = useState({
+      allowDownload: data?.allowDownload,
+      allowUpload: data?.allowUpload,
+      allowMultiples: data?.allowMultiples,
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, checked } = e.target;
+      setPermission(prevData => ({
+          ...prevData,
+          [name]: checked,
+      }));
+  };
 
     const handleSubmitChange = async() => {
       try {
@@ -69,6 +82,9 @@ const DialogPreviewFileV1Boby = muiStyled("div")(({ theme }) => ({
             id: data?._id,
             input: convertObjectEmptyStringToNull({
               expiredAt: moment(data?.expiredAt).format("YYYY-MM-DD h:mm:ss"),
+              allowDownload: permission?.allowDownload,
+              allowUpload: permission?.allowUpload,
+              allowMultiples: permission?.allowMultiples,
               ...(title && title !== data?.title && {
                 title: title
               }),
@@ -90,7 +106,7 @@ const DialogPreviewFileV1Boby = muiStyled("div")(({ theme }) => ({
         );
       }
     }
-   
+
     return(
       <BaseDialogV1
       {...props}
@@ -98,7 +114,11 @@ const DialogPreviewFileV1Boby = muiStyled("div")(({ theme }) => ({
         PaperProps: {
           sx: {
             overflowY: "initial",
-            maxWidth: "300px",
+            maxWidth: {
+              xs:"100%",
+              md:'50%',
+              lg:'450px'
+            },
           },
         },
       }}
@@ -187,6 +207,11 @@ const DialogPreviewFileV1Boby = muiStyled("div")(({ theme }) => ({
                   />
                 </DatePickerV1Content>
               </DatePickerV1Container>
+              <FormControl sx={{display:'flex', flexDirection:{xs:'column', md:'row'}, justifyContent:'center !important', mt: 4}}>
+                <FormControlLabel control={<Checkbox id="allow-download" name="allowDownload" checked={permission.allowDownload} onChange={handleChange} />} label="Allow Download" />
+                <FormControlLabel control={<Checkbox id="allow-upload" name="allowUpload" checked={permission.allowUpload} onChange={handleChange} />} label="Allow Upload" />
+                <FormControlLabel control={<Checkbox id="allow-multiple" name="allowMultiples" checked={permission.allowMultiples} onChange={handleChange} />} label="Allow Multiples" />
+              </FormControl>
               <NormalButton
                 type="submit"
                 sx={{
@@ -201,7 +226,7 @@ const DialogPreviewFileV1Boby = muiStyled("div")(({ theme }) => ({
                   color: "white !important",
                 }}
               >
-                Change Expired Date
+                Submit Change
               </NormalButton>
           </Form>
         </Formik>

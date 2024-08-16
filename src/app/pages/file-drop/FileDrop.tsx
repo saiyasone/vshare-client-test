@@ -26,13 +26,10 @@ import {
   CardContent,
   Checkbox,
   Chip,
-  Divider,
   FormControlLabel,
-  FormGroup,
   Grid,
   IconButton,
   InputAdornment,
-  Switch,
   TextField,
   Typography,
   createTheme,
@@ -47,7 +44,6 @@ import Tooltip from "@mui/material/Tooltip";
 import {
   MUTATION_CREATE_FILE_DROP_URL_PRIVATE,
   MUTATION_DELETE_FILE_DROP_URL,
-  MUTATION_UPDATE_FILE_DROP_URL,
 } from "api/graphql/fileDrop.graphql";
 import SelectV1 from "components/SelectV1";
 import DialogDeleteV1 from "components/dialog/DialogDeleteV1";
@@ -64,8 +60,6 @@ import { handleDownloadQRCode, handleShareQR } from "utils/image.share.download"
 import { decryptId } from "utils/secure.util";
 import { DatePicker } from "@mui/x-date-pickers";
 import DialogEditExpiryLinkFileDrop from "components/dialog/DialogEditExpiryLinkFileDrop";
-import useManageGraphqlError from "hooks/useManageGraphqlError";
-import { convertObjectEmptyStringToNull } from "utils/object.util";
 import { NavLink } from "react-router-dom";
 import { Base64 } from "js-base64";
 
@@ -96,8 +90,6 @@ const DatePickerV1Content = styled(Box)(({ theme }) => ({
 function FileDrop() {
   const theme: any = createTheme();
   const { user }: any = useAuth();
-  const manageGraphqlError = useManageGraphqlError();
-  const [updateFileDrop] = useMutation(MUTATION_UPDATE_FILE_DROP_URL);
   const isMobile = useMediaQuery("(max-width:767px)");
   const link = ENV_KEYS.VITE_APP_FILE_DROP_LINK;
   const qrCodeRef = useRef<SVGSVGElement | any>(null);
@@ -322,37 +314,6 @@ function FileDrop() {
     }
   };
 
-  const handlePermissionChange = async(_id: string, state: boolean, permission: string) => {
-    try 
-    {
-      const fileDropLink = await updateFileDrop({
-        variables: {
-          id: _id,
-          input: convertObjectEmptyStringToNull({
-           ...(permission === 'upload' && {
-            allowUpload: state
-           }),
-           ...(permission === 'multiples' && {
-            allowMultiples: state
-           })
-          }),
-        },
-      });
-      if (fileDropLink?.data?.updateFileDropUrl) {
-        successMessage("Updated file-drop link successfully!", 2000);
-        manageFileDrop.customeFileDrop();
-      }
-    } 
-    catch (error) 
-    {
-      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
-      errorMessage(
-        manageGraphqlError.handleErrorMessage(cutErr) as string,
-        3000,
-      );
-    }
-  }
-
   useEffect(() => {
     if (showValid) {
       setTimeout(() => {
@@ -390,10 +351,9 @@ function FileDrop() {
           <div style={{ color: "green" }}>
             <Chip
               sx={{
-                backgroundColor: params?.row?.status
-                  ? "rgba(168, 170, 174,0.16)"
-                  : "#dcf6e8",
-                color: params?.row?.status ? "rgb(168, 170, 174)" : "#29c770",
+                backgroundColor: params?.row?.status && params?.row?.status ==='expired'
+                  ? "#FFEFE1" : "#dcf6e8",
+                color: params?.row?.status && params?.row?.status ==='expired' ? "#FFA44F" : "#29c770",
               }}
               label={params?.row?.status}
               size="small"
@@ -510,29 +470,6 @@ function FileDrop() {
             </Tooltip>
         </Box>
       ),
-    },
-    {
-      field: 'Permission',
-      headerName: "Permission",
-      headerAlign:'center',
-      align: 'left',
-      renderCell: (params) => {
-        const rowId = params?.row?._id;
-        const isUpload = params?.row?.allowUpload;
-        const isMultiples = params?.row?.allowMultiples;
-
-        return(
-           <FormGroup>
-              <FormControlLabel control={<Switch checked={isUpload} onChange={(e)=>{
-                handlePermissionChange(rowId,e.target.checked,'upload');
-              }} size="small" />} label={`Upload`} />
-              <Divider/>
-              <FormControlLabel control={<Switch checked={isMultiples} onChange={(e)=>{
-                handlePermissionChange(rowId, e.target.checked,'multiples');
-              }} size="small" />} label="Multiples" />
-           </FormGroup>
-        )
-      }
     },
   ];
 
