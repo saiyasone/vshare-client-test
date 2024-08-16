@@ -70,7 +70,6 @@ import DialogEditExpiryLinkFileDrop from "components/dialog/DialogEditExpiryLink
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import { convertObjectEmptyStringToNull } from "utils/object.util";
 import { NavLink } from "react-router-dom";
-import { Base64 } from "js-base64";
 
 const DatePickerV1Container = styled(Box)({
   width: "100%",
@@ -472,7 +471,16 @@ function FileDrop() {
         const url = String(params?.row?.url);
 
         return (
-          <Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              flexWrap: "nowrap",
+              gap: 2,
+              minWidth: "auto",
+            }}
+          >
             <Tooltip title="Copy file drop link" placement="top">
               {isCopied[params?.row?._id] ? (
                 <IconButton disabled>
