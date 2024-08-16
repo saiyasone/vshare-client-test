@@ -179,6 +179,7 @@ export function MyCloud() {
   const [_optionsValue, setOptionsValue] = useState(false);
   const [getValue, setGetValue] = useState<any>(null);
   const [viewMore, setViewMore] = useState(20);
+  const [fileViewMore, setFileViewMore] = useState(20);
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const { setIsAutoClose, isAutoClose } = useMenuDropdownState();
   const [total, setTotal] = useState(0);
@@ -458,7 +459,7 @@ export function MyCloud() {
               source: "default",
             },
             orderBy: "updatedAt_DESC",
-            limit: limitScroll,
+            limit: fileViewMore,
           },
           onCompleted: (data) => {
             if (data) {
@@ -510,7 +511,7 @@ export function MyCloud() {
 
   useEffect(() => {
     queryFileGrid();
-  }, [limitScroll, toggle]);
+  }, [fileViewMore, toggle]);
 
   //query all files count and separate base on file type
   const queryCategory = async () => {
@@ -605,7 +606,8 @@ export function MyCloud() {
   };
 
   const handleViewMoreFile = () => {
-    addMoreLimit();
+    // addMoreLimit();
+    setFileViewMore((prev) => prev + 10);
   };
 
   const handleDownloadFile = async (inputData) => {
@@ -1685,7 +1687,7 @@ export function MyCloud() {
                     </Box>
                   )}
                   {!detectResizeWindow.canBeScrolled &&
-                    limitScroll < total &&
+                    fileViewMore < total &&
                     toggle === "grid" && (
                       <Box
                         sx={{
