@@ -1065,7 +1065,7 @@ export default function ShowUpload(props: Props) {
   }, [startUpload]);
 
   React.useEffect(() => {
-    console.log({ fileStates });
+    // console.log({ fileStates });
     // console.log({ fileStates: Object.values(fileStates).length, files: files.length });
     const completeFunction = async () => {
       if (Object.values(fileStates).length === files.length) {

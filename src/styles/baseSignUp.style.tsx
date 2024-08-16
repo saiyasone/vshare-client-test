@@ -22,7 +22,7 @@ export const DivLine = styled("div")({
 });
 
 export const divCarouselDetail = styled("div")({
-  border: "1px solid red",
+  // border: "1px solid red",
 });
 
 export const ButtonLogin = styled(Button)({

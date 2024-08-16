@@ -96,7 +96,28 @@ export const QUERY_PAYMENT = gql`
         updatedAt
         orderedAt
         expiredAt
+        payerId {
+          _id
+          firstName
+          lastName
+        }
       }
+      total
+    }
+  }
+`;
+
+export const QUERY_CURRENT_PAYMENT = gql`
+  query Data($id: ID!) {
+    getPayment(ID: $id) {
+      data {
+        _id
+        expiredAt
+      }
+      availableDays
+      overdueDays
+      totalDays
+      usedDays
     }
   }
 `;
