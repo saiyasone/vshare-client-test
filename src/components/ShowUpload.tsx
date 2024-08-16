@@ -682,11 +682,16 @@ export default function ShowUpload(props: Props) {
               },
             }));
 
+            // const partProgress = (blob.size / file.size) * 100;
+            // const totalProgress = fileStates[fileIndex].progress + partProgress;
             const percentComplete = Math.round((partNumber * 100) / numParts);
+            // const percentComplete = totalProgress;
+
             setFileStates((prev) => ({
               ...prev,
               [fileIndex]: { ...prev[fileIndex], progress: percentComplete },
             }));
+            //
 
             if (percentComplete >= 100) {
               const endTime = Date.now();
