@@ -1,53 +1,27 @@
-import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import React, { Fragment, useContext, useEffect, useState } from "react";
-import CopyToClipboard from "react-copy-to-clipboard";
 import * as MUI from "./styles/accountInfo.styles";
 
 // material ui
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DescriptionIcon from "@mui/icons-material/Description";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import {
-  Alert,
-  AlertTitle,
-  Avatar,
-  Box,
   Breadcrumbs,
   Button,
-  Checkbox,
-  Chip,
   Divider,
   FormControl,
-  FormControlLabel,
   Grid,
-  IconButton,
   InputLabel,
-  LinearProgress,
   Link,
-  MenuItem,
   OutlinedInput,
-  Paper,
-  Select,
   Typography,
-  linearProgressClasses,
-  styled,
   useMediaQuery,
 } from "@mui/material";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 
 import { useLazyQuery, useMutation } from "@apollo/client";
-import AddIcon from "@mui/icons-material/Add";
-import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import MoreVertOutlinedIcon from "@mui/icons-material/MoreVertOutlined";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import { useLocation, useNavigate } from "react-router-dom";
 //commponent
-import { useTheme } from "@mui/system";
 import { MUTATION_UPDATE_USER, QUERY_USER } from "api/graphql/user.graphql";
 import noProfile from "assets/images/no-profile.svg";
 import DialogGenerateAvatar from "components/dialog/DialogGenerateAvatar";
@@ -62,178 +36,36 @@ import {
   saveSvgToFile,
 } from "utils/file.util";
 import useAuth from "../../../hooks/useAuth";
-import ChangeUserPasswordSection from "./ChangeUserPasswordSection";
-import LoginDevice from "./LoginDevice";
-import TwoFactor from "./TwoFactor";
+import ChangeUserPasswordSection from "./components/ChangeUserPasswordSection";
+import LoginDevice from "./components/LoginDevice";
+import TwoFactor from "./components/TwoFactor";
+import InvoiceAddress from "./components/InvoiceAddress";
+import { QUERY_CURRENT_PAYMENT } from "api/graphql/payment.graphql";
+import CurrentPlan from "./components/currentPlan";
+import PaymentHistory from "./components/paymentHistory";
+import DeleteAccount from "./components/DeleteAccount";
 import { encryptData } from "utils/secure.util";
-const columns: any = [
-  {
-    field: "id",
-    headerName: "ID",
-    width: 100,
-    headerAlign: "center",
-    align: "center",
-  },
-  {
-    field: "firstName",
-    headerName: "CLIENT",
-    flex: 1,
-    renderCell: () => {
-      return (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "start",
-          }}
-        >
-          <Avatar />
-          <Box sx={{ marginLeft: "0.5rem" }}>
-            <Typography
-              variant="h5"
-              sx={{ color: "#6F6B7D", fontSize: "1rem", fontWeight: "500" }}
-            >
-              Paokue
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{ color: "#A5A3AE", fontSize: "0.8rem", fontWeight: "400" }}
-            >
-              Saolong
-            </Typography>
-          </Box>
-        </Box>
-      );
-    },
-  },
-  {
-    field: "lastName",
-    headerName: "TOTAL",
-    flex: 1,
-    renderCell: () => {
-      return (
-        <Typography
-          variant="h5"
-          sx={{ color: "#6F6B7D", fontSize: "0.9rem", fontWeight: "400" }}
-        >
-          $3077
-        </Typography>
-      );
-    },
-  },
-  {
-    field: "age",
-    headerName: "ISSUED DATE",
-    flex: 1,
-    renderCell: () => {
-      return (
-        <Typography
-          variant="h5"
-          sx={{ color: "#6F6B7D", fontSize: "0.9rem", fontWeight: "400" }}
-        >
-          09 May 2022
-        </Typography>
-      );
-    },
-  },
-  {
-    field: "fullName",
-    headerName: "BALANCE",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    renderCell: () => {
-      return (
-        <Chip
-          label="Paid"
-          sx={{ background: "#DCF6E8", color: "#28C76F", fontWeight: "600" }}
-        />
-      );
-    },
-  },
-  {
-    headerName: "ACTIONS",
-    flex: 1,
-    renderCell: () => {
-      return (
-        <Box>
-          <IconButton>
-            <EmailOutlinedIcon />
-          </IconButton>
-          <IconButton>
-            <RemoveRedEyeOutlinedIcon />
-          </IconButton>
-          <IconButton>
-            <MoreVertOutlinedIcon />
-          </IconButton>
-        </Box>
-      );
-    },
-  },
-];
-
-const rows = [
-  {
-    id: 1,
-    lastName: "Snow",
-    firstName: "Jon",
-    age: 35,
-    fullName: "paokue saolong",
-  },
-  {
-    id: 2,
-    lastName: "Snow",
-    firstName: "Jon",
-    age: 35,
-    fullName: "paokue saolong",
-  },
-  {
-    id: 3,
-    lastName: "Snow",
-    firstName: "Jon",
-    age: 35,
-    fullName: "paokue saolong",
-  },
-];
-
-const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
-  height: 10,
-  borderRadius: 5,
-  [`&.${linearProgressClasses.colorPrimary}`]: {
-    backgroundColor:
-      theme.palette.grey[theme.palette.mode === "light" ? 200 : 800],
-  },
-  [`& .${linearProgressClasses.bar}`]: {
-    borderRadius: 5,
-    backgroundColor: "#17766B",
-  },
-}));
 
 function AccountInfo() {
   const { state } = useLocation();
-  const theme = useTheme();
-  const { user, signOut }: any = useAuth();
+  const { user }: any = useAuth();
   const navigate = useNavigate();
   const [activeStatus, setActiveStatus] = React.useState<any>(null);
   const isMobile = useMediaQuery("(max-width:600px)");
   const [isDialogGenerateAvatarOpen, setIsDialogGenerateAvatarOpen] =
     useState<any>(false);
   const isTablet = useMediaQuery("(min-width:600px) and (max-width:1024px)");
-  const [copied, setCopied] = React.useState<any>(false);
-  const [value, setValue] = React.useState<any>(
-    "23eaf7f0-f4f7-495e-8b86-fad3261282ac",
-  );
   const manageGraphqlError = useManageGraphqlError();
-
   const matchImage = ["image/png", "image/jpeg", "image/jpg"];
   const [queryUser, { refetch: userRefetch }] = useLazyQuery(QUERY_USER, {
+    fetchPolicy: "no-cache",
+  });
+  const [queryCurrentPayment] = useLazyQuery(QUERY_CURRENT_PAYMENT, {
     fetchPolicy: "no-cache",
   });
   const [updateUser] = useMutation(MUTATION_UPDATE_USER);
 
   const [userAccount, setUserAccount] = useState<any>({});
-  const [checked, setChecked] = useState<any>(false);
-  const [message, setMessage] = useState<any>(null);
   const [files, setFiles] = useState<any>(null);
   const [preview, setPreview] = useState<any>("");
   const [_fileName, setFileName] = useState<any>(null);
@@ -249,23 +81,18 @@ function AccountInfo() {
   const [isProfileImageFound, setIsProfileImageFound] = useState<any>(true);
   const LOAD_UPLOAD_URL = ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL;
   const LOAD_DELETE_URL = ENV_KEYS.VITE_APP_LOAD_DELETE_URL;
-
+  const SECRET_KEY = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+  const [paymentState, setPaymentState] = React.useState<any>({
+    currentPlanInfo: null,
+    availableDays: 0,
+    overdueDays: 0,
+    totalDays: 0,
+    usedDays: 0,
+  });
   const settingKey = {
     _2Factor: "TFAITCG",
     deactiveUser: "DUAUDTA",
     rememberDevice: "RMBMEEB",
-  };
-
-  function handleCopy() {
-    setCopied(true);
-    successMessage(copied ? "Copied success!" : "");
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
-  }
-
-  const handleChange = (event) => {
-    setChecked(event.target.checked);
   };
 
   function findDataSetting(productKey) {
@@ -344,8 +171,30 @@ function AccountInfo() {
     });
   };
 
+  const handleGetCurrentPayment = async () => {
+    await queryCurrentPayment({
+      variables: {
+        id: user?._id,
+      },
+      onCompleted: ({ getPayment }) => {
+        if (getPayment) {
+          const { data, availableDays, overdueDays, totalDays, usedDays } =
+            getPayment;
+          setPaymentState({
+            currentPlanInfo: data,
+            availableDays,
+            overdueDays,
+            totalDays,
+            usedDays,
+          });
+        }
+      },
+    });
+  };
+
   React.useEffect(() => {
     handleGetUser();
+    handleGetCurrentPayment();
   }, []);
 
   const preViewImage = (file) => {
@@ -548,56 +397,6 @@ function AccountInfo() {
     }
   };
 
-  // deactive user
-  const handleDeactive = async () => {
-    try {
-      if (checked) {
-        const userData = await updateUser({
-          variables: {
-            id: user?._id,
-            body: {
-              status: "deleted",
-            },
-          },
-        });
-        if (userData?.data?.updateUser) {
-          successMessage("Your an account deactive", 3000);
-          setMessage(
-            "Your an account deactive please contact vshare.net support",
-          );
-          setTimeout(() => {
-            signOut();
-          }, 5000);
-          const description = [
-            {
-              inactive_account: "Inactive Account",
-              status: "Success",
-            },
-          ];
-          handleCreateLogs("Update profile", description, user?._id);
-        }
-      } else {
-        setMessage("Please confirm deactive an account");
-        setTimeout(() => {
-          setMessage(null);
-        }, 3000);
-      }
-    } catch (error: any) {
-      const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
-      const description = [
-        {
-          inactive_account: "Inactive Account",
-          status: "Failed",
-        },
-      ];
-      errorMessage(
-        manageGraphqlError.handleErrorMessage(cutErr) as string,
-        3000,
-      );
-      handleCreateLogs("Update profile", description, user?._id);
-    }
-  };
-
   const handleReset = () => {
     setFiles(null);
     setPreview("");
@@ -651,7 +450,7 @@ function AccountInfo() {
               onClick={() => setActiveStatus(1)}
               sx={{
                 background: activeStatus == 1 ? "#17766B" : "",
-                color: activeStatus == 1 ? "#ffffff" : "",
+                color: activeStatus == 1 ? "#ffffff" : "#A8AAAE",
               }}
             >
               Account
@@ -661,10 +460,20 @@ function AccountInfo() {
               onClick={() => setActiveStatus(2)}
               sx={{
                 background: activeStatus === 2 ? "#17766B" : "",
-                color: activeStatus === 2 ? "#ffffff" : "",
+                color: activeStatus === 2 ? "#ffffff" : "#A8AAAE",
               }}
             >
               Security
+            </MUI.ButtonTab>
+            <MUI.ButtonTab
+              startIcon={<DescriptionIcon />}
+              onClick={() => setActiveStatus(3)}
+              sx={{
+                background: activeStatus === 3 ? "#17766B" : "",
+                color: activeStatus === 3 ? "#ffffff" : "#A8AAAE",
+              }}
+            >
+              Invoice
             </MUI.ButtonTab>
           </MUI.BoxShowTabs>
           <MUI.BoxShowTabDetail>
@@ -1128,8 +937,6 @@ function AccountInfo() {
                     </MUI.BoxShowActionButton>
                   </MUI.BoxShowUserDetail>
                 </MUI.PaperGlobal>
-
-                {/* Delete account */}
                 {showDeativeAccount && (
                   <MUI.PaperGlobal
                     elevation={6}
@@ -1137,79 +944,7 @@ function AccountInfo() {
                       marginTop: "2rem",
                     }}
                   >
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        color: "#5D596C",
-                        fontSize: isMobile ? "0.8rem" : "",
-                      }}
-                    >
-                      Delete Account
-                    </Typography>
-                    <Alert
-                      severity="warning"
-                      sx={{
-                        marginTop: "1rem",
-                      }}
-                    >
-                      <AlertTitle
-                        sx={{
-                          fontSize: isMobile ? "0.8rem" : "1rem",
-                          color: "#FF9F43",
-                        }}
-                      >
-                        Are you sure you want to delete your account?
-                      </AlertTitle>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: "#FF9F43",
-                          fontSize: isMobile ? "0.8rem" : "1rem",
-                        }}
-                      >
-                        Once you delete your account, there is no going back.
-                        Please be certain.
-                      </Typography>
-                    </Alert>
-                    <Box
-                      sx={{
-                        color: "#6F6B7D",
-                        margin: "1rem 0",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      <FormControlLabel
-                        required
-                        sx={{ color: "#6F6B7D" }}
-                        control={
-                          <Checkbox checked={checked} onChange={handleChange} />
-                        }
-                        label="I confirm my account deactivation"
-                      />
-                    </Box>
-                    {message && (
-                      <Typography
-                        component="p"
-                        sx={{ color: theme.palette.error.main }}
-                      >
-                        {message}
-                      </Typography>
-                    )}
-                    <Box sx={{ margin: "1rem 0" }}>
-                      <Button
-                        color="error"
-                        variant="contained"
-                        sx={{
-                          padding: isMobile ? "0.3rem 0.5rem" : "0.5rem 2rem",
-                          fontSize: isMobile ? "0.8rem" : "",
-                        }}
-                        disabled={message ? true : false}
-                        fullWidth={isMobile ? true : false}
-                        onClick={handleDeactive}
-                      >
-                        Deactive Account
-                      </Button>
-                    </Box>
+                    <DeleteAccount />
                   </MUI.PaperGlobal>
                 )}
               </>
@@ -1226,220 +961,22 @@ function AccountInfo() {
             {activeStatus == 3 && (
               <>
                 <MUI.PaperGlobal elevation={5}>
-                  <Typography
-                    variant={isMobile ? "h6" : "h4"}
-                    sx={{ color: "#5D596C" }}
-                  >
-                    Current Plan
-                  </Typography>
-                  <MUI.BoxShowPlanDetail>
-                    <MUI.BoxLeftShowPlanDetail>
-                      <Typography variant="h5">
-                        Your Current Paln is Basic
-                      </Typography>
-                      <Typography variant="h6">
-                        A simple start for everyone
-                      </Typography>
-                      <Typography variant="h5">
-                        Active until Dec 09, 2021
-                      </Typography>
-                      <Typography variant="h6">
-                        We will send you a notification upon Subscription
-                        expiration
-                      </Typography>
-                      <Typography variant="h5">
-                        $199 Per month &nbsp;{" "}
-                        <Chip
-                          label="Chip Filled"
-                          sx={{
-                            background: "#DAE9E7",
-                            color: "#17766B",
-                            fontWeight: "800",
-                          }}
-                        />
-                      </Typography>
-                      <Typography variant="h6">
-                        Standard plan for small to medium businesses
-                      </Typography>
-                      <MUI.BoxShowActionsButton
-                        sx={{
-                          marginTop: "2rem",
-                          width: "100%",
-                        }}
-                      >
-                        <Button
-                          sx={{
-                            background: "#17766B",
-                            color: "#ffffff",
-                            padding: isMobile ? "0.3rem 0rem" : "0.5rem 2rem",
-                            fontSize: isMobile ? "0.8rem" : "",
-                            "&:hover": {
-                              color: "#17766B",
-                            },
-                          }}
-                          fullWidth={isMobile ? true : false}
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          sx={{
-                            marginLeft: isMobile ? "0.5rem" : "1.5rem",
-                            background: "#F1F1F2",
-                            color: "#5D596C",
-                            padding: isMobile ? "0.3rem 0.5rem" : "0.5rem 4rem",
-                            fontSize: isMobile ? "0.8rem" : "",
-                            "&:hover": {
-                              color: "#17766B",
-                            },
-                          }}
-                          fullWidth={isMobile ? true : false}
-                        >
-                          Cancel
-                        </Button>
-                      </MUI.BoxShowActionsButton>
-                    </MUI.BoxLeftShowPlanDetail>
-                    <MUI.BoxRightShowPlanDetail>
-                      <Alert
-                        severity="warning"
-                        sx={{
-                          marginTop: "1rem",
-                          borderRadius: "10px",
-                        }}
-                      >
-                        <AlertTitle
-                          sx={{
-                            fontSize: isMobile ? "0.8rem" : "1rem",
-                            color: "#FF9F43",
-                            fontWeight: "800",
-                          }}
-                        >
-                          We need your attention!
-                        </AlertTitle>
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: "#FF9F43",
-                            fontSize: isMobile ? "0.8rem" : "1rem",
-                          }}
-                        >
-                          Your plan requires update
-                        </Typography>
-                      </Alert>
-                      <MUI.BoxShowRemainDay>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            margin: "0.5rem 0",
-                          }}
-                        >
-                          <Typography variant="h5">Days</Typography>
-                          <Typography variant="h5">24 of 30 days</Typography>
-                        </Box>
-                        <BorderLinearProgress
-                          variant="determinate"
-                          value={50}
-                        />
-                        <Typography variant="h6">
-                          6 days remaining until your plan requires update
-                        </Typography>
-                      </MUI.BoxShowRemainDay>
-                    </MUI.BoxRightShowPlanDetail>
-                  </MUI.BoxShowPlanDetail>
+                  <CurrentPlan paymentState={paymentState} />
                 </MUI.PaperGlobal>
+
                 <MUI.PaperGlobal sx={{ marginTop: "2rem" }}>
-                  <Typography variant="h5">Payment History</Typography>
-                  <MUI.BoxShowPaymentHistoryHeader>
-                    <MUI.BoxShowLeftPaymentHistory>
-                      <FormControl sx={{ width: "50%" }} size="small">
-                        <InputLabel id="demo-simple-select-label">
-                          10
-                        </InputLabel>
-                        <Select
-                          labelId="demo-simple-select-label"
-                          id="demo-simple-select"
-                          label="10"
-                        >
-                          <MenuItem value={10}>10</MenuItem>
-                          <MenuItem value={20}>20</MenuItem>
-                          <MenuItem value={30}>30</MenuItem>
-                          <MenuItem value={30}>50</MenuItem>
-                        </Select>
-                      </FormControl>
-                      <Button
-                        startIcon={<AddIcon />}
-                        sx={{
-                          background: "#17766B",
-                          color: "#ffffff",
-                          fontSize: isMobile ? "0.8rem" : "",
-                          "&:hover": {
-                            color: "#17766B",
-                          },
-                          padding: isTablet
-                            ? "0.4rem 0.2rem"
-                            : isMobile
-                            ? "0.4rem 0.6rem"
-                            : "0.4rem 2rem",
-                          width: isMobile ? "45%" : "auto",
-                        }}
-                        size="small"
-                      >
-                        Create Invoice
-                      </Button>
-                    </MUI.BoxShowLeftPaymentHistory>
-                    <MUI.BoxShowRightPaymentHistory>
-                      <FormControl sx={{ width: "50%" }}>
-                        <OutlinedInput
-                          placeholder="Search Invoice"
-                          size="small"
-                          sx={{
-                            fontSize: "0.8rem",
-                            fontWeight: "500",
-                            color: "#5D596C",
-                          }}
-                          type="text"
-                        />
-                      </FormControl>
-                      <FormControl
-                        sx={{
-                          width: isMobile ? "45%" : "50%",
-                          marginLeft: isTablet
-                            ? "0.5rem"
-                            : isMobile
-                            ? "0"
-                            : "2rem",
-                        }}
-                        size="small"
-                      >
-                        <InputLabel id="demo-simple-select-label">
-                          Select Status
-                        </InputLabel>
-                        <Select
-                          labelId="demo-simple-select-label"
-                          id="demo-simple-select"
-                          label="10"
-                        >
-                          <MenuItem value={10}>paid</MenuItem>
-                          <MenuItem value={20}>cancel</MenuItem>
-                          <MenuItem value={30}>pending</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </MUI.BoxShowRightPaymentHistory>
-                  </MUI.BoxShowPaymentHistoryHeader>
-                  <Box sx={{ marginTop: isMobile ? "1rem" : "2rem" }}>
-                    <DataGrid
-                      autoHeight
-                      rows={rows}
-                      columns={columns}
-                      hideFooterPagination
-                      rowHeight={60}
-                    />
-                  </Box>
+                  <Typography variant="h5" sx={{ color: "#4B465C" }}>
+                    Invoice Address
+                  </Typography>
+                  <InvoiceAddress />
+                </MUI.PaperGlobal>
+
+                <MUI.PaperGlobal sx={{ marginTop: "2rem" }}>
+                  <PaymentHistory />
                 </MUI.PaperGlobal>
               </>
             )}
-            {activeStatus == 4 && (
+            {/* {activeStatus == 4 && (
               <MUI.PaperGlobal elevation={5} sx={{ padding: "1.5rem" }}>
                 <Typography
                   variant="h6"
@@ -1796,7 +1333,7 @@ function AccountInfo() {
                   </MUI.BoxShowServerDetail>
                 </MUI.PaperGlobal>
               </>
-            )}
+            )} */}
           </MUI.BoxShowTabDetail>
         </MUI.BoxAccountSetting>
       )}
