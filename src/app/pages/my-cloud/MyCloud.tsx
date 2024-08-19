@@ -51,7 +51,7 @@ import useBreadcrumbData from "hooks/useBreadcrumbData";
 import useDetectResizeWindow from "hooks/useDetectResizeWindow";
 import useExportCSV from "hooks/useExportCSV";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
-import useScroll from "hooks/useScroll";
+// import useScroll from "hooks/useScroll";
 import useManageUserFromShare from "hooks/user/useManageUserFromShare";
 import { Base64 } from "js-base64";
 import moment from "moment";
@@ -78,7 +78,7 @@ import LinearProgress from "../../../components/LinearProgress";
 import CloudFileDataGrid from "./CloudFileDataGrid";
 import CloudFolderDataGrid from "./CloudFolderDataGrid";
 
-const ITEM_PER_PAGE_GRID = 20;
+// const ITEM_PER_PAGE_GRID = 20;
 
 export function MyCloud() {
   const { user }: any = useAuth();
@@ -188,10 +188,10 @@ export function MyCloud() {
   const location = useLocation();
   const [currentFilePage, setCurrentFilePage] = useState(1);
   const detectResizeWindow = useDetectResizeWindow();
-  const { limitScroll, addMoreLimit } = useScroll({
-    total,
-    limitData: ITEM_PER_PAGE_GRID,
-  });
+  // const { limitScroll, addMoreLimit } = useScroll({
+  //   total,
+  //   limitData: ITEM_PER_PAGE_GRID,
+  // });
   const { setFolderId, handleTriggerFolder }: any = useContext(FolderContext);
   const [dataGetUrl, setDataGetUrl] = useState(null);
   const eventUploadTrigger = useContext(EventUploadTriggerContext);
@@ -1691,7 +1691,7 @@ export function MyCloud() {
                     toggle === "grid" && (
                       <Box
                         sx={{
-                          mt: 3,
+                          my: 3,
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
@@ -1706,7 +1706,6 @@ export function MyCloud() {
                           <Button
                             endIcon={<ExpandMore />}
                             sx={{ mt: 2 }}
-                            // disabled={loading === "loading"}
                             size="small"
                             variant="outlined"
                             onClick={handleViewMoreFile}
