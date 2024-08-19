@@ -437,8 +437,9 @@ export function MyCloud() {
     setFolderId(value?._id);
     handleClose();
     const url = value?.url;
-    const base64URL = Base64.encodeURI(url);
-    navigate(`/folder/${base64URL}`);
+    console.log({ url });
+    // const base64URL = Base64.encodeURI(url);
+    // navigate(`/folder/${base64URL}`);
   };
 
   const handleClosePreview = () => {
