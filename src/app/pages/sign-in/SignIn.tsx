@@ -58,10 +58,9 @@ function SignIn() {
   const [initialTime, setInitialTime] = useState(0);
   const [initialTimeMessage, setInitialTimeMessage] = useState("");
   const mobileScreen = useMediaQuery(theme.breakpoints.down("sm"));
-   
+
   const useDataSetting = useManageSetting();
 
-  
   //Social media auth new 20240730 ---> Phonesai
   const SocialMediaAuths = async (str_path: string) => {
     const width = 500;
@@ -230,7 +229,7 @@ function SignIn() {
                 {showFacebook && (
                   <IconButton
                     // onClick={() => facebookOauth.signIn()}
-                    onClick={() => SocialMediaAuths("/facebook")}
+                    onClick={() => SocialMediaAuths("facebook")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
@@ -245,7 +244,7 @@ function SignIn() {
                 {showGithub && (
                   <IconButton
                     // onClick={() => githubOauth.handleGithubSignIn()}
-                    onClick={() => SocialMediaAuths("/github")}
+                    onClick={() => SocialMediaAuths("github")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",

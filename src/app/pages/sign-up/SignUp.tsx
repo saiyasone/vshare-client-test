@@ -6,24 +6,21 @@ import * as MUI from "./style";
 import vShareLogo from "assets/images/logo-vshare-all-white-11.svg";
 
 // material icons and component
-import { useMutation, useSubscription } from "@apollo/client";
+import { useSubscription } from "@apollo/client";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import GoogleIcon from "@mui/icons-material/Google";
 import { IconButton, Link, Typography, useTheme } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import {
-  MUTATION_FACEBOOK_OAUTH,
-  MUTATION_SOCIAL_AUTH,
+  // MUTATION_FACEBOOK_OAUTH,
+  // MUTATION_SOCIAL_AUTH,
   USER_SIGNUP_SUBSCRIPTION,
 } from "api/graphql/social.graphql";
 import BaseSignUp from "components/BaseSignup";
 import { ENV_KEYS } from "constants/env.constant";
 import { SETTING_KEYS } from "constants/setting.constant";
 import useAuth from "hooks/useAuth";
-import useFacebookOauth from "hooks/useFacebookOauth";
-import useGithubOauth from "hooks/useGithubOauth";
-import useManageGraphqlError from "hooks/useManageGraphqlError";
 import useManageSetting from "hooks/useManageSetting";
 import { errorMessage, warningMessage } from "utils/alert.util";
 import { LeftBoxRowAuthenticationLimit } from "./style";
@@ -39,11 +36,11 @@ function SignUp() {
   const [signUpLimit, setSignUpLimit] = useState(null);
   const [timestamp, setTimestamp] = useState(60);
   const mobileScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const manageGraphqlError = useManageGraphqlError();
+  // const manageGraphqlError = useManageGraphqlError();
 
   const { oauthLogin }: any = useAuth();
-  const [signUpWithFacebook] = useMutation(MUTATION_FACEBOOK_OAUTH);
-  const [loginWithGithub] = useMutation(MUTATION_SOCIAL_AUTH);
+  // const [signUpWithFacebook] = useMutation(MUTATION_FACEBOOK_OAUTH);
+  // const [loginWithGithub] = useMutation(MUTATION_SOCIAL_AUTH);
   const useDataSetting = useManageSetting();
 
   const authWindowRef = useRef<Window | null>(null);
@@ -64,55 +61,55 @@ function SignUp() {
     );
   };
 
-  const facebookOauth = useFacebookOauth(ENV_KEYS.VITE_APP_FACEBOOk_APP_ID, {
-    onSuccess: async (facebookUser) => {
-      try {
-        const { first_name, last_name, picture } = facebookUser;
-        await signUpWithFacebook({
-          variables: {
-            dataInput: {
-              ip: "103.43.77.35",
-              accountId: facebookUser.id,
-              firstName: first_name,
-              lastName: last_name,
-              email: facebookUser.email,
-              provider: "facebook",
-              username: `${first_name} ${last_name}`,
-              profile: picture.data.url,
-            },
-          },
-          onCompleted: async (res) => {
-            const [data] = res.loginWithFacebook.data;
-            const token = res.loginWithFacebook.token;
-            oauthLogin(data, token);
-          },
-        });
-      } catch (error: any) {
-        const message = manageGraphqlError.handleErrorMessage(error.message);
-        if (message) {
-          errorMessage(message, 3000);
-        }
-      }
-    },
-  });
+  // const facebookOauth = useFacebookOauth(ENV_KEYS.VITE_APP_FACEBOOk_APP_ID, {
+  //   onSuccess: async (facebookUser) => {
+  //     try {
+  //       const { first_name, last_name, picture } = facebookUser;
+  //       await signUpWithFacebook({
+  //         variables: {
+  //           dataInput: {
+  //             ip: "103.43.77.35",
+  //             accountId: facebookUser.id,
+  //             firstName: first_name,
+  //             lastName: last_name,
+  //             email: facebookUser.email,
+  //             provider: "facebook",
+  //             username: `${first_name} ${last_name}`,
+  //             profile: picture.data.url,
+  //           },
+  //         },
+  //         onCompleted: async (res) => {
+  //           const [data] = res.loginWithFacebook.data;
+  //           const token = res.loginWithFacebook.token;
+  //           oauthLogin(data, token);
+  //         },
+  //       });
+  //     } catch (error: any) {
+  //       const message = manageGraphqlError.handleErrorMessage(error.message);
+  //       if (message) {
+  //         errorMessage(message, 3000);
+  //       }
+  //     }
+  //   },
+  // });
 
-  const githubOauth = useGithubOauth(ENV_KEYS.VITE_APP_GITHUB_CLIENT_ID, {
-    onSuccess: async (githubUser) => {
-      await loginWithGithub({
-        variables: {
-          where: {
-            accountId: githubUser.accountId,
-            email: githubUser.username,
-          },
-        },
-        onCompleted: async (res) => {
-          const [data] = res.socialAuth.data;
-          const token = res.socialAuth.token;
-          oauthLogin(data, token);
-        },
-      });
-    },
-  });
+  // const githubOauth = useGithubOauth(ENV_KEYS.VITE_APP_GITHUB_CLIENT_ID, {
+  //   onSuccess: async (githubUser) => {
+  //     await loginWithGithub({
+  //       variables: {
+  //         where: {
+  //           accountId: githubUser.accountId,
+  //           email: githubUser.username,
+  //         },
+  //       },
+  //       onCompleted: async (res) => {
+  //         const [data] = res.socialAuth.data;
+  //         const token = res.socialAuth.token;
+  //         oauthLogin(data, token);
+  //       },
+  //     });
+  //   },
+  // });
 
   const { data, error } = useSubscription(USER_SIGNUP_SUBSCRIPTION, {
     variables: {
@@ -264,7 +261,7 @@ function SignUp() {
               <MUI.BoxShowSocialMediaSignUp>
                 {showGoogle && (
                   <IconButton
-                    onClick={() => SocialMediaAuths("/google")}
+                    onClick={() => SocialMediaAuths("google")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
@@ -278,7 +275,7 @@ function SignUp() {
 
                 {showFacebook && (
                   <IconButton
-                    onClick={() => facebookOauth.signIn()}
+                    onClick={() => SocialMediaAuths("facebook")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
@@ -292,7 +289,7 @@ function SignUp() {
 
                 {showGithub && (
                   <IconButton
-                    onClick={() => githubOauth.handleGithubSignIn()}
+                    onClick={() => SocialMediaAuths("github")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
