@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import * as MUI from "./style";
 
@@ -6,7 +6,7 @@ import * as MUI from "./style";
 import vShareLogo from "assets/images/logo-vshare-all-white-11.svg";
 
 // material icons and component
-import { useMutation } from "@apollo/client";
+import { useMutation, useSubscription } from "@apollo/client";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -14,8 +14,8 @@ import { IconButton, Link, Typography, useTheme } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import {
   MUTATION_FACEBOOK_OAUTH,
-  MUTATION_GOOGLE_AUTH,
   MUTATION_SOCIAL_AUTH,
+  USER_SIGNUP_SUBSCRIPTION,
 } from "api/graphql/social.graphql";
 import BaseSignUp from "components/BaseSignup";
 import { ENV_KEYS } from "constants/env.constant";
@@ -23,15 +23,14 @@ import { SETTING_KEYS } from "constants/setting.constant";
 import useAuth from "hooks/useAuth";
 import useFacebookOauth from "hooks/useFacebookOauth";
 import useGithubOauth from "hooks/useGithubOauth";
-import useGoogleOauth from "hooks/useGoogleOauth";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import useManageSetting from "hooks/useManageSetting";
-import { errorMessage } from "utils/alert.util";
+import { errorMessage, warningMessage } from "utils/alert.util";
 import { LeftBoxRowAuthenticationLimit } from "./style";
+import { v4 as uuidv4 } from "uuid";
 
 function SignUp() {
   const theme = useTheme();
-  const [signUpCount, setSignUpCount] = useState(0);
   const [showGithub, setShowGithub] = useState(false);
   const [showGoogle, setShowGoogle] = useState(false);
   const [showFacebook, setShowFacebook] = useState(false);
@@ -43,36 +42,27 @@ function SignUp() {
   const manageGraphqlError = useManageGraphqlError();
 
   const { oauthLogin }: any = useAuth();
-  const [signUpWithGoogle] = useMutation(MUTATION_GOOGLE_AUTH);
   const [signUpWithFacebook] = useMutation(MUTATION_FACEBOOK_OAUTH);
   const [loginWithGithub] = useMutation(MUTATION_SOCIAL_AUTH);
   const useDataSetting = useManageSetting();
 
-  const googleOauth = useGoogleOauth(ENV_KEYS.VITE_APP_GOOGLE_CLIENT_ID, {
-    onSuccess: async (googleDetails) => {
-      try {
-        await signUpWithGoogle({
-          variables: {
-            dataInput: {
-              ip: "103.43.77.35",
-              sendToken: googleDetails.credential,
-            },
-          },
+  const authWindowRef = useRef<Window | null>(null);
+  const clientIdRef = useRef<string>(uuidv4());
 
-          onCompleted: async (res) => {
-            const [data] = res.loginWithGoogle.data;
-            const token = res.loginWithGoogle.token;
-            oauthLogin(data, token);
-          },
-        });
-      } catch (error: any) {
-        const message = manageGraphqlError.handleErrorMessage(error.message);
-        if (message) {
-          errorMessage(message, 3000);
-        }
-      }
-    },
-  });
+  const SocialMediaAuths = async (str_path: string) => {
+    const width = 500;
+    const height = 600;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    const url = `${ENV_KEYS.VITE_APP_API_URL}/auth/${str_path}?clientId=${clientIdRef.current}`;
+
+    authWindowRef.current = window.open(
+      url,
+      "_blank",
+      `width=${width},height=${height},left=${left},top=${top} rel='noopener noreferrer'`,
+    );
+  };
 
   const facebookOauth = useFacebookOauth(ENV_KEYS.VITE_APP_FACEBOOk_APP_ID, {
     onSuccess: async (facebookUser) => {
@@ -124,12 +114,11 @@ function SignUp() {
     },
   });
 
-  const handleSignUpFailure = () => {
-    // setSignUpCount(signUpCount + 1);
-    // if (signUpCount === parseInt(signUpLimit?.action)) {
-    //   setHideSignUp(true);
-    // }
-  };
+  const { data, error } = useSubscription(USER_SIGNUP_SUBSCRIPTION, {
+    variables: {
+      signupId: clientIdRef.current,
+    },
+  });
 
   function findDataSetting(productKey) {
     const dataSetting = useDataSetting.data?.find(
@@ -194,6 +183,38 @@ function SignUp() {
     }
   }, [hideSignUp, timestamp]);
 
+  useEffect(() => {
+    if (data) {
+      if (!data || data?.subscribeSignupWithSocial?.message !== "SUCCESS") {
+        return;
+      }
+
+      if (authWindowRef.current) {
+        authWindowRef.current.close();
+      }
+
+      if (data && data.subscribeSignupWithSocial) {
+        const token = data?.subscribeSignupWithSocial?.token;
+        const obj = data?.subscribeSignupWithSocial?.data;
+
+        if (token && obj) {
+          oauthLogin(obj[0], token);
+        } else {
+          warningMessage(
+            "Register failed failed. Please, try again later.",
+            3000,
+          );
+        }
+      }
+    }
+    if (error) {
+      errorMessage(
+        "Subscription error at => " + (error?.message || error),
+        3000,
+      );
+    }
+  }, [data, error]);
+
   return (
     <React.Fragment>
       <MUI.BoxSignUp>
@@ -243,7 +264,7 @@ function SignUp() {
               <MUI.BoxShowSocialMediaSignUp>
                 {showGoogle && (
                   <IconButton
-                    onClick={() => googleOauth.googleButton.click()}
+                    onClick={() => SocialMediaAuths("/google")}
                     sx={{
                       border: "1px solid gray",
                       width: mobileScreen ? "30px" : "50px",
@@ -300,7 +321,7 @@ function SignUp() {
           <MUI.BoxShowFormik>
             <BaseSignUp
               signUpCaptcha={signUpCaptcha}
-              handleSignUpFailure={handleSignUpFailure}
+              // handleSignUpFailure={handleSignUpFailure}
               hideSignUp={hideSignUp}
             />
           </MUI.BoxShowFormik>
