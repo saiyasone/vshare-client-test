@@ -131,6 +131,7 @@ function BaseSignin(props) {
               }
             }
           } catch (error: any) {
+            setCaptchaKey(false);
             setIsLoading(false);
             handleLoginFailure(error);
             setStatus({ success: false });
