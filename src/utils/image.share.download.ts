@@ -26,7 +26,7 @@ export const handleShareQR = async (event: React.MouseEvent<HTMLButtonElement>, 
 
       const file = new File([blob], `${fileName}.jpg`, { type: 'image/jpeg' });
   
-      if (!navigator.canShare && navigator.canShare({ files: [file], text: text.description })) {
+      if (navigator.canShare && navigator.canShare({ files: [file], text: text.description })) {
        
         await navigator.share({
           title: fileName,
@@ -40,7 +40,8 @@ export const handleShareQR = async (event: React.MouseEvent<HTMLButtonElement>, 
           throw new Error("Error => "+ err?.message || err);
         })
       } else {
-        errorMessage('Browser to share is not support.', 3000);
+        // errorMessage('Browser to share is not support.', 3000);
+        console.log('Browser to share is not support sharing image.');
       }
 
     } catch (error) {

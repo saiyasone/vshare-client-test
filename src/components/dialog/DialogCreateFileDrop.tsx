@@ -150,6 +150,10 @@ const DialogCreateFileDrop = (props) => {
     props.handleChange(genLink, expiredDate, values, activePrivateFileDrop);
   };
 
+  const handleSocialNetworkClicked = (str: string) => {
+    console.log(`${str} is clicked`);
+  }
+  
   const handleDateChange = (date: moment.Moment | null) => {
     if (date) {
       const currentDate = moment().startOf("day").utc();
@@ -698,7 +702,7 @@ const DialogCreateFileDrop = (props) => {
                                       socialTypes={['copy','facebook', 'twitter', 'line', 'linkedin', 'whatsapp', 'viber', 'telegram', 'reddit', 'instapaper', 'livejournal', 'mailru', 'ok', 'hatena','email', 'workspace']}
                                       url={value}
                                       onSocialButtonClicked={(buttonName: string) => {
-                                        console.log(`${buttonName} clicked`)
+                                        handleSocialNetworkClicked(buttonName);
                                       }}
                                       title="Social Media"
                                     />
