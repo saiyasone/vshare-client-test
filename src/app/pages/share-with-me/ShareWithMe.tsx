@@ -38,7 +38,6 @@ import DialogFileDetail from "components/dialog/DialogFileDetail";
 import DialogPreviewFile from "components/dialog/DialogPreviewFile";
 import DialogRenameFile from "components/dialog/DialogRenameFile";
 import DialogValidateFilePassword from "components/dialog/DialogValidateFilePassword";
-import ProgressingBar from "components/loading/ProgressingBar";
 import {
   shareWithMeFileMenuItems,
   shareWithMeFolderMenuItems,
@@ -125,14 +124,11 @@ function ShareWithMe() {
   const [folderDrop, setFolderDrop] = useState<any>("");
 
   //dialog
-  const [progressing, setProgressing] = useState<any>(0);
-  const [procesing, setProcesing] = useState<any>(true);
   const [fileDetailsOpen, setFileDetailsOpen] = useState<any>(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState<any>(false);
   const { setIsAutoClose } = useMenuDropdownState();
   const [shareDialog, setShareDialog] = useState<any>(false);
   const [showPreview, setShowPreview] = useState<any>(false);
-  const [showProgressing, setShowProgressing] = useState<any>(false);
   const [shareData, setShareData] = useState<any>(null);
   const [total, setTotal] = useState<any>(0);
   const { limitScroll } = useScroll({ total, limitData: 0 });
@@ -1039,8 +1035,13 @@ function ShareWithMe() {
                                           );
                                         }}
                                         cardProps={{
-                                          onClick: (e) =>
-                                            handleClickFolder(e, data),
+                                          onClick: (e) => {
+                                            handleMultipleData(
+                                              data?._id,
+                                              listItem?.data,
+                                            );
+                                            handleClickFolder(e, data);
+                                          },
                                           onDoubleClick: () => {
                                             setDataForEvent({
                                               data,
@@ -1304,9 +1305,6 @@ function ShareWithMe() {
               </Fragment>
             )}
 
-            {showProgressing && (
-              <ProgressingBar procesing={procesing} progressing={progressing} />
-            )}
             {shareDialog && (
               <DialogCreateShare
                 onDeletedUserFromShareSave={handleDeletedUserFromShareOnSave}
