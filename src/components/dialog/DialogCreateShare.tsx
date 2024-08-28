@@ -1,6 +1,7 @@
 import { useMutation } from "@apollo/client";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
+import { LoadingButton } from "@mui/lab";
 import {
   Avatar,
   Button,
@@ -188,8 +189,7 @@ const DialogCreateShare = (props) => {
             ...user,
             title: `${user.firstName} ${user.lastName}`,
             thumbnailSrc:
-              ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
-              user.newName +
+              user?.newName +
               "-" +
               user?._id +
               "/" +
@@ -198,7 +198,6 @@ const DialogCreateShare = (props) => {
               getFilenameWithoutExtension(user?.profile) +
               `.${ENV_KEYS.VITE_APP_THUMBNAIL_EXTENSION}`,
             src:
-              ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
               user?.newName +
               "-" +
               user?._id +
@@ -734,8 +733,7 @@ const DialogCreateShare = (props) => {
                         ...user,
                         title: `${user.firstName} ${user.lastName}`,
                         thumbnailSrc:
-                          ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
-                          user.newName +
+                          user?.newName +
                           "-" +
                           user?._id +
                           "/" +
@@ -744,7 +742,6 @@ const DialogCreateShare = (props) => {
                           getFilenameWithoutExtension(user?.profile) +
                           `.${ENV_KEYS.VITE_APP_THUMBNAIL_EXTENSION}`,
                         src:
-                          ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
                           user?.newName +
                           "-" +
                           user?._id +
@@ -878,7 +875,7 @@ const DialogCreateShare = (props) => {
                 >
                   Cancel
                 </Button>
-                <Button
+                <LoadingButton
                   sx={{
                     borderRadius: "6px",
                     padding: "8px 25px",
@@ -889,7 +886,7 @@ const DialogCreateShare = (props) => {
                   color="primaryTheme"
                 >
                   Save change
-                </Button>
+                </LoadingButton>
               </ActionContainer>
             </DialogContent>
           </>

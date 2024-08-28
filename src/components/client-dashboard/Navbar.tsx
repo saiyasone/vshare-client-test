@@ -142,7 +142,6 @@ const Navbar = ({ onDrawerToggle }) => {
   });
   const manageGraphqlError = useManageGraphqlError();
   const [showProgressing, setShowProgressing] = useState(false);
-  const [progressing, setProgressing] = useState(0);
   const [procesing, setProcesing] = useState(true);
   const eventUploadTrigger = useContext(EventUploadTriggerContext);
   const [inputSearch, setInputSearch] = useState(null);
@@ -269,21 +268,29 @@ const Navbar = ({ onDrawerToggle }) => {
   const handleDownloadFolders = async (value) => {
     const currentActiveData = value || activeData;
     setShowProgressing(true);
-    await manageFolder.handleDownloadFolder(
+
+    const multipleData = [
       {
         id: currentActiveData._id,
-        folderName: currentActiveData?.name,
-        newPath: currentActiveData?.newPath,
+        checkType: "folder",
+        newFilename: currentActiveData?.newName || "",
+        createdBy: currentActiveData?.createdBy,
+        newPath: currentActiveData?.newPath || "",
+      },
+    ];
+
+    manageFile.handleMultipleDownloadFileAndFolder(
+      {
+        multipleData,
+        isShare: false,
       },
       {
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
-        },
-        onSuccess: async () => {
-          successMessage("Download successful", 2000);
-        },
-        onClosure: async () => {
+        onSuccess: () => {
+          successMessage("Download successful", 3000);
           setShowProgressing(false);
+        },
+        onFailed: (error: any) => {
+          errorMessage(error, 2000);
         },
       },
     );
@@ -539,31 +546,39 @@ const Navbar = ({ onDrawerToggle }) => {
     const currentActiveData = value || activeData;
     setShowProgressing(true);
     setProcesing(true);
-    await manageFile.handleDownloadFile(
+
+    const multipleData = [
       {
         id: currentActiveData._id,
-        newPath: currentActiveData.newPath,
-        newFilename: currentActiveData.newName,
-        filename: currentActiveData.name,
+        checkFile: "file",
+        newPath: currentActiveData?.newPath || "",
+        newFilename: currentActiveData?.newName || "",
+        createdBy: {
+          _id: currentActiveData?.createdBy?._id,
+          newName: currentActiveData?.createdBy?.newName,
+        },
+      },
+    ];
+
+    manageFile.handleMultipleDownloadFile(
+      {
+        multipleData,
       },
       {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
-        },
-        onSuccess: async () => {
-          setActiveData((prev) => ({
-            ...prev,
-            totalDownloadFile: activeData.totalDownloadFile + 1,
-          }));
-          successMessage("Download successful", 2000);
-          eventUploadTrigger.trigger();
-        },
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
-        },
-        onClosure: async () => {
+        onSuccess: () => {
           setShowProgressing(false);
           setProcesing(false);
+
+          // setActiveData((prev) => ({
+          //   ...prev,
+          //   totalDownloadFile: activeData.totalDownloadFile + 1,
+          // }));
+          eventUploadTrigger.trigger();
+        },
+        onFailed: (error: any) => {
+          setShowProgressing(false);
+          setProcesing(false);
+          errorMessage(error, 2000);
         },
       },
     );
@@ -753,7 +768,7 @@ const Navbar = ({ onDrawerToggle }) => {
                                               data.type,
                                             )}
                                             imagePath={
-                                              user.newName +
+                                              user?.newName +
                                               "-" +
                                               user?._id +
                                               "/" +
@@ -955,7 +970,7 @@ const Navbar = ({ onDrawerToggle }) => {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
             user?._id +
             "/" +
@@ -1084,9 +1099,9 @@ const Navbar = ({ onDrawerToggle }) => {
         filename={csvFolder.folderName}
         target="_blank"
       />
-      {showProgressing && (
+      {/* {showProgressing && (
         <ProgressingBar procesing={procesing} progressing={progressing} />
-      )}
+      )} */}
     </Fragment>
   );
 };

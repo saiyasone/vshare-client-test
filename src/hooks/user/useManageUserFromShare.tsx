@@ -7,8 +7,6 @@ import {
 import { useEffect, useState } from "react";
 
 const useManageUserFromShare = ({
-  isShare,
-  parentKey,
   inputFileOrFolder,
   inputType,
   toAccount,

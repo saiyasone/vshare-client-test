@@ -543,35 +543,37 @@ function RecentFile() {
   };
 
   const handleDownloadFile = async () => {
-    setShowProgressing(true);
-    setProcesing(true);
-    await manageFile.handleDownloadFile(
+    const newFileData = [
       {
-        id: dataForEvent.data._id,
-        newPath: dataForEvent.data.newPath,
-        newFilename: dataForEvent.data.newFilename,
-        filename: dataForEvent.data.filename,
-      },
-      {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
+        id: dataForEvent.data?._id,
+        checkType: "file",
+        newPath: dataForEvent.data?.newPath || "",
+        newFilename: dataForEvent.data?.newFilename || "",
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
         },
-        onSuccess: async () => {
-          successMessage("Download successful", 2000);
+      },
+    ];
 
-          setDataForEvent((state) => ({
-            ...state,
-            action: null,
-            data: {
-              ...state.data,
-              totalDownload: dataForEvent.data.totalDownload + 1,
-            },
-          }));
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
+      {
+        onSuccess: () => {
+          successMessage("Download successful", 3000);
+          setDataForEvent((prev) => {
+            return {
+              ...prev,
+              totalDownload: parseInt(dataForEvent.data?.totalDownload + 1),
+            };
+          });
+
           recentFileRefetch();
         },
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
+        onFailed: (error) => {
+          errorMessage(error, 3000);
         },
+
         onClosure: () => {
           setIsAutoClose(false);
           setFileDetailsDialog(false);
@@ -778,7 +780,7 @@ function RecentFile() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
             user?._id +
             "/" +
@@ -1046,7 +1048,7 @@ function RecentFile() {
                                 return (
                                   <FileCardItem
                                     imagePath={
-                                      user.newName +
+                                      user?.newName +
                                       "-" +
                                       user?._id +
                                       "/" +

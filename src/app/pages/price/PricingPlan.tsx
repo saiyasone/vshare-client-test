@@ -67,6 +67,7 @@ const PricingPlan = (props) => {
   const dispatch = useDispatch();
   const isMobile = useMediaQuery("(max-width:600px)");
   const { packageType }: any = useSelector(paymentState);
+  
   return (
     <>
       <MUI.BoxShowSection1>
