@@ -346,13 +346,19 @@ export function MyCloud() {
     if (eventClick === "download") {
       handleCloseDecryptedPassword();
       if (dataForEvent.data?.folder_type === "folder") {
-        if (userPackage?.downLoadOption === "another") {
+        if (
+          userPackage?.downLoadOption === "another" ||
+          userPackage?.category === "free"
+        ) {
           await handleGetDownloadLink();
         } else {
           await handleDownloadFolder(dataForEvent.data);
         }
       } else {
-        if (userPackage?.downLoadOption === "another") {
+        if (
+          userPackage?.downLoadOption === "another" ||
+          userPackage?.category === "free"
+        ) {
           handleGetDownloadLink();
         } else {
           await handleDownloadFile(dataForEvent.data);
@@ -1009,7 +1015,10 @@ export function MyCloud() {
             if (checkPassword) {
               setShowEncryptPassword(true);
             } else {
-              if (userPackage?.downLoadOption === "another") {
+              if (
+                userPackage?.downLoadOption === "another" ||
+                userPackage?.category === "free"
+              ) {
                 handleGetDownloadLink();
               } else {
                 await handleDownloadFolder(dataForEvent.data);
@@ -1020,7 +1029,10 @@ export function MyCloud() {
           if (checkPassword) {
             setShowEncryptPassword(true);
           } else {
-            if (userPackage?.downLoadOption === "another") {
+            if (
+              userPackage?.downLoadOption === "another" ||
+              userPackage?.category === "free"
+            ) {
               handleGetDownloadLink();
             } else {
               await handleDownloadFile(dataForEvent.data);
@@ -1723,7 +1735,10 @@ export function MyCloud() {
                   open={openPreview}
                   handleClose={handleClosePreview}
                   onClick={() => {
-                    if (userPackage?.downLoadOption === "another") {
+                    if (
+                      userPackage?.downLoadOption === "another" ||
+                      userPackage?.category === "free"
+                    ) {
                       handleGetDownloadLink();
                     } else {
                       handleDownloadFile(dataForEvent.data);
@@ -1827,7 +1842,10 @@ export function MyCloud() {
                     downloadIcon: {
                       isShow: true,
                       handleDownloadOnClick: () => {
-                        if (userPackage?.downLoadOption === "another") {
+                        if (
+                          userPackage?.downLoadOption === "another" ||
+                          userPackage?.category === "free"
+                        ) {
                           handleGetDownloadLink();
                         } else {
                           handleDownloadFile(dataForEvent.data);
