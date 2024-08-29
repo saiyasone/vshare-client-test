@@ -62,9 +62,9 @@ function ExtendFolderDataGrid(props) {
     if (isTablet || isMobile) {
       if (props.user.permission) {
         const base64URL = Base64.encodeURI(
-          props.user._id +
+          props.user?._id +
             "/" +
-            props.user.newName +
+            props.user?.newName +
             "/" +
             props.user.permission +
             "/" +
@@ -122,7 +122,7 @@ function ExtendFolderDataGrid(props) {
             }}
           >
             <FileIconContainer onClick={() => handleOnPreview(params)}>
-              {isContainsFiles ? <FolderEmptyIcon /> : <FolderNotEmptyIcon />}
+              {isContainsFiles ? <FolderNotEmptyIcon /> : <FolderEmptyIcon />}
             </FileIconContainer>
             <div className="file_name">{name}</div>
           </div>
@@ -201,18 +201,26 @@ function ExtendFolderDataGrid(props) {
       const { url } = dataForEvents.data || {};
       if (props.user.permission) {
         const base64URL = Base64.encodeURI(
-          props.user._id +
+          props.user?._id +
             "/" +
-            props.user.newName +
+            props.user?.newName +
             "/" +
             props.user.permission +
             "/" +
             url,
         );
-        navigate(`/folder/share/${base64URL}`);
+        if (props?.isShare) {
+          navigate(`/folder/share/${base64URL}`);
+        } else {
+          navigate(`/folder/${base64URL}`);
+        }
       } else {
         const base64URL = Base64.encodeURI(url);
-        navigate(`/folder/share/${base64URL}`);
+        if (props?.isShare) {
+          navigate(`/folder/share/${base64URL}`);
+        } else {
+          navigate(`/folder/${base64URL}`);
+        }
       }
     }
   }

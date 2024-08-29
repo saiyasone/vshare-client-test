@@ -11,6 +11,18 @@ export function encryptId(
   return encodeURIComponent(encryptedID);
 }
 
+export const decryptId = (encryptedParam: any, secretKey?: string) => {
+  try {
+    const decrypted = CryptoJS.AES.decrypt(
+      decodeURIComponent(encryptedParam),
+      secretKey || ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+    ).toString(CryptoJS.enc.Utf8);
+    return decrypted;
+  } catch (error) {
+    return null;
+  }
+};
+
 export const encryptData = (model) => {
   const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
   const key = CryptoJS.enc.Utf8.parse(secretKey);
@@ -26,16 +38,56 @@ export const encryptData = (model) => {
   return encryptedData;
 };
 
-export const decryptData = (encryptedParam: any) => {
-  try {
-    const decrypted = CryptoJS.AES.decrypt(
-      decodeURIComponent(encryptedParam),
-      ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
-    ).toString(CryptoJS.enc.Utf8);
-    return decrypted;
-  } catch (error) {
-    return null;
-  }
+export const encryptDataLink = (data) => {
+  const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+  const key = CryptoJS.enc.Utf8.parse(secretKey);
+  const iv = CryptoJS.lib.WordArray.random(16);
+  const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+
+  let cipherText = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
+  let ivText = iv.toString(CryptoJS.enc.Base64);
+
+  cipherText = cipherText
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+  ivText = ivText.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+  const encryptedData = cipherText + ":" + ivText;
+
+  return encryptedData;
+};
+
+export const decryptDataLink = (data) => {
+  const secretKey = ENV_KEYS.VITE_APP_UPLOAD_SECRET_KEY;
+
+  const [cipherText, ivText] = data.split(":");
+  const cipherTextBase64 = cipherText.replace(/-/g, "+").replace(/_/g, "/");
+  const ivBase64 = ivText.replace(/-/g, "+").replace(/_/g, "/");
+
+  const padding = 4 - (cipherTextBase64.length % 4);
+  const paddedCipherText = cipherTextBase64 + "=".repeat(padding);
+  const iv = CryptoJS.enc.Base64.parse(ivBase64);
+
+  const key = CryptoJS.enc.Utf8.parse(secretKey);
+  const decrypted = CryptoJS.AES.decrypt(
+    {
+      ciphertext: CryptoJS.enc.Base64.parse(paddedCipherText || ""),
+    } as CryptoJS.lib.CipherParams,
+    key,
+    {
+      iv: iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
+    },
+  );
+
+  const decryptedData = decrypted.toString(CryptoJS.enc.Utf8);
+  return JSON.parse(decryptedData);
 };
 
 export const decryptToken = (encryptData: any, secretKey: string) => {
@@ -130,12 +182,3 @@ export const generateUniqueId = (prefix = "") => {
 
   return `${prefix}${timestamp}${randomPart}`.toUpperCase();
 };
-
-export function decryptId(encryptedId, secretKey) {
-  const decryptedBytes = CryptoJS.AES.decrypt(
-    decodeURIComponent(encryptedId),
-    secretKey,
-  );
-  const decryptedID = decryptedBytes.toString(CryptoJS.enc.Utf8);
-  return decryptedID;
-}

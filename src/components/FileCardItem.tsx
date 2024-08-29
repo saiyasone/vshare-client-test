@@ -229,7 +229,11 @@ const FileCardItem: React.FC<any> = ({
     imagePath,
     fileType,
     user,
+    isPublic: props?.isPublic ? true : false,
+    height: 200,
+    width: 200,
   });
+
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const itemRef = useRef(null);
@@ -247,6 +251,10 @@ const FileCardItem: React.FC<any> = ({
     checkboxAction.checkboxFileAndFolderSelector,
   );
 
+  const handleDropdownOpen = (isOpen) => {
+    setIsDropdownOpen(isOpen);
+  };
+
   useEffect(() => {
     setIsOpenMenu(isFileCardItemHover);
   }, [isFileCardItemHover]);
@@ -254,10 +262,6 @@ const FileCardItem: React.FC<any> = ({
   useEffect(() => {
     onOuterClick?.();
   }, [isFileCardOuterClicked]);
-
-  const handleDropdownOpen = (isOpen) => {
-    setIsDropdownOpen(isOpen);
-  };
 
   return (
     <Grid

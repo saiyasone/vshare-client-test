@@ -19,11 +19,13 @@ import Feedback from "./pages/feedback/Feedback";
 import FileDrop from "./pages/file-drop/FileDrop";
 import FileDropDetail from "./pages/file-drop/FileDropDetail";
 import File from "./pages/file/FileType";
+import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import { MyCloud } from "./pages/my-cloud/MyCloud";
 import Page404 from "./pages/not-found/Page404";
 import Pricing from "./pages/price/Pricing";
 import PricingCheckout from "./pages/price/PricingCheckout";
 import RecentFile from "./pages/recent-file/RecentFile";
+import ResetFilePassword from "./pages/reset-file-password/ResetFilePassword";
 import ShareWithMe from "./pages/share-with-me/ShareWithMe";
 import SignIn from "./pages/sign-in/SignIn";
 import SignUp from "./pages/sign-up/SignUp";
@@ -31,6 +33,9 @@ import CreateTicket from "./pages/ticket/CreateTicket";
 import ReplyTicket from "./pages/ticket/ReplyTicket";
 import Ticket from "./pages/ticket/Ticket";
 import Trash from "./pages/trash/Trash";
+import UppyUpload from "components/UppyUpload";
+import ConfirmPayment from "./pages/confirm-payment/Confirmpayment";
+import ResetPassword from "./pages/reset-password/ResetPassword";
 
 const routes: RouteObject[] = [
   {
@@ -56,9 +61,21 @@ const routes: RouteObject[] = [
             path: "sign-up",
             element: <SignUp />,
           },
+          {
+            path: "forgot-password",
+            element: <ForgotPassword />,
+          },
+          {
+            path: "reset-password/:token",
+            element: <ResetPassword />,
+          },
         ],
       },
     ],
+  },
+  {
+    path: "file/reset-password",
+    element: <ResetFilePassword />,
   },
   {
     path: "",
@@ -155,10 +172,22 @@ const routes: RouteObject[] = [
         element: <Feedback />,
       },
       {
+        path: "uppy",
+        element: <UppyUpload />,
+      },
+      {
         path: "file/:user/:fileType/:status",
         element: <File />,
       },
     ],
+  },
+  // {
+  //   path: "uppy",
+  //   element: <UppyUpload />,
+  // },
+  {
+    path: "confirm",
+    element: <ConfirmPayment />,
   },
   {
     path: "*",

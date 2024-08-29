@@ -6,16 +6,26 @@ export const QUERY_SHARE = gql`
     $orderBy: OrderByInput
     $skip: Int
     $limit: Int
+    $noLimit: Boolean
   ) {
-    getShare(where: $where, orderBy: $orderBy, skip: $skip, limit: $limit) {
+    getShare(
+      where: $where
+      orderBy: $orderBy
+      skip: $skip
+      limit: $limit
+      noLimit: $noLimit
+    ) {
       data {
         _id
         isShare
-
+        size
+        item
         ownerId {
           _id
           email
           newName
+          firstName
+          lastName
         }
         fileId {
           _id
@@ -26,6 +36,7 @@ export const QUERY_SHARE = gql`
           url
           fileType
           totalDownload
+          shortUrl
           newFilename
           path
           newPath
@@ -48,6 +59,7 @@ export const QUERY_SHARE = gql`
           is_public
           checkFolder
           status
+          shortUrl
           path
           newPath
           url
@@ -66,6 +78,8 @@ export const QUERY_SHARE = gql`
           _id
           email
           username
+          firstName
+          lastName
         }
         accessKey
         isPublic
@@ -73,6 +87,96 @@ export const QUERY_SHARE = gql`
         permission
         accessedAt
         expiredAt
+        createdBy {
+          _id
+          email
+          username
+        }
+      }
+      total
+    }
+  }
+`;
+
+export const QUERY_FOLDER_SHARE_PUBLIC = gql`
+  query FolderPublic($id: ID!) {
+    folderPublic(ID: $id) {
+      total
+      data {
+        _id
+        folder_name
+        total_size
+        folder_type
+        checkFolder
+        newFolder_name
+        access_password
+        shortUrl
+        url
+        path
+        newPath
+        pin
+        createdBy {
+          _id
+          email
+          username
+          newName
+          firstName
+          lastName
+        }
+        file_id {
+          _id
+          filename
+          size
+          status
+        }
+        parentkey {
+          _id
+        }
+        updatedAt
+      }
+    }
+  }
+`;
+
+export const QUERY_FILE_SHARE_PUBLIC = gql`
+  query FilePublic($id: [ID!]!) {
+    filePublic(ID: $id) {
+      data {
+        _id
+        type_id {
+          _id
+        }
+        folder_id {
+          _id
+        }
+        filename
+        newFilename
+        filePassword
+        fileType
+        size
+        totalDownload
+        status
+        isPublic
+        checkFile
+        path
+        newPath
+        url
+        permissionSharePublic
+        source
+        device
+        actionStatus
+        createdAt
+        updatedAt
+        actionDate
+        createdBy {
+          _id
+          newName
+          email
+          firstName
+          lastName
+        }
+        getLinkBy
+        shortUrl
       }
       total
     }
@@ -88,8 +192,8 @@ export const MUTATION_CREATE_SHARE = gql`
 `;
 
 export const MUTATION_DELETE_SHARE = gql`
-  mutation RemoveShare($id: ID!) {
-    removeShare(ID: $id)
+  mutation DeleteShare($id: ID!, $email: String!) {
+    deleteShare(ID: $id, email: $email)
   }
 `;
 

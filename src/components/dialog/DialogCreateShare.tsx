@@ -1,6 +1,7 @@
 import { useMutation } from "@apollo/client";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
+import { LoadingButton } from "@mui/lab";
 import {
   Avatar,
   Button,
@@ -20,7 +21,7 @@ import {
 } from "api/graphql/share.graphql";
 import Loader from "components/Loader";
 import NormalButton from "components/NormalButton";
-import ActionShare from "components/share/ActionShare";
+import ActionCreateShare from "components/share/ActionCreateShare";
 import ActionShareStatus from "components/share/ActionShareStatus";
 import { ENV_KEYS } from "constants/env.constant";
 import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
@@ -188,17 +189,15 @@ const DialogCreateShare = (props) => {
             ...user,
             title: `${user.firstName} ${user.lastName}`,
             thumbnailSrc:
-              ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
-              user.newName +
+              user?.newName +
               "-" +
-              user._id +
+              user?._id +
               "/" +
               ENV_KEYS.VITE_APP_THUMBNAIL_PATH +
               "/" +
               getFilenameWithoutExtension(user?.profile) +
               `.${ENV_KEYS.VITE_APP_THUMBNAIL_EXTENSION}`,
             src:
-              ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
               user?.newName +
               "-" +
               user?._id +
@@ -282,12 +281,8 @@ const DialogCreateShare = (props) => {
               await createShareFromSharing({
                 variables: {
                   body: {
-                    accessKey: "",
-                    folderId: data?._id,
-                    isPublic: accessStatusShare,
                     permission: statusShare,
                     toAccount: sharedSelectedUserList[i],
-                    link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
                     shareId: share._id,
                   },
                 },
@@ -298,14 +293,9 @@ const DialogCreateShare = (props) => {
                 variables: {
                   body: {
                     folderId: data?._id,
-                    ownerId: data?.createdBy?._id || props.ownerId?._id,
-                    fromAccount: user?.email,
                     isPublic: accessStatusShare,
                     permission: statusShare,
                     toAccount: sharedSelectedUserList[i],
-                    link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
-                    status: "active",
-                    isShare: "yes",
                   },
                 },
               });
@@ -324,12 +314,8 @@ const DialogCreateShare = (props) => {
               await createShareFromSharing({
                 variables: {
                   body: {
-                    fileId: data?._id,
-                    accessKey: "",
-                    isPublic: accessStatusShare,
                     permission: statusShare,
                     toAccount: sharedSelectedUserList[i],
-                    link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
                     shareId: share._id,
                   },
                 },
@@ -340,15 +326,9 @@ const DialogCreateShare = (props) => {
                 variables: {
                   body: {
                     fileId: data?._id,
-                    accessKey: "",
-                    ownerId: data?.createdBy?._id || props.ownerId?._id,
-                    fromAccount: user?.email,
                     isPublic: accessStatusShare,
                     permission: statusShare,
                     toAccount: sharedSelectedUserList[i],
-                    link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
-                    status: "active",
-                    isShare: "yes",
                   },
                 },
               });
@@ -690,7 +670,7 @@ const DialogCreateShare = (props) => {
                   />
 
                   {sharedSelectedUserList.length > 0 && (
-                    <ActionShare
+                    <ActionCreateShare
                       accessStatusShare={accessStatusShare}
                       statusshare={statusShare}
                       handleStatus={handleStatus}
@@ -741,7 +721,9 @@ const DialogCreateShare = (props) => {
             <DialogContent>
               <MUI.ShareSelectHeader>
                 <Typography variant="h2">Who has access</Typography>
-                <Typography component="p">Owned by {user.email}</Typography>
+                <Typography component="p">
+                  Owned by {data?.ownerId?.email}
+                </Typography>
               </MUI.ShareSelectHeader>
               <MUI.ShareSelectOwnerContainer>
                 <MUI.ShareProfileContainer>
@@ -751,17 +733,15 @@ const DialogCreateShare = (props) => {
                         ...user,
                         title: `${user.firstName} ${user.lastName}`,
                         thumbnailSrc:
-                          ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
-                          user.newName +
+                          user?.newName +
                           "-" +
-                          user._id +
+                          user?._id +
                           "/" +
                           ENV_KEYS.VITE_APP_THUMBNAIL_PATH +
                           "/" +
                           getFilenameWithoutExtension(user?.profile) +
                           `.${ENV_KEYS.VITE_APP_THUMBNAIL_EXTENSION}`,
                         src:
-                          ENV_KEYS.VITE_APP_BUNNY_PULL_ZONE +
                           user?.newName +
                           "-" +
                           user?._id +
@@ -775,9 +755,11 @@ const DialogCreateShare = (props) => {
 
                   <MUI.ShareProfileInfo>
                     <Typography variant="h2">
-                      {_.startCase(`${user?.firstName} ${user?.lastName}`)}
+                      {_.startCase(
+                        `${data?.ownerId?.firstName} ${data?.ownerId?.lastName}`,
+                      )}
                     </Typography>
-                    <Typography variant="h5">{user?.email}</Typography>
+                    <Typography variant="h5">{data?.ownerId?.email}</Typography>
                   </MUI.ShareProfileInfo>
                 </MUI.ShareProfileContainer>
                 <MUI.ShareProfileInfoList>
@@ -819,7 +801,7 @@ const DialogCreateShare = (props) => {
                             }}
                           >
                             {props.onChangedUserPermissionFromShareSave && (
-                              <ActionShare
+                              <ActionCreateShare
                                 accessStatusShare={"private"}
                                 statusshare={sharedUser._permission}
                                 handleStatus={(val) => {
@@ -893,7 +875,7 @@ const DialogCreateShare = (props) => {
                 >
                   Cancel
                 </Button>
-                <Button
+                <LoadingButton
                   sx={{
                     borderRadius: "6px",
                     padding: "8px 25px",
@@ -904,7 +886,7 @@ const DialogCreateShare = (props) => {
                   color="primaryTheme"
                 >
                   Save change
-                </Button>
+                </LoadingButton>
               </ActionContainer>
             </DialogContent>
           </>

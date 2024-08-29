@@ -24,9 +24,9 @@ import { UAParser } from "ua-parser-js";
 import { errorMessage, successMessage, warningMessage } from "utils/alert.util";
 import {
   checkAccessToken,
-  decryptData,
+  decryptId,
   decryptToken,
-  encryptData,
+  encryptId,
   isValidToken,
 } from "utils/secure.util";
 
@@ -111,6 +111,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [refreshToken] = useMutation(MUTATION_REFRESH_TOKEN);
   const [openWarning, setOpenWarning] = React.useState(false);
   const [isLoading, setIsLoading] = useState<boolean | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
   const manageGraphqlError = useManageGraphqlError();
 
   const [getUsers] = useLazyQuery(QUERY_USER, {
@@ -175,7 +176,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
           );
 
-          const dataDecode = JSON.parse(decryptData(userStaff) as string);
+          const dataDecode = JSON.parse(decryptId(userStaff) as string);
 
           if (dataDecode?.role?._id) {
             await getSaffLogin({
@@ -186,7 +187,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
               },
               onCompleted: (data) => {
                 const user = data?.queryStaffs?.data[0];
-                const userEncrypted = encryptData(JSON.stringify(user));
+                const userEncrypted = encryptId(
+                  JSON.stringify(user),
+                  ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+                );
                 localStorage.setItem(
                   ENV_KEYS.VITE_APP_USER_DATA_KEY,
                   userEncrypted,
@@ -209,7 +213,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
               },
               onCompleted: (data) => {
                 const user = data?.getUser?.data[0];
-                const userEncrypted = encryptData(JSON.stringify(user));
+                const userEncrypted = encryptId(
+                  JSON.stringify(user),
+                  ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+                );
                 localStorage.setItem(
                   ENV_KEYS.VITE_APP_USER_DATA_KEY,
                   userEncrypted,
@@ -257,7 +264,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     if (storeValue) {
-      const storeParseJson = JSON.parse(decryptData(storeValue) as string);
+      const storeParseJson = JSON.parse(decryptId(storeValue) as string);
       const objectValue = storeParseJson;
       setLocalPermission(objectValue);
     }
@@ -276,6 +283,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  //  v1, v2, v3, v4
+
   const fetchPermission = (id) => {
     if (id) {
       getPermission({
@@ -288,8 +297,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             //   "permission",
             //   JSON.stringify(data?.role_staffs?.data[0]?.permision),
             // );
-            const permissionEncrypted = encryptData(
+            const permissionEncrypted = encryptId(
               JSON.stringify(data?.role_staffs?.data[0]?.permision),
+              ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
             );
             localStorage.setItem(
               ENV_KEYS.VITE_APP_USER_DATA_KEY,
@@ -360,11 +370,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         ENV_KEYS.VITE_APP_TOKEN_SECRET_KEY,
       );
       if (enable2FA === 0) {
-        checkAccessToken(token);
-        localStorage.setItem(
-          ENV_KEYS.VITE_APP_USER_DATA_KEY,
+        const userDataEncrypt = encryptId(
           JSON.stringify(data),
+          ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
         );
+        checkAccessToken(checkRole);
+        localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA_KEY, userDataEncrypt);
+
         dispatch({
           type: SIGN_IN,
           payload: {
@@ -394,7 +406,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             fetchPermission(user?.role._id);
           }
 
-          const userDataEncrypted = encryptData(JSON.stringify(user));
+          const userDataEncrypted = encryptId(
+            JSON.stringify(user),
+            ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+          );
           localStorage.setItem(
             ENV_KEYS.VITE_APP_USER_DATA_KEY,
             userDataEncrypted,
@@ -425,6 +440,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (username, password) => {
+    setAuthLoading(!authLoading);
     try {
       const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
       const signInUser = await userLogin({
@@ -433,6 +449,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             username: username ?? "",
             password: password ?? "",
             ip: responseIp.data ?? "",
+            captcha: window.__reCaptcha!,
           },
         },
       });
@@ -455,26 +472,29 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (enable2FA === 0) {
-        const userDataEncrypt = encryptData(
+        const userDataEncrypt = encryptId(
           JSON.stringify(signInUser?.data?.userLogin?.data[0]),
+          ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
         );
         checkAccessToken(checkRole);
         localStorage.setItem(ENV_KEYS.VITE_APP_USER_DATA_KEY, userDataEncrypt);
 
+        successMessage("Login Success!!", 3000);
         dispatch({
           type: SIGN_IN,
           payload: {
             user,
           },
         });
-        successMessage("Login Success!!", 3000);
+        setAuthLoading(false);
         navigate("/dashboard");
       } else {
         return { authen, user, checkRole, refreshId: tokenData.refreshID };
       }
     } catch (error: any) {
+      setAuthLoading(false);
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
-      if (cutErr === "USERNAME_OR_PASSWORD_INCORRECT") {
+      if (cutErr === "Username or password is incorrect") {
         errorMessage("Username or password incorrect!!", 3000);
       } else if (cutErr === "YOUR_STATUS_IS_DISABLED") {
         setOpenWarning(true);
@@ -483,7 +503,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (cutErr === "ACCOUNT_LOCKED_UNTIL:ວັນທີເດືອນປີ") {
         warningMessage("You account was locked until tomorrow!", 3000);
       } else {
-        warningMessage(error.message);
+        //errorMessage(error.message, 3000);
+        warningMessage(error.message, 3000);
       }
     }
   };
@@ -542,6 +563,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (firstName, lastName, username, email, password) => {
+    setAuthLoading(true);
     const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
     try {
       const signUpUser = await register({
@@ -553,14 +575,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             password: password,
             email: email,
             ip: responseIp.data,
+            captcha: window.__reCaptcha!
           },
         },
       });
       if (signUpUser?.data?.signup?._id) {
         successMessage("Register successful!", 3000);
+        setAuthLoading(false);
         navigate("/auth/sign-in");
       }
     } catch (error: any) {
+      setAuthLoading(false);
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
       errorMessage(manageGraphqlError.handleErrorMessage(cutErr) || "", 3000);
     }
@@ -580,7 +605,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             successMessage("Reset Password success.", 1000);
             setTimeout(() => {
               navigate("/auth/sign-in");
-            }, 1200);
+            }, 2000);
           }
         },
       });
@@ -612,7 +637,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         if (dateCurrentFormat > dateForgetPasswordFormat) {
           await handleForgetPassword(email);
         } else {
-          errorMessage(
+          successMessage(
             "The link was already sent to your email. Please try again later.",
             3000,
           );
@@ -626,20 +651,21 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleForgetPassword = async (email) => {
+    /* reset captcha */
+    window.grecaptcha?.reset();
+
     try {
       await userForgotPasword({
         variables: {
           email: email,
+          captcha: window.__reCaptcha!,
         },
         onCompleted: (data) => {
           if (data?.forgotPassword?.token) {
             const token = data?.forgotPassword?.token;
             const decodeToken: any = jwtDecode(token);
             const dateFormat = decodeToken?.expiredAt;
-            // localStorage.setItem(
-            //   "dateForgetPassword",
-            //   moment(dateFormat).format("HH:mm"),
-            // );
+
             localStorage.setItem(
               ENV_KEYS.VITE_APP_DATE_FORGET_LOCAL_KEY,
               moment(dateFormat).format("HH:mm"),
@@ -674,6 +700,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         ...state,
+        // authLoading,
         method: "jwt",
         generateNewToken,
         logIn,

@@ -7,8 +7,6 @@ import {
 import { useEffect, useState } from "react";
 
 const useManageUserFromShare = ({
-  isShare,
-  parentKey,
   inputFileOrFolder,
   inputType,
   toAccount,
@@ -34,9 +32,9 @@ const useManageUserFromShare = ({
           await getShares({
             variables: {
               where: {
-                parentKey: parentKey || 0,
-                isShare: isShare || "yes",
-                fromAccount: inputFileOrFolder.fromAccount.email,
+                // parentKey: parentKey || 0,
+                // isShare: isShare || "yes",
+                // fromAccount: inputFileOrFolder.createdBy.email,
                 toAccount,
                 ...(inputType === "folder"
                   ? {
@@ -68,6 +66,7 @@ const useManageUserFromShare = ({
             await deleteShare({
               variables: {
                 id: data._id,
+                email: data?.toAccount?.email,
               },
             });
           }),
@@ -93,6 +92,7 @@ const useManageUserFromShare = ({
                 id: data._id,
                 body: {
                   permission: data._permission,
+                  toAccount: data.toAccount?.email,
                 },
               },
             });

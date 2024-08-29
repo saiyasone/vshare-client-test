@@ -6,7 +6,7 @@ import {
   styled,
 } from "@mui/material";
 import {
-  MUTATION_DELETE_FILE,
+  MUTATION_DELETE_FILE_FOREVER,
   MUTATION_UPDATE_FILE,
 } from "api/graphql/file.graphql";
 import {
@@ -23,7 +23,6 @@ import {
 } from "constants/menuItem.constant";
 import { FolderContext } from "contexts/FolderProvider";
 import useManageFile from "hooks/file/useManageFile";
-import useManageFolder from "hooks/folder/useManageFolder";
 import useAuth from "hooks/useAuth";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import { Fragment, useContext, useEffect, useState } from "react";
@@ -97,7 +96,7 @@ function MenuMultipleSelectionFolderAndFile(props) {
   const [restoreFolder] = useMutation(MUTATION_UPDATE_FOLDER);
   const [restoreFile] = useMutation(MUTATION_UPDATE_FILE);
   const [deleteFolder] = useMutation(MUTATION_DELETE_FOLDER_TRASH);
-  const [deleteFile] = useMutation(MUTATION_DELETE_FILE);
+  const [deleteFile] = useMutation(MUTATION_DELETE_FILE_FOREVER);
 
   // redux store
   const dispatch = useDispatch();
@@ -110,12 +109,13 @@ function MenuMultipleSelectionFolderAndFile(props) {
     user,
   });
 
-  const manageFolderAction = useManageFolder({ user });
-
   const handleMenuAction = (action) => {
     switch (action) {
       case "file-download":
-        if (userPackage?.downLoadOption === "direct") {
+        if (
+          userPackage?.downLoadOption === "direct" ||
+          userPackage?.category !== "free"
+        ) {
           handleDownloadFile();
         } else {
           handleGetLinkAnother();
@@ -123,19 +123,32 @@ function MenuMultipleSelectionFolderAndFile(props) {
         break;
 
       case "share-download":
-        handleShareDownloadData();
+        if (
+          userPackage?.downLoadOption === "direct" ||
+          userPackage?.category !== "free"
+        ) {
+          handleShareDownloadData();
+        } else {
+          handleGetLinkAnother();
+        }
         break;
 
       case "folder-download":
-        if (userPackage?.downLoadOption === "direct") {
-          handleDownloadFolder();
+        if (
+          userPackage?.downLoadOption === "direct" ||
+          userPackage?.category !== "free"
+        ) {
+          handleDownloadFileAndFolder();
         } else {
           handleGetLinkAnother();
         }
         break;
 
       case "filedrop-download":
-        if (userPackage?.downLoadOption === "direct") {
+        if (
+          userPackage?.downLoadOption === "direct" ||
+          userPackage?.category !== "free"
+        ) {
           handleDownloadFileDrop();
         } else {
           handleGetLinkAnother();
@@ -147,7 +160,10 @@ function MenuMultipleSelectionFolderAndFile(props) {
         break;
 
       case "multiple-download":
-        if (userPackage?.downLoadOption === "direct") {
+        if (
+          userPackage?.downLoadOption === "direct" ||
+          userPackage?.category !== "free"
+        ) {
           handleDownloadFileAndFolder();
         } else {
           handleGetLinkAnother();
@@ -240,7 +256,6 @@ function MenuMultipleSelectionFolderAndFile(props) {
       {
         onSuccess: () => {
           dispatch(checkboxAction.setIsLoading(false));
-          // handleClearFile();
         },
         onFailed: () => {
           dispatch(checkboxAction.setIsLoading(false));
@@ -258,25 +273,6 @@ function MenuMultipleSelectionFolderAndFile(props) {
       {
         onSuccess: () => {
           dispatch(checkboxAction.setIsLoading(false));
-        },
-        onFailed: (error) => {
-          dispatch(checkboxAction.setIsLoading(false));
-          console.error(error);
-        },
-      },
-    );
-  };
-
-  const handleDownloadFolder = () => {
-    dispatch(checkboxAction.setIsLoading(true));
-    manageFolderAction.handleMultipleDownloadFolder(
-      {
-        multipleData: dataSelector?.selectionFileAndFolderData,
-      },
-      {
-        onSuccess: () => {
-          dispatch(checkboxAction.setIsLoading(false));
-          // handleClearFile();
         },
         onFailed: (error) => {
           dispatch(checkboxAction.setIsLoading(false));
@@ -683,7 +679,7 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                 handleMenuAction(item.action);
                               }}
                               disabled={
-                                (item.action === "download" ||
+                                (item.action === "share-download" ||
                                   item.action === "share") &&
                                 dataSelector?.selectionFileAndFolderData?.find(
                                   (item) =>
@@ -737,6 +733,12 @@ function MenuMultipleSelectionFolderAndFile(props) {
                         {multipleTab === "file" && (
                           <Fragment>
                             {multipleSelectionFileItems.map((item, index) => {
+                              if (
+                                item.action === "password" &&
+                                userPackage?.lockFile === "off"
+                              ) {
+                                return;
+                              }
                               return (
                                 <Fragment key={index}>
                                   <SelectWrapper>
@@ -757,7 +759,8 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                             item.action === "delete" ||
                                             item.action === "share") &&
                                           dataSelector?.selectionFileAndFolderData?.find(
-                                            (item) => item?.dataPassword,
+                                            (selector) =>
+                                              selector?.dataPassword,
                                           ) &&
                                           true
                                         }
@@ -777,6 +780,13 @@ function MenuMultipleSelectionFolderAndFile(props) {
                         {multipleTab === "folder" && (
                           <Fragment>
                             {multipleSelectionFolderItems.map((item, index) => {
+                              if (
+                                item.action === "password" &&
+                                userPackage?.lockFolder === "off"
+                              ) {
+                                return;
+                              }
+
                               return (
                                 <Fragment key={index}>
                                   {item.action === "folder-download" &&
@@ -791,17 +801,23 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                         handleMenuAction(item.action);
                                       }}
                                       disabled={
+                                        !(
+                                          item.action === "delete" &&
+                                          dataSelector?.selectionFileAndFolderData?.some(
+                                            (selector) =>
+                                              selector?.totalSize === 0,
+                                          )
+                                        ) &&
                                         (item.action === "get link" ||
                                           item.action === "folder-download" ||
                                           item.action === "password" ||
                                           item.action === "delete" ||
                                           item.action === "share") &&
-                                        dataSelector?.selectionFileAndFolderData?.find(
-                                          (item) =>
-                                            item?.totalSize === 0 ||
-                                            item?.dataPassword,
-                                        ) &&
-                                        true
+                                        dataSelector?.selectionFileAndFolderData?.some(
+                                          (selector) =>
+                                            selector?.totalSize === 0 ||
+                                            selector?.dataPassword,
+                                        )
                                       }
                                     >
                                       <Fragment>{item.icon}</Fragment>
@@ -818,6 +834,14 @@ function MenuMultipleSelectionFolderAndFile(props) {
                           <Fragment>
                             {multipleSelectionFolderAndFileItems.map(
                               (item, index) => {
+                                if (
+                                  item.action === "password" &&
+                                  (userPackage.lockFile === "off" ||
+                                    userPackage.lockFolder === "off")
+                                ) {
+                                  return;
+                                }
+
                                 return (
                                   <Fragment key={index}>
                                     {item.action === "multiple-download" &&
@@ -839,9 +863,9 @@ function MenuMultipleSelectionFolderAndFile(props) {
                                             item.action === "delete" ||
                                             item.action === "share") &&
                                           dataSelector?.selectionFileAndFolderData?.find(
-                                            (item) =>
-                                              item?.totalSize === 0 ||
-                                              item?.dataPassword,
+                                            (selector) =>
+                                              selector?.totalSize === 0 ||
+                                              selector?.dataPassword,
                                           ) &&
                                           true
                                         }

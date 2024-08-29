@@ -40,7 +40,6 @@ import DialogValidateFilePassword from "components/dialog/DialogValidateFilePass
 import ProgressingBar from "components/loading/ProgressingBar";
 import { ENV_KEYS } from "constants/env.constant";
 import { fileDropMenuItems } from "constants/menuItem.constant";
-import useFetchFile from "hooks/file/useFetchFile";
 import useGetUrlDownload from "hooks/url/useGetUrlDownload";
 import useBreadcrumbData from "hooks/useBreadcrumbData";
 import _ from "lodash";
@@ -55,6 +54,8 @@ import {
 } from "utils/file.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import FileDropDataGrid from "./FileDropDataGrid";
+import useFetchFile from "./hooks/useFetchFile";
+import { decryptDataLink } from "utils/secure.util";
 
 const ITEM_PER_PAGE = 10;
 
@@ -115,7 +116,7 @@ function FileDropDetail() {
       variables: {
         where: {
           path: link,
-          createdBy: user._id,
+          createdBy: user?._id,
         },
       },
     });
@@ -133,12 +134,13 @@ function FileDropDetail() {
 
   const fetchFiles: any = useFetchFile({
     filter: {
-      url: Base64.decode(url as string),
+      url: decryptDataLink(url as string),
     },
   });
 
   function handleMultipleFile(selected) {
     const valueOption = fetchFiles.data?.find((el) => el?._id === selected);
+
     dispatch(
       checkboxAction.setFileAndFolderData({
         data: {
@@ -149,10 +151,11 @@ function FileDropDetail() {
           checkType: "file",
           fileType: valueOption?.fileType,
           dataPassword: valueOption?.filePassword,
+          isPublic: valueOption?.isPublic,
           size: valueOption?.size,
           createdBy: {
-            _id: user?._id,
-            newName: user?.newName,
+            _id: valueOption?.createdBy?._id,
+            newName: valueOption?.createdBy?.newName,
           },
         },
       }),
@@ -190,15 +193,20 @@ function FileDropDetail() {
 
   React.useEffect(() => {
     const fetchIPAddress = async () => {
-      const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
-      const ip = responseIp?.data;
-      if (ip) {
-        const res = await axios.get(
-          `https://pro.ip-api.com/json/${ip}?key=x0TWf62F7ukWWpQ`,
-        );
-        if (res) {
-          setCountry(res?.data?.countryCode);
-        }
+      try {
+        setCountry("other");
+        // const responseIp = await axios.get(ENV_KEYS.VITE_APP_LOAD_GETIP_URL);
+        // const ip = responseIp?.data;
+        // if (ip) {
+        //   const res = await axios.get(
+        //     `https://pro.ip-api.com/json/${ip}?key=x0TWf62F7ukWWpQ`,
+        //   );
+        //   if (res) {
+        //     setCountry(res?.data?.countryCode);
+        //   }
+        // }
+      } catch (error) {
+        setCountry("other");
       }
     };
     fetchIPAddress();
@@ -349,8 +357,7 @@ function FileDropDetail() {
         },
       });
       if (uploading?.data?.createFiles?._id) {
-        successMessage("Download to cloud success!", 3000);
-        const sourcePath = "public/" + dataForEvent?.data?.newFilename;
+        const sourcePath = dataForEvent?.data?.newFilename || "";
         const destinationPath =
           user?.newName +
           "-" +
@@ -375,6 +382,9 @@ function FileDropDetail() {
             destinationFilePath: destinationPath,
           },
         },
+        onCompleted: () => {
+          successMessage("Download to cloud success!", 3000);
+        },
       });
     } catch (error: any) {
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
@@ -387,7 +397,7 @@ function FileDropDetail() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -399,24 +409,28 @@ function FileDropDetail() {
   };
 
   const handleDownloadFile = async () => {
-    setShowProgressing(true);
-    setProcesing(true);
+    // setShowProgressing(true);
+    // setProcesing(true);
 
-    await manageFile.handleDownloadFile(
+    const multipleData = [
       {
         id: dataForEvent.data._id,
-        newPath: dataForEvent?.data?.newPath || "public",
-        newFilename: dataForEvent.data.newFilename,
-        filename: combineOldAndNewFileNames(
-          dataForEvent.data.filename,
-          dataForEvent.data.newFilename,
-        ),
-        isPublicPath: true,
-      },
-      {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
+        newPath: dataForEvent?.data?.newPath,
+        newFilename: dataForEvent.data.newFilename || "",
+        isPublic: dataForEvent.data?.isPublic,
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
         },
+      },
+    ];
+
+    await manageFile.handleSingleFileDropDownload(
+      { multipleData },
+      {
+        // onProcess: async (countPercentage) => {
+        //   setProgressing(countPercentage);
+        // },
         onSuccess: async () => {
           successMessage("Download successful", 3000);
           setDataForEvent((state) => ({
@@ -481,7 +495,7 @@ function FileDropDetail() {
           },
           data: {
             filename: existName ? existName : name,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -644,11 +658,18 @@ function FileDropDetail() {
                         {fetchFiles.data.map((data, index) => {
                           const privatePath =
                             user?.newName +
-                            "-" +
-                            user?._id +
-                            "/" +
-                            data?.newPath;
+                              "-" +
+                              user?._id +
+                              "/" +
+                              data?.newPath || "";
                           const publicPath = "public/" + data.newFilename;
+
+                          // console.log(
+                          //   data?.createdBy?._id === "0"
+                          //     ? publicPath
+                          //     : privatePath,
+                          // );
+
                           return (
                             <FileCardItem
                               cardProps={{
@@ -661,7 +682,12 @@ function FileDropDetail() {
                               }}
                               id={data?._id}
                               imagePath={
-                                data?.newPath ? privatePath : publicPath
+                                data?.createdBy?._id === "0"
+                                  ? publicPath
+                                  : privatePath
+                              }
+                              isPublic={
+                                data?.createdBy?._id === "0" ? true : false
                               }
                               user={user}
                               isCheckbox={true}
@@ -748,6 +774,7 @@ function FileDropDetail() {
             getFileType(dataForEvent.data.filename) ||
             "folder"
           }
+          data={dataForEvent.data}
           size={
             dataForEvent.data.size
               ? convertBytetoMBandGB(dataForEvent.data.size)
@@ -766,7 +793,7 @@ function FileDropDetail() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            dataForEvent?.data?.newPath
+            dataForEvent?.data?.createdBy !== "0"
               ? user?.newName +
                 "-" +
                 user?._id +
@@ -807,7 +834,9 @@ function FileDropDetail() {
       {showPreview && (
         <DialogPreviewFile
           open={showPreview}
-          isPublicPath={"public"}
+          isPublicPath={
+            dataForEvent.data?.createdBy?._id === "0" ? true : false
+          }
           handleClose={() => {
             resetDataForEvent();
             setShowPreview(false);
@@ -824,7 +853,7 @@ function FileDropDetail() {
           fileType={dataForEvent.data.fileType}
           path={dataForEvent.data.newPath ?? "public"}
           user={user}
-          userId={user._id}
+          userId={user?._id}
         />
       )}
 

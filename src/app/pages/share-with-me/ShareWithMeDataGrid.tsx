@@ -1,5 +1,5 @@
 import { Box, Checkbox, styled, useMediaQuery } from "@mui/material";
-import FolderNotEmpty from "assets/images/empty/folder-not-empty.svg";
+import FolderNotEmpty from "assets/images/empty/folder-not-empty.svg?react";
 import FileDataGrid from "components/file/FileDataGrid";
 import ActionFileShare from "components/share/ActionFileShare";
 import ActionShare from "components/share/ActionShare";
@@ -111,38 +111,36 @@ function ShareWithMeDataGrid(props) {
       field: "folder_name||filename",
       headerName: "Name",
       flex: 1,
-      renderCell: (params) => {
-        return (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              columnGap: params?.row?.folderId?.folder_name ? "6px" : "12px",
-            }}
-          >
-            {params?.row?.folderId?.folder_name ? (
-              <FolderIconContainer onClick={() => handleOnClick(params.row)}>
-                <FolderNotEmpty />
-              </FolderIconContainer>
-            ) : (
-              <FileIconContainer onClick={() => onPreViewClick(params.row)}>
-                <FileIcon
-                  extension={getFileType(params?.row?.fileId?.filename)}
-                  {...{
-                    ...defaultStyles[
-                      getFileType(params?.row?.fileId?.filename) as string
-                    ],
-                  }}
-                />
-              </FileIconContainer>
-            )}
-            <span>
-              {params?.row?.folderId?.folder_name ||
-                params?.row?.fileId?.filename}
-            </span>
-          </div>
-        );
-      },
+      renderCell: (params) => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            columnGap: params?.row?.folderId?.folder_name ? "6px" : "12px",
+          }}
+        >
+          {params?.row?.folderId?.folder_name ? (
+            <FolderIconContainer onClick={() => handleOnClick(params.row)}>
+              <FolderNotEmpty />
+            </FolderIconContainer>
+          ) : (
+            <FileIconContainer onClick={() => onPreViewClick(params.row)}>
+              <FileIcon
+                extension={getFileType(params?.row?.fileId?.filename)}
+                {...{
+                  ...defaultStyles[
+                    getFileType(params?.row?.fileId?.filename) as string
+                  ],
+                }}
+              />
+            </FileIconContainer>
+          )}
+          <span>
+            {params?.row?.folderId?.folder_name ||
+              params?.row?.fileId?.filename}
+          </span>
+        </div>
+      ),
     },
 
     {
@@ -150,15 +148,15 @@ function ShareWithMeDataGrid(props) {
       headerName: "File size",
       flex: 1,
       renderCell: (params) => {
-        const checkFolder = params.row?.folderId?._id;
         let fileSize = 0;
-        if (checkFolder) {
-          fileSize = 1024;
+
+        if (params?.row?.fileId?._id) {
+          fileSize = params?.row?.fileId?.size;
         } else {
-          fileSize = params.row?.fileId?.size || 0;
+          fileSize = params?.row?.size;
         }
 
-        return <Fragment>{convertBytetoMBandGB(fileSize)}</Fragment>;
+        return <Fragment>{convertBytetoMBandGB(fileSize || 0)}</Fragment>;
       },
     },
 
@@ -183,7 +181,7 @@ function ShareWithMeDataGrid(props) {
         if (params?.row?.folderId?.folder_type) {
           return (
             <ActionShare
-              params={params?.row}
+              params={params}
               shortMenuItems={shortFavouriteMenuItems}
               menuItems={shareWithMeFolderMenuItems}
               eventActions={{

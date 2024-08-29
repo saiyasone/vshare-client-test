@@ -5,6 +5,9 @@ const theme = createTheme();
 
 export const DivPreviewBody = styled("div")({
   width: "100% !important",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   "& .react-pdf__Page__canvas": {
     // border: "1px solid rgb(233, 233, 233)",
     padding: "0px !important",

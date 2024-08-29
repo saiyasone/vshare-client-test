@@ -41,7 +41,6 @@ import DialogFileDetail from "components/dialog/DialogFileDetail";
 import DialogPreviewFile from "components/dialog/DialogPreviewFile";
 import DialogRenameFile from "components/dialog/DialogRenameFile";
 import DialogValidateFilePassword from "components/dialog/DialogValidateFilePassword";
-import ProgressingBar from "components/loading/ProgressingBar";
 import { ENV_KEYS } from "constants/env.constant";
 import menuItems, { favouriteMenuItems } from "constants/menuItem.constant";
 import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
@@ -74,7 +73,7 @@ import {
   removeFileNameOutOfPath,
 } from "utils/file.util";
 import { convertObjectEmptyStringToNull } from "utils/object.util";
-import { encryptData } from "utils/secure.util";
+import { encryptId } from "utils/secure.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
 import { replacetDotWithDash } from "utils/string.util";
 import useFirstRender from "../../../hooks/useFirstRender";
@@ -193,9 +192,6 @@ function ExtendFolder() {
   }, [triggerFolder]);
 
   const breadCrumbData = useBreadcrumbData(parentFolder?.path, "");
-  const [progressing, setProgressing] = useState<any>(0);
-  const [procesing, setProcesing] = useState<any>(true);
-  const [showProgressing, setShowProgressing] = useState<any>(false);
 
   const [showPreview, setShowPreview] = useState<any>(false);
   const [isPasswordLink, setIsPasswordLink] = useState<any>(false);
@@ -228,6 +224,12 @@ function ExtendFolder() {
   const useDataExportCSV = useExportCSV({
     folderId: csvFolder.folderId,
     exportRef: csvRef,
+    onSuccess: () => {
+      setCsvFolder({
+        folderId: "",
+        folderName: "",
+      });
+    },
   });
 
   const handleViewMore = () => {
@@ -323,7 +325,11 @@ function ExtendFolder() {
   useEffect(() => {
     if (parentFolder?._id) {
       // localStorage.setItem("folderId", parentFolder?._id);
-      const folderEncrypted = encryptData(JSON.stringify(parentFolder?._id));
+      // const folderEncrypted = encryptData(JSON.stringify(parentFolder?._id));
+      const folderEncrypted = encryptId(
+        JSON.stringify(parentFolder?._id),
+        ENV_KEYS.VITE_APP_LOCAL_STORAGE_SECRET_KEY,
+      );
       localStorage.setItem(
         ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY,
         folderEncrypted,
@@ -396,13 +402,13 @@ function ExtendFolder() {
           checkboxAction.setFileAndFolderData({
             data: {
               id: optionValue?._id,
-              name: optionValue?.name ?? "",
-              newPath: optionValue?.newPath ?? "",
+              name: optionValue?.name || "",
+              newPath: optionValue?.newPath || "",
               checkType: "folder",
-              dataPassword: optionValue?.access_password ?? "",
-              newFilename: optionValue?.newFolder_name ?? "",
+              dataPassword: optionValue?.access_password || "",
+              newFilename: optionValue?.newFolder_name || "",
               totalSize: optionValue?.isContainsFiles ? 1 : 0,
-              shortLink: optionValue?.shortUrl ?? "",
+              shortLink: optionValue?.shortUrl || "",
               createdBy: {
                 _id: optionValue?.createdBy?._id,
                 newName: optionValue?.createdBy?.newName,
@@ -688,7 +694,7 @@ function ExtendFolder() {
       await fileAction({
         variables: {
           fileInput: {
-            createdBy: parseInt(user._id),
+            createdBy: parseInt(user?._id),
             fileId: parseInt(dataForEvent.data._id),
             actionStatus: val,
           },
@@ -701,27 +707,63 @@ function ExtendFolder() {
 
   /* handle download folders */
   const handleDownloadFolder = async () => {
-    setShowProgressing(true);
-    setProcesing(true);
-    await manageFolder.handleDownloadFolder(
+    const newFileData = [
       {
         id: dataForEvent.data?._id,
-        folderName: dataForEvent.data?.name,
-        newPath: dataForEvent.data.newPath,
+        checkType: "folder",
+        newPath: dataForEvent.data?.newPath || "",
+        newFilename: dataForEvent.data?.newFolder_name || "",
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
+        },
       },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
       {
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
+        onSuccess: () => {
+          successMessage("Download successful", 3000);
+          setDataForEvent((state) => ({
+            ...state,
+            action: null,
+            data: {
+              ...state.data,
+              totalDownload: dataForEvent.data.totalDownload + 1,
+            },
+          }));
+          customGetSubFoldersAndFiles();
         },
-        onSuccess: async () => {
-          successMessage("Download successful", 2000);
+        onFailed: (error) => {
+          errorMessage(error, 3000);
         },
-        onClosure: async () => {
-          setShowProgressing(false);
-          resetDataForEvent();
+
+        onClosure: () => {
+          setIsAutoClose(false);
+          setFileDetailsDialog(false);
         },
       },
     );
+    // await manageFolder.handleDownloadFolder(
+    //   {
+    //     id: dataForEvent.data?._id,
+    //     folderName: dataForEvent.data?.name,
+    //     newPath: dataForEvent.data.newPath,
+    //   },
+    //   {
+    //     onFailed: async (error) => {
+    //       errorMessage(error, 2000);
+    //     },
+    //     onSuccess: async () => {
+    //       successMessage("Download successful", 2000);
+    //     },
+    //     onClosure: async () => {
+    //
+    //       resetDataForEvent();
+    //     },
+    //   },
+    // );
   };
 
   const handleCreateFileDrop = async (
@@ -774,20 +816,24 @@ function ExtendFolder() {
   };
 
   const handleDownloadFile = async () => {
-    setShowProgressing(true);
-    setProcesing(true);
-    await manageFile.handleDownloadFile(
+    const newFileData = [
       {
-        id: dataForEvent.data._id,
-        newPath: dataForEvent.data.newPath,
-        newFilename: dataForEvent.data.newName,
-        filename: dataForEvent.data.name,
-      },
-      {
-        onProcess: async (countPercentage) => {
-          setProgressing(countPercentage);
+        id: dataForEvent.data?._id,
+        checkType: "file",
+        newPath: dataForEvent.data?.newPath || "",
+        newFilename: dataForEvent.data?.newFilename || "",
+        createdBy: {
+          _id: dataForEvent.data?.createdBy._id,
+          newName: dataForEvent.data?.createdBy?.newName,
         },
-        onSuccess: async () => {
+      },
+    ];
+
+    await manageFile.handleDownloadSingleFile(
+      { multipleData: newFileData },
+      {
+        onSuccess: () => {
+          successMessage("Download successful", 3000);
           setDataForEvent((state) => ({
             ...state,
             action: null,
@@ -798,12 +844,13 @@ function ExtendFolder() {
           }));
           customGetSubFoldersAndFiles();
         },
-        onFailed: async (error) => {
-          errorMessage(error, 2000);
+        onFailed: (error) => {
+          errorMessage(error, 3000);
         },
+
         onClosure: () => {
-          setShowProgressing(false);
-          setProcesing(false);
+          setIsAutoClose(false);
+          setFileDetailsDialog(false);
         },
       },
     );
@@ -819,7 +866,7 @@ function ExtendFolder() {
             },
             data: {
               status: "deleted",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -838,7 +885,7 @@ function ExtendFolder() {
             },
             data: {
               status: "deleted",
-              createdBy: user._id,
+              createdBy: user?._id,
             },
           },
           onCompleted: async () => {
@@ -966,7 +1013,7 @@ function ExtendFolder() {
           },
           data: {
             favorite: dataForEvent.data.favorite ? 0 : 1,
-            updatedBy: user._id,
+            updatedBy: user?._id,
           },
         },
         onCompleted: async () => {
@@ -1009,7 +1056,8 @@ function ExtendFolder() {
       variables: {
         where: {
           path,
-          createdBy: user._id,
+          createdBy: user?._id,
+          status: "active",
         },
       },
       onCompleted: (data: any) => {
@@ -1029,8 +1077,8 @@ function ExtendFolder() {
     fetchSubFoldersAndFiles.resetFolderData();
     fetchSubFoldersAndFiles.resetFileData();
     const base64URL = Base64.encodeURI(dataForEvent.data?.url);
-    resetDataForEvent();
     navigate(`/folder/${base64URL}`);
+    resetDataForEvent();
   };
 
   const handleDeletedUserFromShareOnSave = async (sharedData) => {
@@ -1077,10 +1125,6 @@ function ExtendFolder() {
           " will be deleted?"
         }
       />
-
-      {showProgressing && (
-        <ProgressingBar procesing={procesing} progressing={progressing} />
-      )}
 
       <MUI.ExtendContainer>
         <MUI.TitleAndSwitch className="title-n-switch" sx={{ my: 2 }}>
@@ -1319,9 +1363,9 @@ function ExtendFolder() {
                                       isCheckbox={true}
                                       filePassword={data?.filePassword}
                                       imagePath={
-                                        user.newName +
+                                        user?.newName +
                                         "-" +
-                                        user._id +
+                                        user?._id +
                                         "/" +
                                         (data.newPath
                                           ? removeFileNameOutOfPath(
@@ -1467,11 +1511,20 @@ function ExtendFolder() {
               dataForEvent.data?.folder_type === "folder" ? "folder" : "",
             folder_name: dataForEvent.data.name,
             filename: dataForEvent.data.name,
+            ownerId: {
+              _id: dataForEvent.data?.createdBy?._id,
+              email: dataForEvent.data?.createdBy?.email,
+              firstName: dataForEvent.data?.createdBy?.firstName,
+              lastName: dataForEvent.data?.createdBy?.lastName,
+            },
           }}
           ownerId={{
             ...dataForEvent.data,
             _id: dataForEvent.data?.createdBy?._id,
             newName: dataForEvent.data?.createdBy?.newName,
+            email: dataForEvent.data?.createdBy?.email,
+            firstName: dataForEvent.data?.createdBy?.firstName,
+            lastName: dataForEvent.data?.createdBy?.lastName,
           }}
         />
       )}
@@ -1511,9 +1564,9 @@ function ExtendFolder() {
             setFileDetailsDialog(false);
           }}
           imagePath={
-            user.newName +
+            user?.newName +
             "-" +
-            user._id +
+            user?._id +
             "/" +
             (dataForEvent?.data?.newPath
               ? removeFileNameOutOfPath(dataForEvent.data?.newPath)
@@ -1556,10 +1609,6 @@ function ExtendFolder() {
           " will be deleted?"
         }
       />
-
-      {showProgressing && (
-        <ProgressingBar procesing={procesing} progressing={progressing} />
-      )}
 
       <DialogCreateFileDrop
         isOpen={openFileDrop}
@@ -1669,10 +1718,6 @@ function ExtendFolder() {
           " will be deleted?"
         }
       />
-
-      {showProgressing && (
-        <ProgressingBar procesing={procesing} progressing={progressing} />
-      )}
     </Fragment>
   );
 }

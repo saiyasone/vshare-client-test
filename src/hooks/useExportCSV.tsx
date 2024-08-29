@@ -1,48 +1,28 @@
-import { useLazyQuery, useMutation } from "@apollo/client";
-import { QUERY_FILE } from "api/graphql/file.graphql";
-import { MUTATION_UPDATE_EXPORT_LINK } from "api/graphql/folder.graphql";
-import moment from "instances/moment.instance";
+import { useLazyQuery } from "@apollo/client";
+
+import { QUERY_FILE_CSV } from "api/graphql/folder.graphql";
 import { useEffect } from "react";
 import { errorMessage } from "utils/alert.util";
+import { DateOfNumber } from "utils/date.util";
 import { convertBytetoMBandGB } from "utils/storage.util";
-import useAuth from "./useAuth";
 
 const useExportCSV = ({ folderId, exportRef, onSuccess }) => {
-  const { user }: any = useAuth();
-  const [updateExportCSV] = useMutation(MUTATION_UPDATE_EXPORT_LINK);
-  const [getFile, { data: getFileData }] = useLazyQuery(QUERY_FILE, {
+  const [exportCSV, { data: getFileData }] = useLazyQuery(QUERY_FILE_CSV, {
     fetchPolicy: "no-cache",
   });
 
   async function handleGetAllFile() {
     try {
       if (folderId) {
-        await updateExportCSV({
+        const result = await exportCSV({
           variables: {
-            data: {
-              getLinkBy: parseInt(user?._id),
-            },
-            where: {
-              _id: folderId,
-            },
-          },
-          onCompleted: async (data) => {
-            if (data?.updateStatusFolderExportLink) {
-              const result = await getFile({
-                variables: {
-                  where: {
-                    folder_id: folderId,
-                    status: "active",
-                  },
-                },
-              });
-              if (result.data?.files?.data?.length > 0) {
-                await exportRef?.current?.link.click();
-                await onSuccess?.();
-              }
-            }
+            id: String(folderId),
           },
         });
+        if (result.data?.exportMultipleShortUrl?.data) {
+          await exportRef?.current?.link.click();
+          await onSuccess?.();
+        }
       }
     } catch (error: any) {
       errorMessage(error?.message, 3000);
@@ -55,16 +35,13 @@ const useExportCSV = ({ folderId, exportRef, onSuccess }) => {
 
   return {
     data:
-      getFileData?.files?.data?.map((item, index) => {
+      getFileData?.exportMultipleShortUrl?.data?.map((item, index) => {
         return {
           ID: index + 1,
           Filename: item.filename,
           ShortUrl: item.shortUrl ?? "",
           Size: convertBytetoMBandGB(item.size),
-          // Url: item.url,
-          createdAt: item.createdAt
-            ? moment(item.createdAt).format("DD-MM-YYYY")
-            : "",
+          createdAt: DateOfNumber(item.createdAt),
         };
       }) || [],
   };

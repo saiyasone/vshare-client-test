@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 export const QUERY_FOLDER = gql`
-  query Data(
+  query GetFolder(
     $where: FoldersWhereInput
     $orderBy: OrderByInput
     $limit: Int
@@ -34,6 +34,8 @@ export const QUERY_FOLDER = gql`
           email
           username
           newName
+          firstName
+          lastName
         }
         file_id {
           _id
@@ -45,6 +47,22 @@ export const QUERY_FOLDER = gql`
           _id
         }
         updatedAt
+      }
+    }
+  }
+`;
+
+export const QUERY_FILE_CSV = gql`
+  query ExportMultipleShortUrl($id: ID!) {
+    exportMultipleShortUrl(ID: $id) {
+      total
+      data {
+        _id
+        filename
+        shortUrl
+        size
+        createdAt
+        status
       }
     }
   }
@@ -83,24 +101,6 @@ export const MUTATION_UPDATE_FOLDER = gql`
   mutation UpdateFolders($data: FoldersInput!, $where: FoldersWhereInputOne!) {
     updateFolders(data: $data, where: $where) {
       _id
-      folder_type
-      folder_name
-      newFolder_name
-      total_size
-      is_public
-      checkFolder
-      restore
-      access_password
-      show_download_link
-      status
-      path
-      url
-      expired
-      permissionSharePublic
-      aproveDownloadPublic
-      pin
-      createdAt
-      updatedAt
     }
   }
 `;

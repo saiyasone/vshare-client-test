@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { LoadingButton } from "@mui/lab";
 import {
   Button,
   Dialog,
@@ -25,12 +26,13 @@ import {
   QUERY_FOLDER,
 } from "api/graphql/folder.graphql";
 import ShowUpload from "components/ShowUpload";
+// import UppyUpload from "components/UppyUpload";
 import { ENV_KEYS } from "constants/env.constant";
 import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 import useAuth from "hooks/useAuth";
 import * as React from "react";
 import { successMessage } from "utils/alert.util";
-import { decryptData } from "utils/secure.util";
+import { decryptId } from "utils/secure.util";
 import { v4 as uuidv4 } from "uuid";
 
 const Transition = React.forwardRef(function Transition(
@@ -55,6 +57,7 @@ export default function FloatingButton() {
   const [getType, setGetType] = React.useState("");
   const isMobile = useMediaQuery("(max-width:600px)");
   const eventUploadTrigger = React.useContext(EventUploadTriggerContext);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleFolderClose = () => {
     setFolderOpen(false);
@@ -114,18 +117,21 @@ export default function FloatingButton() {
   const folderJson = localStorage.getItem(
     ENV_KEYS.VITE_APP_FOLDER_ID_LOCAL_KEY,
   );
+
   let globalFolderId = "";
   try {
     if (folderJson) {
-      const decryptedData = decryptData(folderJson);
+      const decryptedData = decryptId(folderJson);
       if (decryptedData && decryptedData.trim() !== "") {
         const folderDecrypted = JSON.parse(decryptedData);
         globalFolderId = folderDecrypted;
       }
     }
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
+
+  React.useEffect(() => {}, [globalFolderId]);
 
   React.useEffect(() => {
     setResMessage(false);
@@ -145,27 +151,16 @@ export default function FloatingButton() {
 
   const handleCreateFolder = async () => {
     const newFolderName = uuidv4();
+    setIsLoading(true);
+
     try {
-      // console.log({
-      //   folder_name: folder,
-      //   createdBy: user?._id,
-      //   folder_type: "folder",
-      //   checkFolder: parseInt(globalFolderId) > 0 ? "sub" : "main",
-      //   ...(parseInt(globalFolderId) > 0
-      //     ? { parentkey: parseInt(globalFolderId) }
-      //     : {}),
-      //   newFolder_name: newFolderName,
-      //   newPath:
-      //     parseInt(globalFolderId) > 0
-      //       ? isNewPath?.folders?.data[0]?.newPath + "/" + newFolderName
-      //       : newFolderName,
-      // });
       const data = await todoFolder({
         variables: {
           data: {
             folder_name: folder,
             createdBy: user?._id,
             folder_type: "folder",
+            destination: "",
             checkFolder: parseInt(globalFolderId) > 0 ? "sub" : "main",
             ...(parseInt(globalFolderId) > 0
               ? { parentkey: parseInt(globalFolderId) }
@@ -183,10 +178,12 @@ export default function FloatingButton() {
         setResMessage("");
         setFolderOpen(false);
         setFolder("");
+        setIsLoading(false);
         setResMessage(false);
         eventUploadTrigger.trigger();
       }
     } catch (error: any) {
+      setIsLoading(false);
       const strMsg = error.message.split(": ")[1];
       if (strMsg) {
         setResMessage(true);
@@ -204,7 +201,6 @@ export default function FloatingButton() {
         setFolder("");
         setErrorMessage("Please select a new folder!");
       } else {
-        console.log(error);
         setErrorMessage(error);
         setFolder(strMsg);
       }
@@ -270,6 +266,8 @@ export default function FloatingButton() {
         </SpeedDial>
       </Box>
 
+      {/* {open && <UppyUpload open={open} />} */}
+
       {selectFiles && (
         <ShowUpload
           open={open}
@@ -333,17 +331,18 @@ export default function FloatingButton() {
               >
                 Cancel
               </Button>
-              <Button
+              <LoadingButton
                 variant="contained"
                 color="primaryTheme"
                 sx={{
                   borderRadius: "18px",
                   padding: isMobile ? "5px 20px" : "8px 30px",
                 }}
+                loading={isLoading}
                 onClick={handleCreateFolder}
               >
                 Save
-              </Button>
+              </LoadingButton>
             </Box>
           </DialogActions>
         </Box>

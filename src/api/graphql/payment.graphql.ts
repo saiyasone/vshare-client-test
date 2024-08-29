@@ -19,6 +19,12 @@ export const MUTATION_CREATE_PAYMENT = gql`
   }
 `;
 
+export const MUTATION_CREATE_TWO_CHECKOUT = gql`
+  mutation TwoCheckoutSubscription($packageId: String!) {
+    twoCheckoutSubscription(packageId: $packageId)
+  }
+`;
+
 export const QUERY_PAYMENT = gql`
   query GetPayments(
     $where: PaymentWhereInput
@@ -90,7 +96,28 @@ export const QUERY_PAYMENT = gql`
         updatedAt
         orderedAt
         expiredAt
+        payerId {
+          _id
+          firstName
+          lastName
+        }
       }
+      total
+    }
+  }
+`;
+
+export const QUERY_CURRENT_PAYMENT = gql`
+  query Data($id: ID!) {
+    getPayment(ID: $id) {
+      data {
+        _id
+        expiredAt
+      }
+      availableDays
+      overdueDays
+      totalDays
+      usedDays
     }
   }
 `;
@@ -158,6 +185,62 @@ export const MUTATION_CREATE_CHECKOUT = gql`
         }
       }
       secret
+    }
+  }
+`;
+
+export const MUTATION_CREATE_QR_AND_SUBSCRIPTION = gql`
+  mutation CreateQrAndSubscribeForPayment($data: PaymentInput!) {
+    createQrAndSubscribeForPayment(data: $data) {
+      qrCode
+      transactionId
+    }
+  }
+`;
+
+export const MUTATION_CREATE_CANCELLED_SUBSCRIPTION = gql`
+  mutation CancelledBcelOneSubscriptionQr {
+    cancelledBcelOneSubscriptionQr {
+      message
+      transactionId
+    }
+  }
+`;
+
+export const MUTATION_CREATE_TEST_SUBSCRIPTION = gql`
+  mutation TestSubscribeBcelOneSubscriptionQr($transactionId: String) {
+    testSubscribeBcelOneSubscriptionQr(transactionId: $transactionId) {
+      message
+      transactionId
+    }
+  }
+`;
+
+export const SUBSCRIPTION_BCEL_ONE_SUBSCRIPTION = gql`
+  subscription Subscription($transactionId: String) {
+    subscribeBcelOneSubscriptionQr(transactionId: $transactionId) {
+      message
+      error
+      transactionId
+    }
+  }
+`;
+
+export const SUBSCRIPTION_TWO_CHECKOUT = gql`
+  subscription TwoCheckoutSubscription($code: String!) {
+    twoCheckoutSubscription(code: $code) {
+      message
+    }
+  }
+`;
+
+export const BCEL_EXCHANGE_RATE = gql`
+  query BceloneLoadExchangeRate {
+    bceloneLoadExchangeRate {
+      result_code
+      status
+      message
+      info
     }
   }
 `;

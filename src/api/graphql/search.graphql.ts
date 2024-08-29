@@ -16,6 +16,8 @@ export const QUERY_SEARCH_FOLDER_AND_FILE = gql`
         type_idFile
         checkTypeItem
         password
+        shortUrl
+        access_passwordFolder
         parentKey
         check
         path

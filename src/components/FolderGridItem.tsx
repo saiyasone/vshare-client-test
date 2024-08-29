@@ -6,6 +6,7 @@ import {
   styled,
   useMediaQuery,
 } from "@mui/material";
+
 import Tooltip from "@mui/material/Tooltip";
 import FolderEmptyIcon from "assets/images/empty/folder-empty.svg?react";
 import FolderNotEmptyIcon from "assets/images/empty/folder-not-empty.svg?react";

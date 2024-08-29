@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { createRef, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 // material ui icon and component
@@ -36,6 +36,7 @@ import {
   setAddressData,
   setCalculatePrice,
   setPackageData,
+  setPackageIdData,
   setPaymentId,
   setShowBcel,
   setShowStrip,
@@ -60,6 +61,7 @@ function PricingCheckout() {
     params.packageId,
     ENV_KEYS.VITE_APP_ENCRYPTION_KEY,
   );
+
   const dispatch = useDispatch();
   const { activeStep, paymentSteps, packageType, ...paymentSelector } =
     useSelector(paymentState);
@@ -72,16 +74,19 @@ function PricingCheckout() {
   const [getSetting] = useLazyQuery(QUERY_SETTING, {
     fetchPolicy: "no-cache",
   });
+  const transitonRef = createRef<any>();
 
   const packageData =
     packageType === PACKAGE_TYPE.annual
       ? memorizedPackages.current.filteredAnnualData || packages.annualData
       : memorizedPackages.current.filteredMonthlyData || packages.monthlyData;
 
+
   const settingKeys = {
     Strip: "SRIPETE",
     Bcel: "CELBENE",
   };
+
 
   useEffect(() => {
     memorizedPackages.current = packages;
@@ -159,8 +164,13 @@ function PricingCheckout() {
   useEffect(() => {
     if (packageId) {
       dispatch(setActivePaymentId(packageId));
+
+      if (packages.data) {
+        const result = packages.data?.find((el) => el?._id === packageId);
+        dispatch(setPackageIdData(result?.packageId));
+      }
     }
-  }, [packageId, dispatch]);
+  }, [packageId, dispatch, packages.data]);
 
   useEffect(() => {
     if (paymentSelector.packageData && paymentSelector.activePackageId) {
@@ -224,6 +234,7 @@ function PricingCheckout() {
             onSubmit={(values) => {
               dispatch(setAddressData(values));
               dispatch(setActiveStep(3));
+              dispatch(resetPayment());
             }}
           />
         );
@@ -237,8 +248,14 @@ function PricingCheckout() {
           position: "relative",
         }}
       >
-        <CSSTransition key={activeStep} classNames="fade" timeout={duration}>
+        <CSSTransition
+          key={activeStep}
+          classNames="fade"
+          timeout={duration}
+          nodeRef={transitonRef}
+        >
           <div
+            ref={transitonRef}
             style={{
               width: "100%",
               height: "100%",
@@ -259,11 +276,11 @@ function PricingCheckout() {
     );
   };
 
-  useEffect(() => {
-    return () => {
-      dispatch(resetPayment());
-    };
-  }, [dispatch]);
+  // useEffect(() => {
+  //   return () => {
+  //     dispatch(resetPayment());
+  //   };
+  // }, [dispatch]);
 
   if (isFirstRender) {
     return null;

@@ -1,5 +1,6 @@
 export const base64File = {
-  _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+  _keyStr:
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
   encode: function (input) {
     let output = "";
     let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
@@ -35,7 +36,7 @@ export const base64File = {
     let enc1, enc2, enc3, enc4;
     let i = 0;
 
-    input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+    input = input.replace(/[^A-Za-z0-9]/g, "");
 
     while (i < input.length) {
       enc1 = this._keyStr.indexOf(input.charAt(i++));
@@ -72,12 +73,10 @@ export const base64Encode = (data, key) => {
 };
 
 export const base64Decode = (encodedData, key) => {
-  return JSON.parse(
-    base64File
-      .decode(encodedData)
-      .split("")
-      .map((c, i) => c.charCodeAt(0) ^ key.charCodeAt(i % key.length))
-      .map((v) => String.fromCharCode(v))
-      .join(""),
-  );
+  return base64File
+    .decode(encodedData)
+    .split("")
+    .map((c, i) => c.charCodeAt(0) ^ key.charCodeAt(i % key.length))
+    .map((v) => String.fromCharCode(v))
+    .join("");
 };

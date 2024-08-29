@@ -267,8 +267,8 @@ export const MUTATION_VERIFY_2FA = gql`
   }
 `;
 export const MUATION_FORGOT_PASS = gql`
-  mutation ForgotPassword($email: String!) {
-    forgotPassword(email: $email) {
+  mutation ForgotPassword($email: String!, $captcha: String!) {
+    forgotPassword(email: $email, captcha: $captcha) {
       token
     }
   }
@@ -286,6 +286,17 @@ export const MUTATION_RESET_PASS = gql`
       confirmPassword: $confirmPassword
     ) {
       token
+    }
+  }
+`;
+
+export const MUTATION_RESET_FILE_PASSWORD = gql`
+  mutation ChangePasswordFolderAndFile(
+    $data: FoldersData!
+    $where: FoldersForgotInput!
+  ) {
+    changePasswordFolderAndFile(data: $data, where: $where) {
+      status
     }
   }
 `;

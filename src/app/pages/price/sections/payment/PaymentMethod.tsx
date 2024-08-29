@@ -1,16 +1,20 @@
 import { Box, useTheme } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import useBcelOnePay from "hooks/payment/useBcelOnePay";
-import { useMemo } from "react";
+import useBcelSubscirption from "hooks/payment/useBcelSubscription";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   PAYMENT_METHOD,
   paymentState,
   setActivePaymentMethod,
+  setActiveStep,
+  setPaymentStatus,
 } from "stores/features/paymentSlice";
 import NormalButton from "../../../../../components/NormalButton";
 import BCELOnePayment from "./BCELOnePayment";
 import StripePayment from "./StripePayment";
+import TwoPaymentCheckout from "./TwoPaymentCheckout";
+import useAuth from "hooks/useAuth";
 
 const PaymentMethodContainer = styled("div")({
   display: "flex",
@@ -21,37 +25,60 @@ const PaymentMethodContainer = styled("div")({
 const PaymentMethod = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const { generateNewToken }: { generateNewToken: () => void } = useAuth();
 
   const paymentSelector: any = useSelector(paymentState);
 
   const btnMethodList = useMemo(() => {
     if (paymentSelector?.showBcelOne && paymentSelector?.showStripe) {
-      return [PAYMENT_METHOD.bcelOne, PAYMENT_METHOD.stripe];
+      return [PAYMENT_METHOD.bcelOne];
     }
 
     if (paymentSelector?.showStripe && !paymentSelector?.showBcelOne) {
-      return [PAYMENT_METHOD.stripe];
+      return [PAYMENT_METHOD.bcelOne];
     }
 
     if (!paymentSelector?.showStripe && paymentSelector?.showBcelOne) {
-      return [PAYMENT_METHOD.bcelOne];
+      return [PAYMENT_METHOD.bcelOne, PAYMENT_METHOD.TwopaymentCheckout];
     }
 
     return [];
   }, []);
 
-  const bcelOnePay = useBcelOnePay();
+  useEffect(()=>{
+    
+  },[paymentSelector.country, paymentSelector.currencySymbol])
+
+  const bcelOnePay = useBcelSubscirption();
   const paymentMethodList = () => {
     switch (paymentSelector.activePaymentMethod) {
       case PAYMENT_METHOD.bcelOne:
         return (
-          <BCELOnePayment qrCode={bcelOnePay.qrCode} link={bcelOnePay.link} />
+          <BCELOnePayment
+            qrCode={bcelOnePay.qrCode}
+            link={bcelOnePay.link}
+            transactionId={bcelOnePay.transactionId}
+          />
         );
       case PAYMENT_METHOD.stripe:
         return <StripePayment />;
+
+      case PAYMENT_METHOD.TwopaymentCheckout:
+        return (
+          <TwoPaymentCheckout
+            packageId={paymentSelector?.packageId || ""}
+            handleSuccess={handleTwoCheckoutSuccess}
+          />
+        );
       default:
         return;
     }
+  };
+
+  const handleTwoCheckoutSuccess = async () => {
+    dispatch(setPaymentStatus("success"));
+    dispatch(setActiveStep(3));
+    generateNewToken();
   };
 
   return (

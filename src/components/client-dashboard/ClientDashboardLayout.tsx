@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Outlet, useLocation } from "react-router-dom";
 
@@ -10,6 +10,7 @@ import { spacing } from "@mui/system";
 import { QUERY_SETTING } from "api/graphql/setting.graphql";
 import ShowUpload from "components/ShowUpload";
 import navItems from "constants/navItem.constant";
+import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 import GlobalStyle from "styles/GlobalStyle";
 import FloatingButton from "./FloatingButton";
 import Navbar from "./Navbar";
@@ -59,6 +60,7 @@ const ClientDashboardLayout = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showUploadFile, setShowUploadFile] = useState(true);
   const [selectedFolderFiles, setSelectedFolderFiles] = useState<any[]>([]);
   const [files, setFiles] = useState<any[]>([]);
   const [hasFile, setHasFile] = useState(false);
@@ -66,6 +68,9 @@ const ClientDashboardLayout = () => {
   const [getSetting] = useLazyQuery(QUERY_SETTING, {
     fetchPolicy: "no-cache",
   });
+
+  // context
+  const uploadContext = useContext(EventUploadTriggerContext);
 
   const settingKey = {
     viewMode: "DVMLAGH",
@@ -206,8 +211,20 @@ const ClientDashboardLayout = () => {
 
   // Close mobile menu when navigation occurs
   useEffect(() => {
+    const pathShare = router.pathname;
+
+    if (pathShare.includes("folder/share")) {
+      if (uploadContext?.sharePermission === "edit") {
+        setShowUploadFile(true);
+      } else {
+        setShowUploadFile(false);
+      }
+    } else {
+      setShowUploadFile(true);
+    }
     setMobileOpen(false);
-  }, [router.pathname]);
+    //
+  }, [router.pathname, uploadContext?.sharePermission]);
 
   const theme = useTheme();
 
@@ -259,16 +276,19 @@ const ClientDashboardLayout = () => {
             hasNewFile={hasFile}
           />
         </MainContent>
-        <Box
-          sx={{
-            position: "fixed",
-            bottom: 30,
-            right: 30,
-            zIndex: 100,
-          }}
-        >
-          <FloatingButton />
-        </Box>
+
+        {showUploadFile && (
+          <Box
+            sx={{
+              position: "fixed",
+              bottom: 30,
+              right: 30,
+              zIndex: 100,
+            }}
+          >
+            <FloatingButton />
+          </Box>
+        )}
       </AppContent>
     </Root>
   );

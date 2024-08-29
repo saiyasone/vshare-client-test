@@ -8,11 +8,9 @@ import {
   MUTATION_CREATE_SHARE,
   MUTATION_CREATE_SHARE_FROM_SHARING,
 } from "api/graphql/share.graphql";
-import ActionShare from "components/share/ActionShare";
-import { ENV_KEYS } from "constants/env.constant";
+import ActionCreateShare from "components/share/ActionCreateShare";
 import { EventUploadTriggerContext } from "contexts/EventUploadTriggerProvider";
 import { useMenuDropdownState } from "contexts/MenuDropdownProvider";
-import useAuth from "hooks/useAuth";
 import useManageGraphqlError from "hooks/useManageGraphqlError";
 import { MuiChipsInput } from "mui-chips-input";
 import React, { Fragment } from "react";
@@ -40,7 +38,6 @@ const BoxTitle = styled("div")({});
 const DialogCreateMultipleShare = (props) => {
   const { open, data, onClose, dataSelector } = props;
 
-  const { user }: any = useAuth();
   const manageGraphqlError = useManageGraphqlError();
   const [createShare] = useMutation(MUTATION_CREATE_SHARE);
   const [createShareFromSharing] = useMutation(
@@ -57,6 +54,7 @@ const DialogCreateMultipleShare = (props) => {
   const handleChange = (newChip) => {
     setChipData(newChip);
   };
+
   const isValidEmail = (data) => {
     const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return regex.test(data);
@@ -77,13 +75,9 @@ const DialogCreateMultipleShare = (props) => {
                   await createShareFromSharing({
                     variables: {
                       body: {
-                        accessKey: "",
-                        folderId: item?.dataId,
-                        permission: statusShare,
-                        toAccount: chipData[i],
-                        link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
                         shareId: item?.share._id,
-                        isPublic: "private",
+                        toAccount: chipData[i],
+                        permission: statusShare,
                       },
                     },
                   });
@@ -92,14 +86,9 @@ const DialogCreateMultipleShare = (props) => {
                     variables: {
                       body: {
                         folderId: item?.id,
-                        ownerId: item?.createdBy?._id || props.ownerId?._id,
-                        fromAccount: user?.email,
+                        toAccount: chipData[i],
                         isPublic: isGlobals,
                         permission: statusShare,
-                        toAccount: chipData[i],
-                        link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
-                        status: "active",
-                        isShare: "yes",
                       },
                     },
                   });
@@ -113,12 +102,8 @@ const DialogCreateMultipleShare = (props) => {
                   await createShareFromSharing({
                     variables: {
                       body: {
-                        fileId: item?._id,
-                        accessKey: "",
-                        isPublic: isGlobals,
                         permission: statusShare,
                         toAccount: chipData[i],
-                        link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
                         shareId: item?.share._id,
                       },
                     },
@@ -129,15 +114,9 @@ const DialogCreateMultipleShare = (props) => {
                     variables: {
                       body: {
                         fileId: item?.id,
-                        accessKey: "",
-                        ownerId: item?.createdBy?._id,
-                        fromAccount: user?.email,
+                        toAccount: chipData[i],
                         isPublic: isGlobals,
                         permission: statusShare,
-                        toAccount: chipData[i],
-                        link: ENV_KEYS.VITE_APP_VSHARE_URL_PRIVATE,
-                        status: "active",
-                        isShare: "yes",
                       },
                     },
                   });
@@ -222,7 +201,7 @@ const DialogCreateMultipleShare = (props) => {
               />
 
               {chipData.length > 0 && (
-                <ActionShare
+                <ActionCreateShare
                   accessStatusShare={"private"}
                   statusshare={statusShare}
                   handleStatus={handleStatus}
