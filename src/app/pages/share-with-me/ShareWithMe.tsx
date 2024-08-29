@@ -287,25 +287,25 @@ function ShareWithMe() {
     const valueOption = item?.find((el) => el?._id === selected);
 
     const dataName =
-      valueOption?.fileId?.filename ?? valueOption?.folderId?.folder_name;
+      valueOption?.fileId?.filename || valueOption?.folderId?.folder_name;
     const newFilename = valueOption?.fileId?._id
       ? valueOption?.fileId?.newFilename
       : valueOption?.folderId?.newFolder_name;
     const newPath =
-      valueOption?.fileId?.newPath ?? valueOption?.folderId?.newPath;
+      valueOption?.fileId?.newPath || valueOption?.folderId?.newPath;
 
     dispatch(
       checkboxAction.setFileAndFolderData({
         data: {
           id: valueOption?._id,
-          dataId: valueOption?.fileId?._id ?? valueOption?.folderId?._id,
+          dataId: valueOption?.fileId?._id || valueOption?.folderId?._id,
           name: dataName,
           checkType: valueOption?.fileId?._id ? "file" : "folder",
           permission: valueOption?.permission,
           newFilename,
           newPath,
           dataPassword:
-            valueOption?.fileId?.filePassword ??
+            valueOption?.fileId?.filePassword ||
             valueOption?.folderId?.access_password,
           createdBy: {
             _id: valueOption?.fromAccount?._id,
@@ -980,7 +980,7 @@ function ShareWithMe() {
                                       data: {
                                         ...data,
                                         _id:
-                                          data?.fileId?._id ??
+                                          data?.fileId?._id ||
                                           data?.folderId?._id,
                                       },
                                     });
@@ -1105,7 +1105,7 @@ function ShareWithMe() {
                                                                   ...data,
                                                                   _id:
                                                                     data?.fileId
-                                                                      ?._id ??
+                                                                      ?._id ||
                                                                     data
                                                                       ?.folderId
                                                                       ?._id,
@@ -1134,7 +1134,7 @@ function ShareWithMe() {
                                                                 ...data,
                                                                 _id:
                                                                   data?.fileId
-                                                                    ?._id ??
+                                                                    ?._id ||
                                                                   data?.folderId
                                                                     ?._id,
                                                               },
@@ -1314,7 +1314,7 @@ function ShareWithMe() {
                 data={{
                   ...dataForEvent.data,
                   _id:
-                    dataForEvent.data?.folderId?._id ??
+                    dataForEvent.data?.folderId?._id ||
                     dataForEvent.data?.fileId?._id,
                   folder_name: dataForEvent.data?.folderId?.folder_name,
                   folder_type: dataForEvent.data?.folderId?.folder_type,
