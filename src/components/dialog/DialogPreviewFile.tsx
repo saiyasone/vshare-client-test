@@ -137,7 +137,6 @@ export default function DialogPreviewFile(props) {
         </Box>
 
         <DialogContentV1>
-          {newUrl + sourcePath}
           <MUI.DivPreviewBody>
             {type === "image" ? (
               <MUI.ShowImageBox>
