@@ -80,7 +80,7 @@ import useFirstRender from "../../../hooks/useFirstRender";
 import ExtendFileDataGrid from "./ExtendFileDataGrid";
 import ExtendFolderDataGrid from "./ExtendFolderDataGrid";
 
-const ITEM_PER_PAGE = 10;
+// const ITEM_PER_PAGE = 10;
 const _ITEM_GRID_PER_PAGE = 20;
 
 function ExtendFolder() {
@@ -167,13 +167,13 @@ function ExtendFolder() {
 
   const { limitScroll, addMoreLimit } = useScroll({
     total,
-    limitData: ITEM_PER_PAGE,
+    limitData: _ITEM_GRID_PER_PAGE,
   });
 
   const fetchSubFoldersAndFiles = useFetchSubFolderAndFile({
     id: parentFolder?._id,
     currentPage: currentFilePage,
-    limit: ITEM_PER_PAGE,
+    limit: _ITEM_GRID_PER_PAGE,
     toggle,
     limitScroll,
     name: inputSearch,
@@ -312,7 +312,7 @@ function ExtendFolder() {
       setDataFolderFilters((prevState) => {
         const result = {
           ...prevState,
-          skip: (currentFolderPage - 1) * ITEM_PER_PAGE,
+          skip: (currentFolderPage - 1) * _ITEM_GRID_PER_PAGE,
         };
         if (currentFolderPage - 1 === 0) {
           delete result.skip;
@@ -1246,6 +1246,7 @@ function ExtendFolder() {
                                     }}
                                     id={data?._id}
                                     isCheckbox={true}
+                                    selectType={"folder"}
                                     isContainFiles={data.isContainsFiles}
                                     fileType="folder"
                                     isPinned={data.pin ? true : false}
@@ -1318,7 +1319,7 @@ function ExtendFolder() {
                           pagination={{
                             total: Math.ceil(
                               fetchSubFoldersAndFiles.folders.total /
-                                ITEM_PER_PAGE,
+                              _ITEM_GRID_PER_PAGE,
                             ),
                             currentPage: currentFolderPage,
                             setCurrentPage: setCurrentFolderPage,
@@ -1381,6 +1382,7 @@ function ExtendFolder() {
                                         data.newName
                                       }
                                       user={user}
+                                      selectType={"file"}
                                       handleSelect={handleMultipleFileData}
                                       favouriteIcon={{
                                         isShow: false,
@@ -1440,7 +1442,7 @@ function ExtendFolder() {
                               pagination={{
                                 total: Math.ceil(
                                   fetchSubFoldersAndFiles.apiTotal /
-                                    ITEM_PER_PAGE,
+                                  _ITEM_GRID_PER_PAGE,
                                 ),
                                 currentPage: currentFilePage,
                                 setCurrentPage: setCurrentFilePage,
