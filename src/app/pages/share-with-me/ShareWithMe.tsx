@@ -1010,6 +1010,7 @@ function ShareWithMe() {
                                   return (
                                     <Fragment key={index}>
                                       <FolderGridItem
+                                        key={index}
                                         file_id={
                                           data?.folderId._id ? true : false
                                         }
@@ -1024,7 +1025,6 @@ function ShareWithMe() {
                                         isPinned={
                                           data?.folderId.pin ? true : false
                                         }
-                                        key={index}
                                         onOuterClick={() => {
                                           setMultiChecked(multiChecked);
                                           setChecked({});
@@ -1287,18 +1287,6 @@ function ShareWithMe() {
                               })}
                             </FileCardContainer>
                           )}
-
-                          {/* {limitScroll < total && toggle !== "list" && (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                mt: 3,
-                              }}
-                            >
-                              <LinearProgress />
-                            </Box>
-                          )} */}
                         </Fragment>
                       )}
                     </Fragment>

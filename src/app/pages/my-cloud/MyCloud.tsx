@@ -1011,7 +1011,6 @@ export function MyCloud() {
       case "download": {
         setEventClick("download");
         if (
-          // getValue?.folder_type === "folder" ||
           dataForEvent.data?.folder_type === "folder"
         ) {
           setEventClick("download");

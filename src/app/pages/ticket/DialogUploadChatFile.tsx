@@ -42,13 +42,14 @@ import {
   ShowUploadChatFile,
   ShowUploadChatForm,
 } from "./styles/chat.style";
+import { encryptData } from "utils/secure.util";
+import { ENV_KEYS } from "constants/env.constant";
+import axios from "axios";
 
 function DialogUploadChatFile(props) {
   const { dataReply, isAdmin, onConfirm, selectFileMore } = props;
-  const [showProgress, setShowProgress] = useState(false);
-  const [progressInfo, setProgressInfo] = useState([
-    { percentage: 0, filename: "" },
-  ]);
+  const [showUpload, setShowUpload] = useState(false);
+  const [showProgress, setShowProgress] = useState<any>({});
   const { user }: any = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -82,19 +83,9 @@ function DialogUploadChatFile(props) {
   }
 
   const submitDialogFormReply = async (values) => {
+    setIsLoading(true);
     try {
       const fileNames = chatSelector?.files.map((file) => file.name) || [];
-      const _firstProgressInfos: any[] = [];
-      for (let i = 0; i < chatSelector?.files.length; i++) {
-        _firstProgressInfos.push({
-          percentage: 0,
-          filename: chatSelector?.files[i].name,
-        });
-      }
-
-      setProgressInfo(_firstProgressInfos);
-      setIsLoading(true);
-
       const result = await createReplyMessage({
         variables: {
           data: {
@@ -113,59 +104,56 @@ function DialogUploadChatFile(props) {
       });
 
       if (result?.data?.createTickets?._id) {
-        // if (chatSelector?.files.length) {
-        //   setShowProgress(true);
-        //   const imageAccess = (await result?.data?.createTickets?.image) || [];
+        if (chatSelector?.files.length) {
+          setShowUpload(true);
+          const imageAccess = (await result?.data?.createTickets?.image) || [];
 
-        //   for (let i = 0; i < chatSelector?.files.length; i++) {
-        //     setProgressInfo(() => [
-        //       {
-        //         filename: chatSelector?.files[i].name,
-        //         percentage: 0,
-        //       },
-        //     ]);
-        //     await axios.put(
-        //       `${bunneyUrl}/${user?.newName}-${user?._id}/${imageAccess[i]?.newNameImage}`,
-        //       chatSelector?.files[i],
-        //       {
-        //         headers: {
-        //           AccessKey: bunnyAccess,
-        //           "Content-Type": "multipart/form-data",
-        //         },
-        //         onUploadProgress: (event: any) => {
-        //           const percentCompleted = Math.round(
-        //             (event.loaded * 100) / event.total,
-        //           );
+          const uploadPromises = chatSelector?.files.map(
+            async (file, index) => {
+              const headers = {
+                PATH: `${user?.newName}-${user?._id}/${imageAccess[index]?.newNameImage}`,
+                FILENAME: "",
+                createdBy: user?._id,
+              };
 
-        //           if (percentCompleted === 100) {
-        //             setProgressInfo(() => [
-        //               {
-        //                 filename: chatSelector?.files?.[i].name,
-        //                 percentage: 99,
-        //               },
-        //             ]);
-        //           } else {
-        //             setProgressInfo(() => [
-        //               {
-        //                 filename: chatSelector?.files?.[i].name,
-        //                 percentage: percentCompleted,
-        //               },
-        //             ]);
-        //           }
-        //         },
-        //       },
-        //     );
-        //   }
-        // }
-        setIsLoading(false);
-        setShowProgress(false);
-        onConfirm();
-        dispatch(ChatAction.setChatMessageEMPTY());
-        setProgressInfo([]);
+              const formData = new FormData();
+              formData.append("file", file);
+
+              const encryptedHeader = encryptData(headers);
+              await axios.post(
+                `${ENV_KEYS.VITE_APP_LOAD_UPLOAD_URL}`,
+                formData,
+                {
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                    encryptedheaders: encryptedHeader!,
+                  },
+
+                  onUploadProgress: (event: any) => {
+                    const percentCompleted = Math.round(
+                      (event.loaded * 100) / event.total,
+                    );
+
+                    setShowProgress((prev) => ({
+                      ...prev,
+                      [index]: percentCompleted,
+                    }));
+                  },
+                },
+              );
+            },
+          );
+
+          await Promise.all(uploadPromises);
+
+          setIsLoading(false);
+          setShowUpload(false);
+          onConfirm();
+          dispatch(ChatAction.setChatMessageEMPTY());
+        }
       }
     } catch (error) {
-      setShowProgress(false);
-      setProgressInfo([]);
+      setShowUpload(false);
       setIsLoading(false);
       errorMessage("Something went wrong, please try again", 3000);
     }
@@ -295,48 +283,54 @@ function DialogUploadChatFile(props) {
             </ShowUploadChatForm>
 
             <BoxPreviewFileContainer>
-              {showProgress ? (
+              {showUpload ? (
                 <Fragment>
-                  {progressInfo.map((file, index) => (
-                    <BoxPreviewFileV1 key={index}>
-                      <BoxPreviewFileInnerV1Container>
-                        <BoxPreviewFileInnerV1>
-                          <Box
-                            sx={{
-                              width: "16px",
-                            }}
-                          >
-                            <FileIcon
-                              color="white"
-                              extension={getFileType(file.filename)}
-                              {...{
-                                ...defaultStyles[
-                                  getFileType(file.filename) as string
-                                ],
+                  {chatSelector?.files.map((file, index) => {
+                    const progress = showProgress[index]
+                      ? showProgress[index]
+                      : 0;
+
+                    return (
+                      <BoxPreviewFileV1 key={index}>
+                        <BoxPreviewFileInnerV1Container>
+                          <BoxPreviewFileInnerV1>
+                            <Box
+                              sx={{
+                                width: "16px",
                               }}
-                            />
-                          </Box>
-
-                          <BoxProgressText>
-                            <Typography component="span" color="initial">
-                              {file.filename}
-                            </Typography>
-                            <BoxProgressItem>
-                              <BoxProgressItemLine
-                                sx={{
-                                  width: file.percentage + "%",
+                            >
+                              <FileIcon
+                                color="white"
+                                extension={getFileType(file.filename)}
+                                {...{
+                                  ...defaultStyles[
+                                    getFileType(file.filename) as string
+                                  ],
                                 }}
-                              ></BoxProgressItemLine>
+                              />
+                            </Box>
 
-                              <Typography component="p">
-                                {file.percentage} %
+                            <BoxProgressText>
+                              <Typography component="span" color="initial">
+                                {file.filename}
                               </Typography>
-                            </BoxProgressItem>
-                          </BoxProgressText>
-                        </BoxPreviewFileInnerV1>
-                      </BoxPreviewFileInnerV1Container>
-                    </BoxPreviewFileV1>
-                  ))}
+                              <BoxProgressItem>
+                                <BoxProgressItemLine
+                                  sx={{
+                                    width: progress + "%",
+                                  }}
+                                ></BoxProgressItemLine>
+
+                                <Typography component="p">
+                                  {progress} %
+                                </Typography>
+                              </BoxProgressItem>
+                            </BoxProgressText>
+                          </BoxPreviewFileInnerV1>
+                        </BoxPreviewFileInnerV1Container>
+                      </BoxPreviewFileV1>
+                    );
+                  })}
                 </Fragment>
               ) : (
                 <Fragment>
