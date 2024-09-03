@@ -171,6 +171,7 @@ const DialogCreateShare = (props) => {
   const { setIsAutoClose } = useMenuDropdownState();
   const [sharedSelectedUserList, setSharedSelectedUserList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sendLoading, setSendLoading] = useState(false);
   const [showShared, setShowShared] = useState(false);
   const eventUploadTrigger = useContext(EventUploadTriggerContext);
   const encodeKey = ENV_KEYS.VITE_APP_ENCODE_KEY;
@@ -261,6 +262,7 @@ const DialogCreateShare = (props) => {
   const handleShareStatus = async () => {
     try {
       if (sharedSelectedUserList.length > 0) {
+        setSendLoading(true);
         if (
           data?.folder_type === "folder" ||
           data?.checkTypeItem === "folder"
@@ -336,11 +338,14 @@ const DialogCreateShare = (props) => {
         onClose();
       }
     } catch (error: any) {
+      setSendLoading(false);
       const cutErr = error.message.replace(/(ApolloError: )?Error: /, "");
       errorMessage(
         manageGraphqlError.handleErrorMessage(cutErr) as string,
         3000,
       );
+    } finally {
+      setSendLoading(false);
     }
   };
 
@@ -695,13 +700,14 @@ const DialogCreateShare = (props) => {
                 >
                   Close
                 </Button>
-                <Button
+                <LoadingButton
                   sx={{
                     borderRadius: "6px",
                     padding: "8px 25px",
                   }}
                   type="button"
                   variant="contained"
+                  loading={sendLoading}
                   color="primaryTheme"
                   {...{
                     ...(accessStatusShare === "private" &&
@@ -715,7 +721,7 @@ const DialogCreateShare = (props) => {
                   }}
                 >
                   Send
-                </Button>
+                </LoadingButton>
               </ActionContainer>
             </DialogContent>
           </>

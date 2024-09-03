@@ -79,6 +79,7 @@ import { replacetDotWithDash } from "utils/string.util";
 import useFirstRender from "../../../hooks/useFirstRender";
 import ExtendFileDataGrid from "./ExtendFileDataGrid";
 import ExtendFolderDataGrid from "./ExtendFolderDataGrid";
+import { TitleAndSwitch } from "styles/clientPage.style";
 
 // const ITEM_PER_PAGE = 10;
 const _ITEM_GRID_PER_PAGE = 20;
@@ -1132,86 +1133,86 @@ function ExtendFolder() {
         }
       />
 
-      <MUI.ExtendContainer>
-        <MUI.TitleAndSwitch className="title-n-switch" sx={{ my: 2 }}>
-          {dataSelector?.selectionFileAndFolderData?.length > 0 ? (
-            <MenuMultipleSelectionFolderAndFile
-              onPressShare={() => {
-                setShareMultipleDialog(true);
+      <TitleAndSwitch className="title-n-switch" sx={{ my: 2 }}>
+        {dataSelector?.selectionFileAndFolderData?.length > 0 ? (
+          <MenuMultipleSelectionFolderAndFile
+            onPressShare={() => {
+              setShareMultipleDialog(true);
+            }}
+            onPressLockData={handleOpenMultiplePassword}
+            onPressSuccess={() => {
+              handleClearMultipleFileAndFolder();
+              customGetSubFoldersAndFiles();
+            }}
+          />
+        ) : (
+          <Fragment>
+            <Typography
+              sx={{
+                display: "flex",
               }}
-              onPressLockData={handleOpenMultiplePassword}
-              onPressSuccess={() => {
-                handleClearMultipleFileAndFolder();
-                customGetSubFoldersAndFiles();
-              }}
-            />
-          ) : (
-            <Fragment>
-              <Typography
-                sx={{
-                  display: "flex",
-                }}
-                component="div"
-              >
-                <BreadcrumbNavigate
-                  title="my Cloud"
-                  titlePath="/my-cloud"
-                  user={user}
-                  path={breadCrumbData}
-                  folderId={parentFolder?._id}
-                  handleNavigate={handleFolderNavigate}
-                />
-                {(fetchSubFoldersAndFiles.folders.isDataFound ||
-                  fetchSubFoldersAndFiles.files.isDataFound ||
-                  inputSearch) && (
-                  <Typography sx={{ ml: 5 }} component="div">
-                    <InputSearch
-                      inputProps={{
-                        placeholder: "Search within this folder...",
-                        sx: {
-                          paddingTop: (theme) => theme.spacing(0.5),
-                          paddingBottom: (theme) => theme.spacing(0.5),
-                          width: "200px",
-                        },
-                      }}
-                      data={{
-                        inputSearch: inputSearch,
-                        setInputHover: setInputHover,
-                        onChange: handleOnSearchChange,
-                        onEnter: () => {},
-                      }}
-                    />
+              component="div"
+            >
+              <BreadcrumbNavigate
+                title="my Cloud"
+                titlePath="/my-cloud"
+                user={user}
+                path={breadCrumbData}
+                folderId={parentFolder?._id}
+                handleNavigate={handleFolderNavigate}
+              />
+              {(fetchSubFoldersAndFiles.folders.isDataFound ||
+                fetchSubFoldersAndFiles.files.isDataFound ||
+                inputSearch) && (
+                <Typography sx={{ ml: 5 }} component="div">
+                  <InputSearch
+                    inputProps={{
+                      placeholder: "Search within this folder...",
+                      sx: {
+                        paddingTop: (theme) => theme.spacing(0.5),
+                        paddingBottom: (theme) => theme.spacing(0.5),
+                        width: "200px",
+                      },
+                    }}
+                    data={{
+                      inputSearch: inputSearch,
+                      setInputHover: setInputHover,
+                      onChange: handleOnSearchChange,
+                      onEnter: () => {},
+                    }}
+                  />
+                </Typography>
+              )}
+            </Typography>
+
+            {fetchSubFoldersAndFiles.folders.isDataFound !== null &&
+              fetchSubFoldersAndFiles.files.isDataFound !== null &&
+              (fetchSubFoldersAndFiles.folders.isDataFound ||
+                fetchSubFoldersAndFiles.files.isDataFound) && (
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontSize: "1rem",
+                      color: "initial !important",
+                      fontWeight: "normal !important",
+                    }}
+                    mr={3}
+                  >
+                    {fetchSubFoldersAndFiles.apiTotal || 0} Items
                   </Typography>
-                )}
-              </Typography>
+                  <SwitchPages
+                    handleToggle={handleToggle}
+                    toggle={toggle === "grid" ? "grid" : "list"}
+                    setToggle={setToggle}
+                  />
+                </Box>
+              )}
+          </Fragment>
+        )}
+      </TitleAndSwitch>
 
-              {fetchSubFoldersAndFiles.folders.isDataFound !== null &&
-                fetchSubFoldersAndFiles.files.isDataFound !== null &&
-                (fetchSubFoldersAndFiles.folders.isDataFound ||
-                  fetchSubFoldersAndFiles.files.isDataFound) && (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontSize: "1rem",
-                        color: "initial !important",
-                        fontWeight: "normal !important",
-                      }}
-                      mr={3}
-                    >
-                      {fetchSubFoldersAndFiles.apiTotal || 0} Items
-                    </Typography>
-                    <SwitchPages
-                      handleToggle={handleToggle}
-                      toggle={toggle === "grid" ? "grid" : "list"}
-                      setToggle={setToggle}
-                    />
-                  </Box>
-                )}
-            </Fragment>
-          )}
-        </MUI.TitleAndSwitch>
-
+      <MUI.ExtendContainer>
         {fetchSubFoldersAndFiles.folders.isDataFound !== null &&
           fetchSubFoldersAndFiles.files.isDataFound !== null &&
           (fetchSubFoldersAndFiles.folders.isDataFound ||
@@ -1319,7 +1320,7 @@ function ExtendFolder() {
                           pagination={{
                             total: Math.ceil(
                               fetchSubFoldersAndFiles.folders.total /
-                              _ITEM_GRID_PER_PAGE,
+                                _ITEM_GRID_PER_PAGE,
                             ),
                             currentPage: currentFolderPage,
                             setCurrentPage: setCurrentFolderPage,
@@ -1442,7 +1443,7 @@ function ExtendFolder() {
                               pagination={{
                                 total: Math.ceil(
                                   fetchSubFoldersAndFiles.apiTotal /
-                                  _ITEM_GRID_PER_PAGE,
+                                    _ITEM_GRID_PER_PAGE,
                                 ),
                                 currentPage: currentFilePage,
                                 setCurrentPage: setCurrentFilePage,
