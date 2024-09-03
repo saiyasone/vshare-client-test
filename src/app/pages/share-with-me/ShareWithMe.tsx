@@ -1017,6 +1017,11 @@ function ShareWithMe() {
                                         folderId={
                                           data?.folderId._id ? true : false
                                         }
+                                        isContainFiles={
+                                          data?.folderId?.total_size > 0
+                                            ? true
+                                            : false
+                                        }
                                         id={data?._id}
                                         folder_name={data?.folderId.folder_name}
                                         selectType={"folder"}

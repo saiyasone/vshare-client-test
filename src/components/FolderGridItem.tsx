@@ -175,7 +175,7 @@ export default function FolderGridItem({ onOuterClick, cardProps, ...props }) {
 
           <MUI.Folder>
             <IconFolderContainer>
-              {props?.file_id || props?.folderId ? (
+              {props?.isContainFiles || props?.file_id ? (
                 <FolderNotEmptyIcon />
               ) : (
                 <FolderEmptyIcon />

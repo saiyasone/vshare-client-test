@@ -113,12 +113,6 @@ function ExtendShare() {
     userAuth,
   );
 
-  useEffect(() => {
-    // if (fetchSubFoldersAndFiles.data) {
-    //   console.log(fetchSubFoldersAndFiles.data);
-    // }
-  }, [fetchSubFoldersAndFiles.data]);
-
   // for detect file password
   const [filePassword, setFilePassword] = useState<any>("");
   const [showEncryptPassword, setShowEncryptPassword] = useState<any>(false);
