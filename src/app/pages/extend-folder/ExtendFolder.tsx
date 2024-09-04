@@ -1487,7 +1487,6 @@ function ExtendFolder() {
                         <Button
                           endIcon={<ExpandMore />}
                           sx={{ mt: 2 }}
-                          // disabled={loading === "loading"}
                           size="small"
                           variant="outlined"
                           onClick={handleViewMore}

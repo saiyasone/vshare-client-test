@@ -316,7 +316,7 @@ function AccountInfo() {
       if (selectedFile instanceof File && userAccount?.profile) {
         try {
           const headers = {
-            PATH: `${sourcePath}/${userAccount?.profile}`,
+            PATH: `${sourcePath}${userAccount?.profile}`,
             FILENAME: userAccount?.profile,
             createdBy: user?._id,
           };
@@ -385,6 +385,7 @@ function AccountInfo() {
         successMessage("Update profile success", 2000);
         userRefetch();
         handleGetUser();
+        setFiles(null);
         eventUploadTrigger.trigger();
       }
     } catch (error: any) {

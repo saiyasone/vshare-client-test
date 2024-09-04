@@ -1010,9 +1010,7 @@ export function MyCloud() {
       }
       case "download": {
         setEventClick("download");
-        if (
-          dataForEvent.data?.folder_type === "folder"
-        ) {
+        if (dataForEvent.data?.folder_type === "folder") {
           setEventClick("download");
           if (multiSelectId.length > 0) {
             await handleDownloadFolders();
