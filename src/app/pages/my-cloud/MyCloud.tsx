@@ -529,6 +529,14 @@ export function MyCloud() {
   //query all files count and separate base on file type
   const queryCategory = async () => {
     await getCategoryAll({
+      variables: {
+        where: {
+          createdBy: parseInt(user?._id),
+        },
+      },
+      onError: (err: any) => {
+        console.log({ err });
+      },
       onCompleted: (data) => {
         if (data) {
           setGetCategory(data);

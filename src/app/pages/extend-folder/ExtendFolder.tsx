@@ -1686,7 +1686,10 @@ function ExtendFolder() {
             if (dataForEvent.type === "folder") {
               handleDownloadFolder();
             } else {
-              handleDownloadFile();
+              setDataForEvent((prev) => ({
+                ...prev,
+                action: "download",
+              }));
             }
           }}
           filename={dataForEvent.data.name}

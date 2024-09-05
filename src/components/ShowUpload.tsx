@@ -77,6 +77,7 @@ export default function ShowUpload(props: Props) {
   const navigate = useNavigate();
   const { CancelToken } = axios;
   const theme = useTheme();
+  const mobileScreen = useMediaQuery(theme.breakpoints.down("md"));
   const { user: userAuth }: any = useAuth();
   const UA = new UAParser();
   const result = UA.getResult();
@@ -110,7 +111,7 @@ export default function ShowUpload(props: Props) {
   const [startUpload, setStartUpload] = useState(false);
   const [presignUploadSuccess, setPresignUploadSuccess] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
-  const chunkSize = 250 * 1024 * 1024; // 250MB
+  const chunkSize = 100 * 1024 * 1024; // 100MB
 
   const [hideFolderSelectMore, setHideFolderSelectMore] = useState(0);
   const [cancelFolderStatus, setCancelFolderStatus] = useState<any>(false);
@@ -599,11 +600,6 @@ export default function ShowUpload(props: Props) {
         }));
       }
     }
-
-    setFileStates((prev) => ({
-      ...prev,
-      [fileIndex]: { ...prev[fileIndex], uploadFinished: true },
-    }));
   };
 
   const uploadPart = async (
@@ -680,11 +676,7 @@ export default function ShowUpload(props: Props) {
               },
             }));
 
-            // const partProgress = (blob.size / file.size) * 100;
-            // const totalProgress = fileStates[fileIndex].progress + partProgress;
             const percentComplete = Math.round((partNumber * 100) / numParts);
-            // const percentComplete = totalProgress;
-
             setFileStates((prev) => ({
               ...prev,
               [fileIndex]: { ...prev[fileIndex], progress: percentComplete },
@@ -704,7 +696,6 @@ export default function ShowUpload(props: Props) {
                 },
               }));
             }
-            setUploadComplete(true);
             resolve();
           } else {
             reject(
@@ -714,6 +705,39 @@ export default function ShowUpload(props: Props) {
             );
           }
         };
+
+        // xhr.upload.onprogress = (event) => {
+        //   const percentComplete = Math.ceil((event.loaded / event.total) * 100);
+        //   setFileStates((prev) => ({
+        //     ...prev,
+        //     [fileIndex]: { ...prev[fileIndex], progress: percentComplete },
+        //   }));
+
+        //   const endTime = Date.now();
+        //   const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
+
+        //   setFileStates((prev) => ({
+        //     ...prev,
+        //     [fileIndex]: {
+        //       ...prev[fileIndex],
+        //       timeElapsed: `${(timeTaken / 60).toFixed(2)} minutes`,
+        //     },
+        //   }));
+
+        //   if (percentComplete >= 100) {
+        //     const endTime = Date.now();
+        //     const timeTaken =
+        //       (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
+
+        //     setFileStates((prev) => ({
+        //       ...prev,
+        //       [fileIndex]: {
+        //         ...prev[fileIndex],
+        //         timeElapsed: `${(timeTaken / 60).toFixed(2)} minutes`,
+        //       },
+        //     }));
+        //   }
+        // };
 
         xhr.onerror = () =>
           reject(
@@ -737,10 +761,6 @@ export default function ShowUpload(props: Props) {
     uploadId: string,
     file: File | any,
   ) => {
-    // if (fileStates[fileIndex]?.cancel) return;
-
-    setUploadComplete(false);
-
     const formData = new FormData();
     formData.append("parts", JSON.stringify(parts));
     formData.append("uploadId", uploadId);
@@ -752,40 +772,41 @@ export default function ShowUpload(props: Props) {
       PATH: file.path,
     };
 
-    const _encryptHeader = encryptData(headers);
-
     try {
-      await axios.post(
-        `${ENV_KEYS.VITE_APP_LOAD_URL}complete-multipart-upload`,
-        formData,
-        {
-          headers: {
-            encryptedheaders: _encryptHeader!,
+      const _encryptHeader = encryptData(headers);
+
+      if (!fileStates[fileIndex]?.uploadFinished) {
+        await axios.post(
+          `${ENV_KEYS.VITE_APP_LOAD_URL}complete-multipart-upload`,
+          formData,
+          {
+            headers: {
+              encryptedheaders: _encryptHeader!,
+            },
           },
-        },
-      );
+        );
 
-      const endTime = Date.now();
-      const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
-      setFileStates((prev) => ({
-        ...prev,
-        [fileIndex]: {
-          ...prev[fileIndex],
-          parts: [],
-          uploadFinished: true,
-          timeElapsed: `${(timeTaken / 60).toFixed(2)}`,
-        },
-      }));
+        const endTime = Date.now();
+        const timeTaken = (endTime - fileStates[fileIndex].startTime) / 1000; // time in seconds
 
-      await eventUploadTrigger?.trigger();
-      setCanClose(false);
-      setHideSelectMore(2);
-      // mvc
+        setFileStates((prev) => ({
+          ...prev,
+          [fileIndex]: {
+            ...prev[fileIndex],
+            parts: [],
+            uploadFinished: true,
+            timeElapsed: `${(timeTaken / 60).toFixed(2)}`,
+          },
+        }));
+      }
     } catch (error: any) {
       setCanClose(false);
       setHideSelectMore(2);
       console.error("Error completing multipart upload:", error);
-      // alert(`Error completing multipart upload: ${error.message}`);
+    } finally {
+      await eventUploadTrigger?.trigger();
+      setCanClose(false);
+      setHideSelectMore(2);
     }
   };
 
@@ -1017,7 +1038,6 @@ export default function ShowUpload(props: Props) {
 
   const handleCloseModal = () => {
     setHideSelectMore(0);
-    onClose?.();
     onRemoveAll?.();
     handleUploadDone();
     setFileProgress({});
@@ -1035,6 +1055,8 @@ export default function ShowUpload(props: Props) {
     setFolderProgressMap({});
     setPresignUploadSuccess(false);
     setCanClose(false);
+
+    onClose?.();
   };
 
   const handleWarningMessage = () => {
@@ -1061,8 +1083,6 @@ export default function ShowUpload(props: Props) {
       errorMessage("You action file wrong", 2000);
     }
   };
-
-  const mobileScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   function LinearProgressWithLabel(props) {
     return (
@@ -1162,27 +1182,32 @@ export default function ShowUpload(props: Props) {
   React.useEffect(() => {
     const completeFunction = async () => {
       if (Object.values(fileStates).length === files.length) {
-        Object.values(fileStates).map(async (fileState, fileIndex) => {
-          if (
-            fileState?.progress >= 100 &&
-            fileState?.retryParts?.length <= 0 &&
-            fileState?.parts?.length > 0 &&
-            !fileState?.cancel &&
-            uploadComplete
-          ) {
-            await tryCompleteMultipartUpload(
-              fileIndex,
-              [...(fileState?.parts || [])],
-              fileState?.uploadId,
-              files[fileIndex],
-            );
-          }
-        });
+        const uploadPromises = Object.values(fileStates).map(
+          async (fileState, fileIndex) => {
+            // console.log({ progress: fileState?.progress });
+            if (
+              fileState?.progress >= 100 &&
+              fileState?.retryParts?.length <= 0 &&
+              fileState?.parts?.length > 0 &&
+              !fileState?.cancel &&
+              !fileState?.uploadFinished
+            ) {
+              await tryCompleteMultipartUpload(
+                fileIndex,
+                [...(fileState?.parts || [])],
+                fileState?.uploadId,
+                files[fileIndex],
+              );
+            }
+          },
+        );
+
+        await Promise.all(uploadPromises);
       }
     };
 
     completeFunction();
-  }, [fileStates, uploadComplete]);
+  }, [fileStates]);
 
   React.useEffect(() => {
     const newFileStates = Object.values(fileStates);
@@ -1196,13 +1221,13 @@ export default function ShowUpload(props: Props) {
   }, [fileStates, data, presignUploadSuccess]);
 
   React.useEffect(() => {
-    window.addEventListener("online", retryFailedParts);
+    // window.addEventListener("online", retryFailedParts);
     window.addEventListener("offline", () =>
       console.log("Network connection lost"),
     );
 
     return () => {
-      window.removeEventListener("online", retryFailedParts);
+      // window.removeEventListener("online", retryFailedParts);
       window.removeEventListener("offline", () =>
         console.log("Network connection lost"),
       );
@@ -1648,55 +1673,45 @@ export default function ShowUpload(props: Props) {
                       </MUI.ShowNameAndProgress>
                       {/* ee */}
                       <MUI.ShowActionButtonBox>
-                        {
-                          // cancelStatus[index] ? (
-                          //   <Chip
-                          //     label="Cancled"
-                          //     color="error"
-                          //     variant="outlined"
-                          //   />
-
-                          // )
-                          cancelStatusV1 ? (
-                            <Chip
-                              label="Cancelled"
-                              color="error"
-                              variant="outlined"
-                            />
-                          ) : fileStates[index]?.uploadFinished ? (
-                            <IconButton sx={{ background: "#EEFBF3" }}>
-                              <DownloadDoneIcon sx={{ color: "#17766B" }} />
-                            </IconButton>
-                          ) : (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-around",
-                              }}
-                            >
-                              {isHideV1 && progressV1 < 100 && (
-                                <Tooltip
-                                  title="Cancel upload"
-                                  placement="top"
-                                  followCursor
+                        {cancelStatusV1 ? (
+                          <Chip
+                            label="Cancelled"
+                            color="error"
+                            variant="outlined"
+                          />
+                        ) : fileStates[index]?.uploadFinished ? (
+                          <IconButton sx={{ background: "#EEFBF3" }}>
+                            <DownloadDoneIcon sx={{ color: "#17766B" }} />
+                          </IconButton>
+                        ) : (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-around",
+                            }}
+                          >
+                            {isHideV1 && progressV1 < 100 && (
+                              <Tooltip
+                                title="Cancel upload"
+                                placement="top"
+                                followCursor
+                              >
+                                <IconButton
+                                  onClick={() => {
+                                    handleCancelUploadPresign(index);
+                                  }}
                                 >
-                                  <IconButton
-                                    onClick={() => {
-                                      // handleCancleUploadFile(index);
-                                      handleCancelUploadPresign(index);
+                                  <HighlightOffIcon
+                                    sx={{
+                                      color: "#555555",
+                                      cursor: "pointer",
                                     }}
-                                  >
-                                    <HighlightOffIcon
-                                      sx={{
-                                        color: "#555555",
-                                        cursor: "pointer",
-                                      }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
-                              {/* {isHide[index] && progress < 100 && (
+                                  />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            {/* {isHide[index] && progress < 100 && (
                               <Tooltip
                                 title="Cancel upload"
                                 placement="top"
@@ -1714,24 +1729,24 @@ export default function ShowUpload(props: Props) {
                                 </IconButton>
                               </Tooltip>
                             )} */}
-                              {!isHideV1 && (
-                                <Tooltip
-                                  title="Delete File"
-                                  placement="top"
-                                  followCursor
+                            {!isHideV1 && (
+                              <Tooltip
+                                title="Delete File"
+                                placement="top"
+                                followCursor
+                              >
+                                <IconButton
+                                  onClick={() =>
+                                    handleUploadCancel(index, "file")
+                                  }
                                 >
-                                  <IconButton
-                                    onClick={() =>
-                                      handleUploadCancel(index, "file")
-                                    }
-                                  >
-                                    <DeleteForeverIcon
-                                      sx={{ color: "#D93025" }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
-                              {/* {!isHide[index] && (
+                                  <DeleteForeverIcon
+                                    sx={{ color: "#D93025" }}
+                                  />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            {/* {!isHide[index] && (
                               <Tooltip
                                 title="Delete File"
                                 placement="top"
@@ -1748,9 +1763,8 @@ export default function ShowUpload(props: Props) {
                                 </IconButton>
                               </Tooltip>
                             )} */}
-                            </Box>
-                          )
-                        }
+                          </Box>
+                        )}
                       </MUI.ShowActionButtonBox>
                     </MUI.ShowFileDetailBox>
                     {cancelStatusV1 ? (

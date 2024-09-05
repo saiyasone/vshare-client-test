@@ -416,16 +416,35 @@ const FileCardItem: React.FC<any> = ({
                     )}
                   </Box>
                 )}
-                {fileType !== "folder" && (
-                  <FileIconContainer>
-                    <FileIcon
-                      extension={getFileType(props.name)}
-                      {...{
-                        ...defaultStyles[getFileType(props.name) as string],
-                      }}
-                    />
-                  </FileIconContainer>
-                )}
+
+                <Fragment>
+                  {fileType !== "folder" && (
+                    <FileIconContainer>
+                      <FileIcon
+                        extension={getFileType(props.name)}
+                        {...{
+                          ...defaultStyles[getFileType(props.name) as string],
+                        }}
+                      />
+                    </FileIconContainer>
+                  )}
+                </Fragment>
+                {/* {fileType === "video" ? (
+                  <VideoThumbnail videoSrc={newUrl + imagePath} />
+                ) : (
+                  <Fragment>
+                    {fileType !== "folder" && (
+                      <FileIconContainer>
+                        <FileIcon
+                          extension={getFileType(props.name)}
+                          {...{
+                            ...defaultStyles[getFileType(props.name) as string],
+                          }}
+                        />
+                      </FileIconContainer>
+                    )}
+                  </Fragment>
+                )} */}
               </React.Fragment>
             )}
             {!props.disableName && (
