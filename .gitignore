@@ -29,8 +29,3 @@ dist-ssr
 
 # testing
 /coverage
-
-/.env.development
-/.env.staging
-/.env.production
-/.eslintcache
