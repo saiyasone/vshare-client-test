@@ -99,6 +99,13 @@ function ExtendShare() {
   const [updateFolder] = useMutation(MUTATION_UPDATE_FOLDER, {
     refetchQueries: [QUERY_FOLDER],
   });
+
+  const [deleteShareFolder] = useMutation(MUTATION_UPDATE_FOLDER, {
+    fetchPolicy: "no-cache",
+  });
+  const [deleteShareFile] = useMutation(MUTATION_UPDATE_FILE, {
+    fetchPolicy: "no-cache",
+  });
   const [deleteShareFileAndFolder] = useMutation(MUTATION_DELETE_SHARE, {
     fetchPolicy: "no-cache",
   });
@@ -620,20 +627,37 @@ function ExtendShare() {
 
   const handleDeleteFilesAndFolders = async () => {
     try {
-      await deleteShareFileAndFolder({
-        variables: {
-          id: dataForEvent.data?.sharedId,
-          email: userAuth?.email,
-        },
-        onCompleted: async () => {
-          if (dataForEvent.type === "folder") {
-            successMessage("Delete folder successful !", 2000);
-          } else {
-            successMessage("Delete file successful !", 2000);
-          }
-          fetchSubFoldersAndFiles.refetch();
-        },
-      });
+      if (dataForEvent.data?.folder_type) {
+        await deleteShareFolder({
+          variables: {
+            where: {
+              _id: dataForEvent.data._id,
+            },
+            data: {
+              status: "deleted",
+            },
+          },
+          onCompleted: () => {
+            fetchSubFoldersAndFiles.refetch();
+            successMessage("Successfully deleted", 3000);
+          },
+        });
+      } else {
+        await deleteShareFile({
+          variables: {
+            where: {
+              _id: dataForEvent.data._id,
+            },
+            data: {
+              status: "deleted",
+            },
+          },
+          onCompleted: () => {
+            fetchSubFoldersAndFiles.refetch();
+            successMessage("Successfully deleted", 3000);
+          },
+        });
+      }
     } catch (err: any) {
       errorMessage(err, 3000);
       errorMessage("Sorry! Something went wrong. Please try again!", 3000);
