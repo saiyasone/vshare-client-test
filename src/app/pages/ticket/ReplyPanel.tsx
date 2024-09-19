@@ -8,25 +8,41 @@ import { setChatMessage } from "stores/features/chatSlice";
 import { getTimeLineChat } from "utils/date.util";
 import { getFileType } from "utils/file.util";
 import * as MUI from "./styles/chat.style";
+import useManageFile from "hooks/file/useManageFile";
+import useAuth from "hooks/useAuth";
 
 function ReplyPanel(props) {
   const { chat, ticketStatus } = props;
+  const { user }: any = useAuth();
+  const manageFile = useManageFile({ user });
 
   const dispatch = useDispatch();
   const messagesEndRef = useRef<any>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollTo(0, 0);
-    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleReply = (chat) => {
     dispatch(setChatMessage(chat));
   };
 
-  async function onDownloadFile(chat, file) {
+  async function onDownloadFile(_, file) {
     try {
-      console.log(chat, file);
+      const multipleData: any = [
+        {
+          id: file?._id,
+          checkType: "file",
+          newPath: "chat-message",
+          newFilename: file.newNameImage,
+          createdBy: { _id: user?._id, newName: user?.newName },
+        },
+      ];
+
+      manageFile.handleMultipleDownloadFileAndFolder(
+        { multipleData, isShare: false },
+        { onSuccess: () => {}, onFailed: () => {} },
+      );
     } catch (err) {
       console.error(err);
     }
@@ -40,7 +56,6 @@ function ReplyPanel(props) {
     <Box className="chat-panel" ref={messagesEndRef}>
       {chat?.createdByStaff?._id ? (
         <MUI.ChatListContainer className="chat-user">
-          {/* <img src={iconPerson} alt="icon-person" /> */}
           <MUI.ChatBoxListContainer>
             <MUI.ChatBoxContainer>
               <MUI.ChatBoxCardContainer className="box-card-user">
@@ -111,19 +126,6 @@ function ReplyPanel(props) {
                           </Box>
                           <Typography component="span">{file.image}</Typography>
                         </Box>
-                        {/* <IconButton
-                            aria-label="download-file"
-                            size="small"
-                            color="default"
-                            onClick={() => onDownloadFile(chat, file)}
-                          >
-                            <FileDownload
-                              className="icon-download-user"
-                              sx={{
-                                fontSize: "1rem",
-                              }}
-                            />
-                          </IconButton> */}
                       </MUI.ChatBoxFileItem>
                     ) : null;
                   })
@@ -159,11 +161,6 @@ function ReplyPanel(props) {
                   </Box>
                 </MUI.ChatBoxCard>
               </MUI.ChatBoxCardContainer>
-              {/* <Box className="timeDate owner">
-                <Typography component="small">
-                  {moment(chat.createdAt).format("HH:mm")}
-                </Typography>
-              </Box> */}
             </MUI.ChatBoxContainer>
 
             {/* Chat Files */}
@@ -204,7 +201,6 @@ function ReplyPanel(props) {
                 : null}
             </MUI.ChatBoxFileListContainer>
           </MUI.ChatBoxListContainer>
-          {/* <img src={iconPerson} alt="icon-person" /> */}
         </MUI.ChatListContainer>
       )}
     </Box>
