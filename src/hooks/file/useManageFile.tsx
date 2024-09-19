@@ -442,6 +442,8 @@ const useManageFile = ({ user }) => {
         createdBy: newModelData?.[0]?.createdBy,
       };
 
+      console.log({ headers });
+
       const encryptedData = dataEncrypted({ headers });
       const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
 
@@ -523,7 +525,37 @@ const useManageFile = ({ user }) => {
         downloadBy: multipleData[0]?.toAccount?.email,
         createdBy: multipleData[0].createdBy?._id,
       };
+      const encryptedData = dataEncrypted({ headers });
+      const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
 
+      startDownload({ baseUrl });
+      setTimeout(() => {
+        onSuccess();
+      }, 1000);
+    } catch (error) {
+      onFailed?.(error);
+    }
+  };
+
+  const handleMultipleDownloadTicketFileAndFolder = async (
+    { multipleData },
+    { onSuccess, onFailed },
+  ) => {
+    try {
+      const newModelData = multipleData.map((file) => {
+        return {
+          isFolder: false,
+          path: `${file.createdBy?.newName}-${file.createdBy?._id}/${file.newPath}/${file.newFilename}`,
+          createdBy: file.createdBy?._id,
+        };
+      });
+
+      const headers = {
+        accept: "*/*",
+        lists: newModelData,
+        downloadBy: multipleData[0]?.toAccount?.email,
+        createdBy: multipleData[0].createdBy?._id,
+      };
       const encryptedData = dataEncrypted({ headers });
       const baseUrl = `${ENV_KEYS.VITE_APP_LOAD_URL}downloader/file/download-multifolders-and-files?download=${encryptedData}`;
 
@@ -638,6 +670,7 @@ const useManageFile = ({ user }) => {
     handleMultipleSaveToClound,
     handleDownloadSingleFile,
     handleSingleFileDropDownload,
+    handleMultipleDownloadTicketFileAndFolder,
   };
 };
 
