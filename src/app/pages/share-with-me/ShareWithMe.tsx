@@ -16,11 +16,13 @@ import Snackbar from "../../../components/Notification";
 import {
   MUTATION_ACTION_FILE,
   MUTATION_DELETE_FILE,
+  MUTATION_SHARE_UPDATE_FILE,
   MUTATION_UPDATE_FILE,
 } from "api/graphql/file.graphql";
 import { MUTATION_CREATE_FILE_DROP_URL_PRIVATE } from "api/graphql/fileDrop.graphql";
 import {
   MUTATION_UPDATE_FOLDER,
+  MUTATION_UPDATE_SHARE_FOLDER,
   QUERY_FOLDER,
 } from "api/graphql/folder.graphql";
 import { MUTATION_DELETE_SHARE, QUERY_SHARE } from "api/graphql/share.graphql";
@@ -79,10 +81,10 @@ function ShareWithMe() {
 
   const [getFolders] = useLazyQuery(QUERY_FOLDER, { fetchPolicy: "no-cache" });
   const [updateFile] = useMutation(MUTATION_UPDATE_FILE);
-  const [deleteShareFolder] = useMutation(MUTATION_UPDATE_FOLDER, {
+  const [deleteShareFolder] = useMutation(MUTATION_UPDATE_SHARE_FOLDER, {
     fetchPolicy: "no-cache",
   });
-  const [deleteShareFile] = useMutation(MUTATION_UPDATE_FILE, {
+  const [deleteShareFile] = useMutation(MUTATION_SHARE_UPDATE_FILE, {
     fetchPolicy: "no-cache",
   });
   const [fileAction] = useMutation(MUTATION_ACTION_FILE);

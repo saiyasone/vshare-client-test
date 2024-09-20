@@ -97,6 +97,14 @@ export const MUTATION_CANCEL_UPLOAD_FOLDER = gql`
   }
 `;
 
+export const MUTATION_UPDATE_SHARE_FOLDER = gql`
+  mutation UpdateShareFolders($data: FoldersInput!, $where: FoldersWhereInputOne!) {
+    updateShareFolders(data: $data, where: $where) {
+      _id
+    }
+  }
+`;
+
 export const MUTATION_UPDATE_FOLDER = gql`
   mutation UpdateFolders($data: FoldersInput!, $where: FoldersWhereInputOne!) {
     updateFolders(data: $data, where: $where) {

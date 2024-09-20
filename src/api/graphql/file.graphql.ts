@@ -350,33 +350,18 @@ export const MUTATION_CREATE_FILE = gql`
   }
 `;
 
+export const MUTATION_SHARE_UPDATE_FILE = gql`
+  mutation UpdateShareFiles($data: FilesInput!, $where: FilesWhereInputOne!) {
+    updateShareFiles(data: $data, where: $where) {
+      _id
+    }
+  }
+`;
+
 export const MUTATION_UPDATE_FILE = gql`
   mutation UpdateFiles($data: FilesInput!, $where: FilesWhereInputOne!) {
     updateFiles(data: $data, where: $where) {
       _id
-      filename
-      newFilename
-      filePassword
-      passwordUrlAll
-      fileType
-      size
-      totalDownload
-      status
-      isPublic
-      checkFile
-      path
-      detail
-      urlAll
-      url
-      permissionSharePublic
-      aproveDownloadPublic
-      ip
-      favorite
-      actionStatus
-      expired
-      createdAt
-      updatedAt
-      actionDate
     }
   }
 `;
