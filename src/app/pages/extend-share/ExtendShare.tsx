@@ -15,11 +15,13 @@ import * as MUI from "./styles/extendShare.style";
 //function
 import {
   MUTATION_ACTION_FILE,
+  MUTATION_SHARE_UPDATE_FILE,
   MUTATION_UPDATE_FILE,
 } from "api/graphql/file.graphql";
 import { MUTATION_CREATE_FILE_DROP_URL_PRIVATE } from "api/graphql/fileDrop.graphql";
 import {
   MUTATION_UPDATE_FOLDER,
+  MUTATION_UPDATE_SHARE_FOLDER,
   QUERY_FOLDER,
 } from "api/graphql/folder.graphql";
 import { MUTATION_DELETE_SHARE } from "api/graphql/share.graphql";
@@ -100,10 +102,10 @@ function ExtendShare() {
     refetchQueries: [QUERY_FOLDER],
   });
 
-  const [deleteShareFolder] = useMutation(MUTATION_UPDATE_FOLDER, {
+  const [deleteShareFolder] = useMutation(MUTATION_UPDATE_SHARE_FOLDER, {
     fetchPolicy: "no-cache",
   });
-  const [deleteShareFile] = useMutation(MUTATION_UPDATE_FILE, {
+  const [deleteShareFile] = useMutation(MUTATION_SHARE_UPDATE_FILE, {
     fetchPolicy: "no-cache",
   });
   const [deleteShareFileAndFolder] = useMutation(MUTATION_DELETE_SHARE, {
