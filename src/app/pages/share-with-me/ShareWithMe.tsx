@@ -16,6 +16,7 @@ import Snackbar from "../../../components/Notification";
 import {
   MUTATION_ACTION_FILE,
   MUTATION_DELETE_FILE,
+  MUTATION_REMOVE_SHARE_DATA,
   MUTATION_SHARE_UPDATE_FILE,
   MUTATION_UPDATE_FILE,
 } from "api/graphql/file.graphql";
@@ -82,6 +83,9 @@ function ShareWithMe() {
   const [getFolders] = useLazyQuery(QUERY_FOLDER, { fetchPolicy: "no-cache" });
   const [updateFile] = useMutation(MUTATION_UPDATE_FILE);
   const [deleteShareFolder] = useMutation(MUTATION_UPDATE_SHARE_FOLDER, {
+    fetchPolicy: "no-cache",
+  });
+  const [deleteShareFolderAndFile] = useMutation(MUTATION_REMOVE_SHARE_DATA, {
     fetchPolicy: "no-cache",
   });
   const [deleteShareFile] = useMutation(MUTATION_SHARE_UPDATE_FILE, {
@@ -800,37 +804,50 @@ function ShareWithMe() {
 
   const handleDeleteShare = async () => {
     try {
-      if (dataForEvent.data?.folderId) {
-        await deleteShareFolder({
-          variables: {
-            where: {
-              _id: dataForEvent.data?.folderId?._id,
-            },
-            data: {
-              status: "deleted",
-            },
+      await deleteShareFolderAndFile({
+        variables: {
+          where: { _id: dataForEvent.data?._id },
+          data: {
+            status: "deleted",
           },
+        },
 
-          onCompleted: async () => {
-            successMessage("Delete folder successful !", 2000);
-            queryGetShare();
-          },
-        });
-      } else {
-        await deleteShareFile({
-          variables: {
-            where: { _id: dataForEvent.data?.fileId?._id },
-            data: {
-              status: "deleted",
-            },
-          },
+        onCompleted: async () => {
+          successMessage("Delete file successful !", 2000);
+          queryGetShare();
+        },
+      });
+      // if (dataForEvent.data?.folderId) {
+      //   await deleteShareFolder({
+      //     variables: {
+      //       where: {
+      //         _id: dataForEvent.data?.folderId?._id,
+      //       },
+      //       data: {
+      //         status: "deleted",
+      //       },
+      //     },
 
-          onCompleted: async () => {
-            successMessage("Delete file successful !", 2000);
-            queryGetShare();
-          },
-        });
-      }
+      //     onCompleted: async () => {
+      //       successMessage("Delete folder successful !", 2000);
+      //       queryGetShare();
+      //     },
+      //   });
+      // } else {
+      //   await deleteShareFile({
+      //     variables: {
+      //       where: { _id: dataForEvent.data?.fileId?._id },
+      //       data: {
+      //         status: "deleted",
+      //       },
+      //     },
+
+      //     onCompleted: async () => {
+      //       successMessage("Delete file successful !", 2000);
+      //       queryGetShare();
+      //     },
+      //   });
+      // }
     } catch (error: any) {
       errorMessage(error, 3000);
       errorMessage("Sorry! Something went wrong. Please try again!", 3000);

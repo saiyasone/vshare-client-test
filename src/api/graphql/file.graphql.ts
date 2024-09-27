@@ -358,6 +358,14 @@ export const MUTATION_SHARE_UPDATE_FILE = gql`
   }
 `;
 
+export const MUTATION_REMOVE_SHARE_DATA = gql`
+  mutation RemoveShareData($data: FilesInput!, $where: FilesWhereInputOne!) {
+    removeShareWithMe(data: $data, where: $where) {
+      _id
+    }
+  }
+`;
+
 export const MUTATION_UPDATE_FILE = gql`
   mutation UpdateFiles($data: FilesInput!, $where: FilesWhereInputOne!) {
     updateFiles(data: $data, where: $where) {
